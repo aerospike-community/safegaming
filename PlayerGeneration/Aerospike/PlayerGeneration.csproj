@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Company>Aerospike</Company>
+    <Authors>Richard Andersen</Authors>
+    <Copyright>2022</Copyright>
+    <Title>SafeGaming Generator</Title>
+    <Version>1.1.0.0</Version>
+    <FileVersion>1.1.0.0</FileVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>../PlayerGeneration.snk</AssemblyOriginatorKeyFile>    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ConsoleArguments.cs" Link="ConsoleArguments.cs" />
+    <Compile Include="..\DateTimeHistory.cs" Link="DateTimeHistory.cs" />
+    <Compile Include="..\DateTimeRealTime.cs" Link="DateTimeRealTime.cs" />
+    <Compile Include="..\DateTimeSimulation.cs" Link="DateTimeSimulation.cs" />
+    <Compile Include="..\FinTransaction.cs" Link="FinTransaction.cs" />
+    <Compile Include="..\Game.cs" Link="Game.cs" />
+    <Compile Include="..\GCMonitor.cs" Link="GCMonitor.cs" />
+    <Compile Include="..\GlobalIncrement.cs" Link="GlobalIncrement.cs" />
+    <Compile Include="..\Helpers.cs" Link="Helpers.cs" />
+    <Compile Include="..\IDBConnection.cs" Link="IDBConnection.cs" />
+    <Compile Include="..\intervention.cs" Link="intervention.cs" />
+    <Compile Include="..\InterventionThresholds.cs" Link="InterventionThresholds.cs" />
+    <Compile Include="..\LiveWager.cs" Link="LiveWager.cs" />
+    <Compile Include="..\Logger.cs" Link="Logger.cs" />
+    <Compile Include="..\Metrics.cs" Link="Metrics.cs" />
+    <Compile Include="..\Player.cs" Link="Player.cs" />
+    <Compile Include="..\PlayerHistory.cs" Link="PlayerHistory.cs" />
+    <Compile Include="..\PlayersTransHistory.cs" Link="PlayersTransHistory.cs" />
+    <Compile Include="..\PrefStat.cs" Link="PrefStat.cs" />
+    <Compile Include="..\Program.cs" Link="Program.cs" />
+    <Compile Include="..\ProgramCancel.cs" Link="ProgramCancel.cs" />
+    <Compile Include="..\ProgramConsole.cs" Link="ProgramConsole.cs" />
+    <Compile Include="..\ProgramErrorCancelHandling.cs" Link="ProgramErrorCancelHandling.cs" />
+    <Compile Include="..\Progression.cs" Link="Progression.cs" />
+    <Compile Include="..\Session.cs" Link="Session.cs" />
+    <Compile Include="..\Settings.cs" Link="Settings.cs" />
+    <Compile Include="..\StateCountyDB.cs" Link="StateCountyDB.cs" />
+    <Compile Include="..\UsedEmailCnt.cs" Link="UsedEmailCnt.cs" />
+    <Compile Include="..\WagerResultTransaction.cs" Link="WagerResultTransaction.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\appsettings.json" Link="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\county_gaming_database.json" Link="county_gaming_database.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\state_database.json" Link="state_database.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettingsAerospike.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aerospike.Client" Version="6.0.1" />
+    <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
+    <PackageReference Include="Common.Console" Version="5.31.10" />
+    <PackageReference Include="Common.Functions" Version="5.31.10" />
+    <PackageReference Include="Common.JSON" Version="5.31.3" />
+    <PackageReference Include="Common.Logger" Version="5.31.12" />
+    <PackageReference Include="Common.Path" Version="5.31.5" />
+    <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />
+    <PackageReference Include="Common.Patterns.Threading" Version="5.31.1" />
+    <PackageReference Include="Faker.Net" Version="2.0.154" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+  </ItemGroup>  
+
+  <ItemGroup>
+    <None Update="publishrelease-linux.sh">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

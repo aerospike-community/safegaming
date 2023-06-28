@@ -1,0 +1,35 @@
+{
+  "profiles": {
+    "PlayerGeneration": {
+      "commandName": "Project"
+    },
+    "PlayerGeneration CommandLineArgs": {
+      "commandName": "Project",
+      "commandLineArgs": "--start-key 800 --keys 150"
+    },
+    "PG Sync Mode": {
+      "commandName": "Project",
+      "commandLineArgs": "--Sync --keys 1"
+    },
+    "PG Sync Real": {
+      "commandName": "Project",
+      "commandLineArgs": "--Sync --keys 1 --RealTime"
+    },
+    "OG Sleep": {
+      "commandName": "Project",
+      "commandLineArgs": "--Sync --keys 1 --Sleep 500"
+    },
+    "PG Real": {
+      "commandName": "Project",
+      "commandLineArgs": "--keys 10 --RealTime"
+    },
+    "PG No Timers": {
+      "commandName": "Project",
+      "commandLineArgs": "--DisableTimings"
+    },
+    "PG TimingJson": {
+      "commandName": "Project",
+      "commandLineArgs": "--TimingJsonFile ./Timings.json"
+    }
+  }
+}

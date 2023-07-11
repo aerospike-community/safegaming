@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>PlayerGeneration</RootNamespace>  
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
   
   <ItemGroup>

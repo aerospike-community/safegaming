@@ -225,14 +225,12 @@ namespace PlayerGeneration
 
         public static (string dbName, 
                         string driverName, 
-                        Version driverVersion, 
-                        System.Configuration.Assemblies.AssemblyVersionCompatibility? versionCompatibility) GetInfo()
+                        Version driverVersion) GetInfo()
         {
             var asyncClient = typeof(Aerospike.Client.AsyncClient).Assembly.GetName();
             return ("Aerospike Driver",
                     asyncClient?.Name,
-                    asyncClient?.Version,
-                    asyncClient?.VersionCompatibility);
+                    asyncClient?.Version);
         }
 
         /// <summary>

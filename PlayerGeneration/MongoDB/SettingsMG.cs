@@ -55,6 +55,15 @@ namespace PlayerGeneration
                            ref this.UpdatedTimingJsonFile,
                            nameof(TimingJsonFile));
 
+            GetSetting(config,
+                           ref this.EnableHistogram,
+                           ref this.UpdatedEnableHistogram,
+                           nameof(EnableHistogram));
+            GetSetting(config,
+                           ref this.HGRMFile,
+                           ref this.UpdatedHGRMFile,
+                           nameof(HGRMFile));
+
         }
         public readonly ECM.IConfigurationBuilder ConfigBuilder;
 

@@ -63,14 +63,28 @@ namespace PlayerGeneration
             {
                 DefaultValue = appSettings.TimingJsonFile,
                 Optional = true, //Required                
-                Description = "JSON File where the timings will be stored"
+                Description = "JSON DetailFile where the timings will be stored"
             });
 
             this._cmdLineParser.Arguments.Add(new ValueArgument<string>("TimingCSVFile")
             {
                 DefaultValue = appSettings.TimingCSVFile,
                 Optional = true, //Required                
-                Description = "CSV File where the timings will be stored"
+                Description = "CSV DetailFile where the timings will be stored"
+            });
+
+            this._cmdLineParser.Arguments.Add(new ValueArgument<bool>("EnableHistogram")
+            {
+                DefaultValue = appSettings.EnableHistogram,
+                Optional = true, //Required                
+                Description = "True/False to enable/disable histogram support"
+            });
+
+            this._cmdLineParser.Arguments.Add(new ValueArgument<string>("HGRMFile")
+            {
+                DefaultValue = appSettings.HGRMFile,
+                Optional = true, //Required                
+                Description = "Histogram Output File"
             });
 
             this._cmdLineParser.Arguments.Add(new SwitchArgument("Debug", false)
@@ -201,6 +215,12 @@ namespace PlayerGeneration
                     case "TimingCSVFile":
                         this.AppSettings.TimingCSVFile = ((ValueArgument<string>)item).Value;
                         break;
+                    case "EnableHistogram":
+                        this.AppSettings.EnableHistogram = ((ValueArgument<bool>)item).Value;
+                        break;
+                    case "HGRMFile":
+                        this.AppSettings.HGRMFile = ((ValueArgument<string>)item).Value;
+                        break;
                     case "Debug":
                         this.Debug = true;
                         break;
@@ -223,7 +243,6 @@ namespace PlayerGeneration
                 }
             }
             
-
             if(!explictDisableTiming && this.AppSettings.TimeEvents)
             {
                 this.AppSettings.TimeEvents = !(string.IsNullOrEmpty(this.AppSettings.TimingJsonFile)
@@ -298,12 +317,11 @@ namespace PlayerGeneration
                                                 Common.Functions.Instance.ApplicationRunTimeDir);
             
             {
-                var dbInfo = DBConnection.GetInfo();
-                ConsoleDisplay.Console.WriteLine("\t\t{0}: {1} Version: {2} VersionCompatibility: {3}",
-                                             dbInfo.dbName,
-                                            dbInfo.driverName,
-                                            dbInfo.driverVersion,
-                                            dbInfo.versionCompatibility);
+                var (dbName, driverName, driverVersion) = DBConnection.GetInfo();
+                ConsoleDisplay.Console.WriteLine("\t\t{0}: {1} Version: {2}",
+                                                    dbName,
+                                                    driverName,
+                                                    driverVersion);
             }
         }
     }

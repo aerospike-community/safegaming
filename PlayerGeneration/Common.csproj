@@ -63,6 +63,7 @@
     <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />
     <PackageReference Include="Common.Patterns.Threading" Version="5.31.1" />
     <PackageReference Include="Faker.Net" Version="2.0.154" />
+    <PackageReference Include="HdrHistogram" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
   </ItemGroup>
 </Project>

@@ -1,8 +1,10 @@
 ﻿using Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using static PlayerGeneration.DateTimeSimulation;
 using ECM = Microsoft.Extensions.Configuration;
 
@@ -32,9 +34,7 @@ namespace PlayerGeneration
             GetSetting(config, ref this.UpdateDB, nameof(UpdateDB));
             GetSetting(config, ref this.TruncateSets, nameof(TruncateSets));
             GetSetting(config, ref this.IgnoreFaults, nameof(IgnoreFaults));
-            if(!UpdatedTimingEvents)
-                GetSetting(config, ref this.TimeEvents, nameof(TimeEvents));
-
+            
             if(!UpdatedWarnMaxMSLatencyDBExceeded)
                 GetSetting(config, ref this.WarnMaxMSLatencyDBExceeded, nameof(WarnMaxMSLatencyDBExceeded));
             if(!UpdatedWarnIfObjectSizeBytes)
@@ -52,10 +52,69 @@ namespace PlayerGeneration
             //GetSetting(config, ref this.HistoryJsonFile, nameof(HistoryJsonFile));
             //GetSetting(config, ref this.PlayerJsonFile, nameof(PlayerJsonFile));
 
-            if(!UpdatedTimingCSVFile)
+            if (!UpdatedTimingEvents)
+                GetSetting(config, ref this.TimeEvents, nameof(TimeEvents));
+            if (!UpdatedTimingCSVFile)
                 GetSetting(config, ref this.TimingCSVFile, nameof(TimingCSVFile));
             if(!UpdatedTimingJsonFile)
                 GetSetting(config, ref this.TimingJsonFile, nameof(TimingJsonFile));
+
+            if (!UpdatedEnableHistogram)
+                GetSetting(config, ref EnableHistogram, nameof(EnableHistogram));
+            if(!UpdatedHGRMFile)
+                GetSetting(config, ref HGRMFile, nameof(HGRMFile));
+            GetSetting(config, ref HGRMFile, nameof(HGRMFile));
+            GetSetting(config, ref HGPrecision, nameof(HGPrecision));
+            GetSetting(config, ref HGLowestTickValue, nameof(HGLowestTickValue));
+            GetSetting(config, ref HGHighestTickValue, nameof(HGHighestTickValue));
+            GetSetting(config, ref HGReportPercentileTicksPerHalfDistance, nameof(HGReportPercentileTicksPerHalfDistance));
+            GetSetting(config, ref HGReportTickToUnitRatio, nameof(HGReportTickToUnitRatio));
+
+            if (string.IsNullOrEmpty(HGReportTickToUnitRatio))
+            {
+                HGReportUnitRatio = HdrHistogram.OutputScalingFactor.None;
+            }
+            else
+            {
+                switch (HGReportTickToUnitRatio.ToLower())
+                {
+                    case "ticks":
+                    case "tick":
+                        HGReportUnitRatio = HdrHistogram.OutputScalingFactor.None;
+                        break;
+                    case "nanoseconds":
+                    case "nanosecond":
+                    case "nano":
+                    case "nanos":
+                    case "ns":
+                        HGReportUnitRatio = TimeSpan.NanosecondsPerTick;
+                        break;
+                    case "microseconds":
+                    case "microsecond":
+                    case "mics":
+                    case "mic":
+                    case "μs":
+                        HGReportUnitRatio = HdrHistogram.OutputScalingFactor.TimeStampToMicroseconds;
+                        break;
+                    case "milliseconds":
+                    case "millisecond":
+                    case "mills":
+                    case "mill":
+                    case "ms":
+                        HGReportUnitRatio = HdrHistogram.OutputScalingFactor.TimeStampToMilliseconds;
+                        break;
+                    case "seconds":
+                    case "second":
+                    case "sec":
+                    case "secs":
+                    case "s":
+                        HGReportUnitRatio = HdrHistogram.OutputScalingFactor.TimeStampToSeconds;
+                        break;
+                    default:
+                        HGReportUnitRatio = double.Parse(HGReportTickToUnitRatio);
+                        break;
+                }
+            }
 
             GetSetting(config, ref this.NbrPlayers, nameof(NbrPlayers));
             GetSetting(config, ref this.MaxTransPerSession, nameof(MaxTransPerSession));
@@ -128,6 +187,19 @@ namespace PlayerGeneration
         }
 
         public static void GetSetting(ECM.IConfiguration config,
+                                            ref long property,
+                                            ref bool updatedProperty,
+                                            string propName)
+        {
+            var value = config[propName];
+
+            if (string.IsNullOrEmpty(value)) return;
+
+            property = long.Parse(value);
+            updatedProperty = true;
+        }
+
+        public static void GetSetting(ECM.IConfiguration config,
                                             ref bool property,
                                             ref bool updatedProperty,
                                             string propName)            
@@ -161,6 +233,16 @@ namespace PlayerGeneration
 
             property = int.Parse(value);
         }
+
+        public static void GetSetting(ECM.IConfiguration config, ref long property, string propName)
+        {
+            var value = config[propName];
+
+            if (string.IsNullOrEmpty(value)) return;
+
+            property = long.Parse(value);
+        }
+
 
         public static void GetSetting(ECM.IConfiguration config, ref decimal property, string propName)
         {
@@ -215,6 +297,8 @@ namespace PlayerGeneration
         public readonly bool UpdatedTimingEvents;
         public readonly bool UpdatedTimingCSVFile;
         public readonly bool UpdatedTimingJsonFile;
+        public readonly bool UpdatedEnableHistogram;
+        public readonly bool UpdatedHGRMFile;
 
         public int MaxDegreeOfParallelismGeneration = -1;
         public int WorkerThreads = -1;
@@ -268,7 +352,16 @@ namespace PlayerGeneration
         public string StateJsonFile = ".\\state_database.json";
 
         public string TimingJsonFile = null;
-        public string TimingCSVFile = "~\\Timings.csv";
+        public string TimingCSVFile = null;
+
+        public bool EnableHistogram = true;
+        public string HGRMFile = null;
+        public int HGPrecision = 3;
+        public long HGLowestTickValue = 1;
+        public long HGHighestTickValue = 6000000000;
+        public int HGReportPercentileTicksPerHalfDistance = 5;
+        public string HGReportTickToUnitRatio = "Microseconds";
+        public double HGReportUnitRatio = HdrHistogram.OutputScalingFactor.TimeStampToMicroseconds;
 
         public int RouletteWinTurns = 68;       
         public int SlotsWinTurns = 68;

@@ -129,14 +129,12 @@ namespace PlayerGeneration
 
         public static (string dbName,
                         string driverName,
-                        Version driverVersion,
-                        System.Configuration.Assemblies.AssemblyVersionCompatibility? versionCompatibility) GetInfo()
+                        Version driverVersion) GetInfo()
         {
             var asyncClient = typeof(MongoDB.Driver.MongoClient).Assembly.GetName();
             return ("MongoDB Driver",
                     asyncClient?.Name,
-                    asyncClient?.Version,
-                    asyncClient?.VersionCompatibility);
+                    asyncClient?.Version);
         }
 
         public DBConnection([NotNull] string dbConnectionString,

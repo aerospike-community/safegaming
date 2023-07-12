@@ -49,12 +49,11 @@ namespace PlayerGeneration
 
 
             {
-                var dbInfo = DBConnection.GetInfo();
-                Logger.Instance.InfoFormat("\t\t{0}: {1} Version: {2} VersionCompatibility: {3}",
-                                            dbInfo.dbName,
-                                            dbInfo.driverName,
-                                            dbInfo.driverVersion,
-                                            dbInfo.versionCompatibility);
+                var (dbName, driverName, driverVersion) = DBConnection.GetInfo();
+                Logger.Instance.InfoFormat("\t\t{0}: {1} Version: {2}",
+                                                dbName,
+                                                driverName,
+                                                driverVersion);
             }
 
             #region Arguments
@@ -68,9 +67,9 @@ namespace PlayerGeneration
                         return;
                     }
 
-                    if(consoleArgs.Sync)
+                    if (consoleArgs.Sync)
                     {
-                        SyncMode = true;                        
+                        SyncMode = true;
                     }
 
                     if (consoleArgs.Debug)
@@ -138,7 +137,7 @@ namespace PlayerGeneration
                                     Logger.DumpType.Info,
                                     "Json Configuration Settings:",
                                     ignoreFldPropNames: "Instance");
-            
+
             System.Console.CancelKeyPress += Console_CancelKeyPress;
             Logger.Instance.OnLoggingEvent += Instance_OnLoggingEvent;
 
@@ -149,7 +148,7 @@ namespace PlayerGeneration
 #endif
 
             if (Settings.Instance.WorkerThreads > 0 || Settings.Instance.CompletionPortThreads > 0)
-            {                
+            {
                 ThreadPool.GetAvailableThreads(out int currWorker, out int currCompletionPort);
                 ThreadPool.GetMinThreads(out int minWorker, out int minCompletionPort);
 
@@ -184,8 +183,8 @@ namespace PlayerGeneration
             {
                 ConsoleDisplay.Console.WriteLine($"Will be Truncating...");
             }
-                      
-            {                
+
+            {
                 ThreadPool.GetAvailableThreads(out int currWorker, out int currCompletionPort);
                 ConsoleDisplay.Console.WriteLine("Working Threads: {0} Completion Port Threads: {1}",
                                                     currWorker, currCompletionPort);
@@ -214,14 +213,57 @@ namespace PlayerGeneration
 #endif
             ConsoleDisplay.Console.WriteLine("Ignore Faults: {0}", Settings.Instance.IgnoreFaults);
 
-            if(Settings.Instance.TimeEvents)
+            #region Timing and Histogram Events
+
+            PrefStats.EnableEvents = false;
+            PrefStats.CaptureType = PrefStats.CaptureTypes.Disabled;
+
+            if (Settings.Instance.TimeEvents
+                    && (!string.IsNullOrEmpty(Settings.Instance.TimingJsonFile)
+                        || !string.IsNullOrEmpty(Settings.Instance.TimingCSVFile)))
             {
-                ConsoleDisplay.Console.WriteLine("Event Timings Json File: {0} CSV File: {1}",
+                ConsoleDisplay.Console.WriteLine("Event Timings Json DetailFile: {0} CSV DetailFile: {1}",
                                                     Settings.Instance.TimingJsonFile ?? "N/A",
                                                     Settings.Instance.TimingCSVFile ?? "N/A");
+                PrefStats.EnableEvents = true;
+                PrefStats.CaptureType |= PrefStats.CaptureTypes.Detail;
+                if(!string.IsNullOrEmpty(Settings.Instance.TimingJsonFile))
+                {
+                    PrefStats.CaptureType |= PrefStats.CaptureTypes.JSON;
+                }
+                if (!string.IsNullOrEmpty(Settings.Instance.TimingCSVFile))
+                {
+                    PrefStats.CaptureType |= PrefStats.CaptureTypes.CSV;
+                }
             }
             else
-                ConsoleDisplay.Console.WriteLine("Event Timing Disabled");
+            {
+                ConsoleDisplay.Console.WriteLine("Event Timing Disabled");                
+            }
+
+            if (Settings.Instance.EnableHistogram)
+            {
+                ConsoleDisplay.Console.WriteLine("Histogram Enabled, reporting to file: {0}",
+                                                    Settings.Instance.HGRMFile ?? "N/A");
+
+                PrefStats.EnableEvents = true;
+                PrefStats.CaptureType |= PrefStats.CaptureTypes.Histogram;
+
+                if (!string.IsNullOrEmpty(Settings.Instance.HGRMFile))
+                {
+                    PrefStats.CaptureType |= PrefStats.CaptureTypes.HGRM;
+                }
+
+                PrefStats.CreateHistogram(Settings.Instance.HGPrecision,
+                                            Settings.Instance.HGLowestTickValue,
+                                            Settings.Instance.HGHighestTickValue);
+            }
+            else
+            {
+                ConsoleDisplay.Console.WriteLine("Histogram Disabled");
+            }
+
+            #endregion
 
             {
                 var currentTimeUTC = DateTimeOffset.UtcNow;
@@ -305,7 +347,7 @@ namespace PlayerGeneration
             ConsolePuttingPlayer = new ConsoleDisplay("Updating Player Completed: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsolePuttingHistory = new ConsoleDisplay("Updating History Completed: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsoleSleep = new ConsoleDisplay("Sleep: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
-            ConsoleFileWriting = new ConsoleDisplay("Writing File: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
+            ConsoleFileWriting = new ConsoleDisplay("Writing DetailFile: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsoleWarnings = new ConsoleDisplay("Warnings: {working} Last: {tag}", reserveLines: 1, takeStartBlock: false);
             ConsoleErrors = new ConsoleDisplay("Errors: {working} Last: {tag}", reserveLines: 1, takeStartBlock: false);
             ConsoleExceptions = new ConsoleDisplay("Exceptions: {working} Last: {tag}", reserveLines: 1, takeStartBlock: false);
@@ -356,15 +398,15 @@ namespace PlayerGeneration
             State[] stateDB;
 
             {
-                Logger.Instance.Debug("Main Reading State/County JSON File");
+                Logger.Instance.Debug("Main Reading State/County JSON DetailFile");
 
-                using var readingJsonProg = new Progression(ConsoleGenerating, "State", "Reading State Json File");
+                using var readingJsonProg = new Progression(ConsoleGenerating, "State", "Reading State Json DetailFile");
 
                 var stateDBPath = BaseFile.Make(Settings.Instance.StateJsonFile);
 
                 stateDB = Common.JSONExtensions.FromJSON<State[]>(stateDBPath.ReadAllText());
 
-                Logger.Instance.DebugFormat("Main Read State/County JSON File {0}", stateDB.Length);
+                Logger.Instance.DebugFormat("Main Read State/County JSON DetailFile {0}", stateDB.Length);
             }
 
 
@@ -599,11 +641,11 @@ namespace PlayerGeneration
             ConsolePuttingDB.TaskEndAll();
             dbConnection.Dispose();
 
-            #region Write Timing Events
+            #region Write Timing/Histogram Events
 
             if (Settings.Instance.TimeEvents)
             {
-                if (!string.IsNullOrEmpty(Settings.Instance.TimingJsonFile))
+                if (PrefStats.CaptureType.HasFlag(PrefStats.CaptureTypes.JSON))
                 {
                     ConsoleFileWriting.Increment(Settings.Instance.TimingJsonFile);
                     try
@@ -618,7 +660,8 @@ namespace PlayerGeneration
                     ConsoleFileWriting.Decrement(Settings.Instance.TimingJsonFile);
                 }
 
-                if (!string.IsNullOrEmpty(Settings.Instance.TimingCSVFile))
+                if (PrefStats.CaptureType.HasFlag(PrefStats.CaptureTypes.Detail)
+                        && PrefStats.CaptureType.HasFlag(PrefStats.CaptureTypes.CSV))
                 {
                     ConsoleFileWriting.Increment(Settings.Instance.TimingCSVFile);
                     try
@@ -632,6 +675,26 @@ namespace PlayerGeneration
                     }
                     ConsoleFileWriting.Decrement(Settings.Instance.TimingCSVFile);
                 }
+
+                if (PrefStats.CaptureType.HasFlag(PrefStats.CaptureTypes.Histogram))
+                {
+                    ConsoleFileWriting.Increment(Settings.Instance.HGRMFile ?? "Histogram");
+                    try
+                    {
+                        PrefStats.OutputHistogram(ConsoleDisplay.Console,
+                                                    Logger.Instance,
+                                                    Settings.Instance.HGRMFile,
+                                                    Settings.Instance.HGReportPercentileTicksPerHalfDistance,
+                                                    Settings.Instance.HGReportUnitRatio);
+                        Logger.Instance.Info($"Writing Histogram File to \"{Settings.Instance.HGRMFile ?? "N/A"}\"");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Instance.Error($"Writing Histogram Failed: \"{Settings.Instance.HGRMFile}\"", ex);
+                    }
+                    ConsoleFileWriting.Decrement(Settings.Instance.HGRMFile ?? "Histogram");
+                }
+
                 ConsoleFileWriting.TaskEndAll();
             }
 
@@ -820,11 +883,11 @@ namespace PlayerGeneration
                 decimal wagerAmt = player.CalculateWager(random);
 
                 {
-                    var checkBalance = player.Session.CheckEndTriggerBalance(wagerAmt, random);
+                    var (endSession, reDeposit) = player.Session.CheckEndTriggerBalance(wagerAmt, random);
 
-                    if (checkBalance.endSession)
+                    if (endSession)
                         break;
-                    if (checkBalance.reDeposit)
+                    if (reDeposit)
                     {
                         player.AddFinancialTransaction(new FinTransaction(FinTransaction.Types.Deposit,
                                                                             CreateDespositAmt(player, random),

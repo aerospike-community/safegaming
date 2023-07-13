@@ -1,14 +1,27 @@
-This zip file contains three folders that is assocated with the target platform. They are completely self-contained and no additional packages need to be installed to execute the application. 
-The application name is "PlayerGeneration". 
+The application name is "PlayerGeneration". There are two versions. They are:
 
-The corresponding application configuration file is "appsettings.json". The application does not take any arguments.  
-Changes to behavior and connection need to be made within the application configuration file.
-Note when connecting to an external Cluster (public IP), the "DBUseExternalIPAddresses" setting must be true.
+-   ./PlayerGeneration which is the Aerospike version
+-   ./PlayerGenerationMG which is the MongoDB version
+
+The application used command line arguments and application configuration files. To obtain the list of all command line arguments, pass “-?” To the application. Command line arguments will always override the application config file values.
+
+There are three application configuration files. They are:
+
+-   appsettings.json – This contains all common configuration between the different versions.
+-   appsettingsAerospike.json – This contains configuration specifically for Aerospike.  
+    Note when connecting to an external Cluster (public IP), the "DBUseExternalIPAddresses" setting must be true.
+-   appsettingsMG.json -- This contains configuration specifically for MongoDB
 
 Installation:
 
-1) Unzip the PlayerGenration.zip file into a folder.
-2) CD into this folder.
-3) To Run:
-    MacOS and Linux: ./PlayerGeneration
-    Windows: PlayerGeneration.exe
+1.  Install .Net framework version 7.0 SDK  
+    https://learn.microsoft.com/en-us/dotnet/fundamentals/
+2.  CD into the appropriate folder (i.e., Aerospike or MongoDB)
+3.  Execute the build script.
+    -   “publishrelease.sh” to build a platform neutral version.
+    -   “publishrelease-linux.sh” to build for the Linux platform.
+4.  To Run CD into the runtime folder (will be displayed at the end of the build script, step 3):
+    -   MacOS and Linux:   
+        ./PlayerGeneration
+    -   Windows:   
+        PlayerGeneration.exe

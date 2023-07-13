@@ -104,7 +104,7 @@ namespace PlayerGeneration
 
                 if(CaptureType.HasFlag(CaptureTypes.Histogram))
                 {
-                    HdrHistogram.RecordValueWithCount(stopWatch.ElapsedTicks, currentSeqNbr);
+                    HdrHistogram.RecordValue(stopWatch.ElapsedTicks);
                 }
             }
         }
@@ -240,7 +240,7 @@ namespace PlayerGeneration
         /// <seealso cref="OutputScalingFactor"/>
         /// </param>
         /// <returns></returns>
-        public static void OutputHistogram(Common.ConsoleWriter console,
+        public static string OutputHistogram(Common.ConsoleWriter console,
                                                 Common.Logger logger,
                                                 string file = null,
                                                 int percentileTicksPerHalfDistance = 5,
@@ -255,7 +255,8 @@ namespace PlayerGeneration
                                                             percentileTicksPerHalfDistance,
                                                             outputValueUnitScalingRatio);
                 var histOutputResult = writer.ToString();
-                logger?.Info(histOutputResult);
+
+                logger?.Info($"HdrHistogram Output:\n{histOutputResult}");
                 console?.WriteLine(histOutputResult);                
 
                 if(file is not null)
@@ -275,7 +276,9 @@ namespace PlayerGeneration
                                                                         true);
                     }
                 }
+                return histOutputResult;
             }
+            return string.Empty;
         }
     }
 

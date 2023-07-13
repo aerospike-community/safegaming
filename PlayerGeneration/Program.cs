@@ -9,6 +9,7 @@ using Common.File;
 using System.Threading;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 
 namespace PlayerGeneration
 {
@@ -347,7 +348,7 @@ namespace PlayerGeneration
             ConsolePuttingPlayer = new ConsoleDisplay("Updating Player Completed: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsolePuttingHistory = new ConsoleDisplay("Updating History Completed: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsoleSleep = new ConsoleDisplay("Sleep: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
-            ConsoleFileWriting = new ConsoleDisplay("Writing DetailFile: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
+            ConsoleFileWriting = new ConsoleDisplay("Writing File: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsoleWarnings = new ConsoleDisplay("Warnings: {working} Last: {tag}", reserveLines: 1, takeStartBlock: false);
             ConsoleErrors = new ConsoleDisplay("Errors: {working} Last: {tag}", reserveLines: 1, takeStartBlock: false);
             ConsoleExceptions = new ConsoleDisplay("Exceptions: {working} Last: {tag}", reserveLines: 1, takeStartBlock: false);
@@ -643,7 +644,9 @@ namespace PlayerGeneration
 
             #region Write Timing/Histogram Events
 
-            if (Settings.Instance.TimeEvents)
+            string histogramOutput = null;
+
+            if (PrefStats.CaptureType != PrefStats.CaptureTypes.Disabled)
             {
                 if (PrefStats.CaptureType.HasFlag(PrefStats.CaptureTypes.JSON))
                 {
@@ -679,13 +682,14 @@ namespace PlayerGeneration
                 if (PrefStats.CaptureType.HasFlag(PrefStats.CaptureTypes.Histogram))
                 {
                     ConsoleFileWriting.Increment(Settings.Instance.HGRMFile ?? "Histogram");
+                    
                     try
-                    {
-                        PrefStats.OutputHistogram(ConsoleDisplay.Console,
-                                                    Logger.Instance,
-                                                    Settings.Instance.HGRMFile,
-                                                    Settings.Instance.HGReportPercentileTicksPerHalfDistance,
-                                                    Settings.Instance.HGReportUnitRatio);
+                    {                        
+                        histogramOutput = PrefStats.OutputHistogram(null,
+                                                                    Logger.Instance,
+                                                                    Settings.Instance.HGRMFile,
+                                                                    Settings.Instance.HGReportPercentileTicksPerHalfDistance,
+                                                                    Settings.Instance.HGReportUnitRatio);
                         Logger.Instance.Info($"Writing Histogram File to \"{Settings.Instance.HGRMFile ?? "N/A"}\"");
                     }
                     catch (Exception ex)
@@ -718,6 +722,17 @@ namespace PlayerGeneration
                                                    actualPlayersProcessed,
                                                    startPlayerProcessingTime.Elapsed,
                                                    playerRate);
+            ConsoleDisplay.Console.SetReWriteToWriterPosition();
+
+            if (!string.IsNullOrEmpty(histogramOutput))
+            {
+                ConsoleDisplay.Console.WriteLine();
+                ConsoleDisplay.Console.WriteLine($"Histogram Output ({Settings.Instance.HGReportTickToUnitRatio}):");
+                
+                ConsoleDisplay.Console.WriteLine(histogramOutput);
+                //ConsoleDisplay.Console.SetReWriteToWriterPosition();                
+            }
+
 
             var consoleColor = System.Console.ForegroundColor;
             try
@@ -729,16 +744,17 @@ namespace PlayerGeneration
                 else
                     System.Console.ForegroundColor = ConsoleColor.Green;
 
-                ConsoleDisplay.Console.WriteLine();               
-                ConsoleDisplay.Console.WriteLine("Application Logs \"{0}\"", logFilePath);
+                ConsoleDisplay.Console.WriteLine();
+                ConsoleDisplay.Console.WriteLine("Application Logs \"{0}\"", Helpers.MakeRelativePath(logFilePath));
                 ConsoleDisplay.Console.WriteLine();
             }
             finally
             {
                 System.Console.ForegroundColor = consoleColor;
             }
+            
+            ConsoleDisplay.Console.SetReWriteToWriterPosition();
 
-            ConsoleDisplay.Console.WriteLine();
             #endregion
         }
 

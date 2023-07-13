@@ -17,7 +17,7 @@ namespace PlayerGeneration
         static public ConsoleDisplay ConsoleWarnings = null;
         static public ConsoleDisplay ConsoleErrors = null;
         static public ConsoleDisplay ConsoleExceptions = null;
-
+        
         public enum DebugMenuItems
         {
             DebugMode = 1,

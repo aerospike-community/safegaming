@@ -360,8 +360,8 @@ namespace PlayerGeneration
         public long HGLowestTickValue = 1;
         public long HGHighestTickValue = 6000000000;
         public int HGReportPercentileTicksPerHalfDistance = 5;
-        public string HGReportTickToUnitRatio = "Microseconds";
-        public double HGReportUnitRatio = HdrHistogram.OutputScalingFactor.TimeStampToMicroseconds;
+        public string HGReportTickToUnitRatio = "Milliseconds";
+        public double HGReportUnitRatio = HdrHistogram.OutputScalingFactor.TimeStampToMilliseconds;
 
         public int RouletteWinTurns = 68;       
         public int SlotsWinTurns = 68;

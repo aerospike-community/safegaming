@@ -5,11 +5,29 @@ using System.Linq;
 using System.Text;
 using System.Collections;
 using System.Threading;
+using System.IO;
 
 namespace PlayerGeneration
 {
     public static class Helpers
     {
+
+        public static string MakeRelativePath(string path)
+        {
+            try
+            {
+                Uri file = new Uri(path);
+                // Must end in a slash to indicate folder
+                Uri folder = new Uri(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar);
+                return string.Format(".{0}{1}",
+                        Path.DirectorySeparatorChar,
+                        Uri.UnescapeDataString(folder.MakeRelativeUri(file)
+                                                .ToString()
+                                                .Replace('/', Path.DirectorySeparatorChar)));
+            }
+            catch { }
+            return path;
+        }
              
         public static double GetRandomNumber(double minimum, double maximum, Random random = null)
         {

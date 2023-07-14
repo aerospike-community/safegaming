@@ -197,10 +197,9 @@ namespace PlayerGeneration
                         Settings.Instance.NbrPlayers,
                         Settings.Instance.PlayerIdStartRange);
 #if MONGODB
-            ConsoleDisplay.Console.WriteLine("MGDB Connection Timeout: {0}, Operation Timeout: {1} Compression: {2} Max Latency Warning: {3}",
-                        Settings.Instance.ConnectionTimeout,
-                        Settings.Instance.DBOperationTimeout,
-                        Settings.Instance.EnableDriverCompression,
+            ConsoleDisplay.Console.WriteLine("MGDB Connection Timeout: {0}, Socket Timeout: {1} Max Latency Warning: {2}",
+                        Settings.Instance.ConnectionSettings?.ConnectTimeout,
+                        Settings.Instance.ConnectionSettings?.SocketTimeout,
                         Settings.Instance.WarnMaxMSLatencyDBExceeded);
 #else
             ConsoleDisplay.Console.WriteLine("ADB Connection Timeout: {0}, Max: {1} Min: {2} Idle: {3} Operation Timeout: {4} Compression: {5} Max Latency Warning: {6}",
@@ -375,10 +374,7 @@ namespace PlayerGeneration
             IDBConnection dbConnection = Settings.Instance.UpdateDB
                                             ? new DBConnection(Settings.Instance.DBConnectionString,
                                                                 Settings.Instance.DBName,
-                                                                Settings.Instance.ConnectionTimeout,
-                                                                Settings.Instance.DBOperationTimeout,
-                                                                Settings.Instance.HistoricTimeEndMonth,
-                                                                Settings.Instance.EnableDriverCompression,
+                                                                Settings.Instance.ConnectionSettings,
                                                                 displayProgression: ConsolePuttingDB,
                                                                 playerProgression: ConsolePuttingPlayer,
                                                                 historyProgression: ConsolePuttingHistory)

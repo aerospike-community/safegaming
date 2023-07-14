@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PlayerGenerationMG;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,10 +19,8 @@ namespace PlayerGeneration
             ECM.IConfiguration config = configBuilderFile.Build();
 
             GetSetting(config, ref this.DBConnectionString, nameof(DBConnectionString));
-            GetSetting(config, ref this.ConnectionTimeout, nameof(ConnectionTimeout));
-            GetSetting(config, ref this.DBOperationTimeout, nameof(DBOperationTimeout));
-            GetSetting(config, ref this.EnableDriverCompression, nameof(EnableDriverCompression));
-
+            GetSetting(config, ref this.ConnectionSettings, nameof(ConnectionSettings));
+            
             GetSetting(config, ref this.DBName, nameof(DBName));
             GetSetting(config, ref this.CurrentPlayersCollection, nameof(CurrentPlayersCollection));
             GetSetting(config, ref this.PlayersHistoryCollection, nameof(PlayersHistoryCollection));
@@ -68,9 +67,7 @@ namespace PlayerGeneration
         public readonly ECM.IConfigurationBuilder ConfigBuilder;
 
         public readonly string DBConnectionString = "mongodb://localhost";
-        public int ConnectionTimeout = 5000;
-        public int DBOperationTimeout = 5000;
-        public bool EnableDriverCompression = false;
+        public readonly MGDriverSettings ConnectionSettings = null;
 
         public readonly string DBName = "safegaming";
         public readonly string CurrentPlayersCollection = "CurrentPlayers";

@@ -15,6 +15,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using System.Data;
 using System.Numerics;
+using PlayerGenerationMG;
 
 namespace PlayerGeneration
 {
@@ -139,10 +140,7 @@ namespace PlayerGeneration
 
         public DBConnection([NotNull] string dbConnectionString,
                             string dbName,                            
-                            int connectionTiimeout,
-                            int operationalTimeout,
-                            int heartBeatTimeout,
-                            bool compression,
+                            MGDriverSettings driverSettings,
                             ConsoleDisplay displayProgression = null,
                             ConsoleDisplay playerProgression = null,
                             ConsoleDisplay historyProgression = null)
@@ -152,23 +150,23 @@ namespace PlayerGeneration
             this.HistoryProgression = historyProgression;
 
             this.ConnectionString = dbConnectionString;
-            this.ConnectionTimeout = connectionTiimeout;
-            this.OperationalTimeout = operationalTimeout;
-            this.Compression = compression;
-            this.HeartbeatTimeout = heartBeatTimeout;
-
+           
             Logger.Instance.InfoFormat("DBConnection:");
             Logger.Instance.InfoFormat("\tDB Connection String: {0}", ConnectionString);
             Logger.Instance.InfoFormat("\tDB Name: {0}", dbName);
-            Logger.Instance.InfoFormat("\tConnection Timeout: {0}", ConnectionTimeout);
-            Logger.Instance.InfoFormat("\tOperational Timeout: {0}", OperationalTimeout);
-            Logger.Instance.InfoFormat("\tHeartbeat Timeout: {0}", HeartbeatTimeout);
-            Logger.Instance.InfoFormat("\tCompression: {0}", Compression);
+           
 
             BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
             //BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer());
+
+            var mgConnectionString = MongoClientSettings.FromConnectionString(ConnectionString);
+
+            driverSettings?.SetConnectionSettings(mgConnectionString);
+
+            this.Client = new MongoClient(mgConnectionString);
             
-            this.Client = new MongoClient(this.ConnectionString);
+            Logger.Instance.Dump(this.Client.Settings, comments: "MongoDB Connection Settings:");
+           
             this.Database = this.Client.GetDatabase(dbName);
 
             this.CurrentPlayersCollection = new DBCollection<Player>(dbName,
@@ -237,11 +235,7 @@ namespace PlayerGeneration
                                         this.Database.DatabaseNamespace);            
         }
 
-        public string ConnectionString { get; }        
-        public int ConnectionTimeout { get; }
-        public int OperationalTimeout { get; }
-        public bool Compression { get; }
-        public int HeartbeatTimeout { get; }
+        public string ConnectionString { get; }
         
         public Progression ConsoleProgression { get; }
         public ConsoleDisplay PlayerProgression { get; }

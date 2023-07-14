@@ -1,12 +1,13 @@
 ﻿using Common;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Linq;
-using System.Linq.Expressions;
-using static PlayerGeneration.DateTimeSimulation;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using ECM = Microsoft.Extensions.Configuration;
+using static PlayerGeneration.DateTimeSimulation;
+using Microsoft.Extensions.Configuration;
+using System.Linq;
+using System.Text.Json.Nodes;
 
 namespace PlayerGeneration
 {
@@ -291,6 +292,79 @@ namespace PlayerGeneration
 
             property =  items;
         }
+
+        private static JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
+        {
+            IncludeFields = true,
+            UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
+            DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+            //NumberHandling = JsonNumberHandling.AllowReadingFromString,
+            WriteIndented = true
+        };
+
+        private static JsonNode BuildJson(IConfiguration configuration)
+        {
+            if (configuration is IConfigurationSection configurationSection)
+            {
+                if (configurationSection.Value != null)
+                {
+                    var value = configurationSection.Value;
+
+                    if(string.IsNullOrEmpty(value)) return null;
+                    
+                    if(long.TryParse(value, out var lngValue))
+                        return JsonValue.Create(lngValue);
+                    if (double.TryParse(value, out var dblValue))
+                        return JsonValue.Create(dblValue);
+                    if (bool.TryParse(value, out var bValue))
+                        return JsonValue.Create(bValue);
+
+                    return JsonValue.Create(configurationSection.Value);                    
+                }
+            }
+
+            var children = configuration.GetChildren().AsEnumerable();
+            if (!children.Any())
+            {                
+                return null;
+            }
+
+            if (children.First().Key == "0")
+            {
+                var result = new JsonArray();
+                foreach (var child in children)
+                {
+                    result.Add(BuildJson(child));
+                }
+
+                return result;
+            }
+            else
+            {
+                var result = new JsonObject();
+                foreach (var child in children)
+                {                   
+                    result.Add(new KeyValuePair<string, JsonNode>(child.Key, BuildJson(child)));
+                }
+
+                return result;
+            }
+        }
+
+
+        public static void GetSetting<T>(ECM.IConfiguration config, ref T property, string propName, JsonSerializerOptions deserializerOptions = null)
+                            where T : new()
+        {
+            var section = config.GetSection(propName);
+            
+            if (section is null) return;
+
+            var json = BuildJson(section);
+            var value = json.ToJsonString();
+
+            property = (T) JsonSerializer.Deserialize(value, typeof(T), deserializerOptions ?? jsonSerializerOptions);
+        }
+
 
         public readonly bool UpdatedWarnMaxMSLatencyDBExceeded;
         public readonly bool UpdatedWarnIfObjectSizeBytes;

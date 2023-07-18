@@ -93,7 +93,7 @@
     <PackageReference Include="Faker.Net" Version="2.0.154" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.20.0" />
-    <PackageReference Include="HdrHistogram" Version="1.0.2" />
+    <PackageReference Include="HdrHistogram" Version="2.5.2" />
   </ItemGroup>
   
 </Project>

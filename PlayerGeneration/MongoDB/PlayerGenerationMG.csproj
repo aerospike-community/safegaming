@@ -86,7 +86,7 @@
     <PackageReference Include="Common.Console" Version="5.31.10" />
     <PackageReference Include="Common.Functions" Version="5.31.10" />
     <PackageReference Include="Common.JSON" Version="5.31.3" />
-    <PackageReference Include="Common.Logger" Version="5.31.12" />
+    <PackageReference Include="Common.Logger" Version="5.31.15" />
     <PackageReference Include="Common.Path" Version="5.31.5" />
     <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />
     <PackageReference Include="Common.Patterns.Threading" Version="5.31.1" />

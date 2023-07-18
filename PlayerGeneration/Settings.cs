@@ -293,7 +293,7 @@ namespace PlayerGeneration
             property =  items;
         }
 
-        private static JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
+        private readonly static JsonSerializerOptions jsonSerializerOptions = new()
         {
             IncludeFields = true,
             UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,

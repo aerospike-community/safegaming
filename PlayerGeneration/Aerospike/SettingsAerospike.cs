@@ -17,17 +17,26 @@ namespace PlayerGeneration
             var configBuilderFile = ECM.JsonConfigurationExtensions.AddJsonFile(this.ConfigBuilder, appJsonFile);
             ECM.IConfiguration config = configBuilderFile.Build();
 
-            GetSetting(config, ref this.asyncBufferSize, nameof(asyncBufferSize));
-            GetSetting(config, ref this.asyncMaxCommands, nameof(asyncMaxCommands));
-            GetSetting(config, ref this.connPoolsPerNode, nameof(connPoolsPerNode));
-            GetSetting(config, ref this.maxErrorRate, nameof(maxErrorRate));
-            GetSetting(config, ref this.maxRetries, nameof(maxRetries));
-            GetSetting(config, ref this.errorRateWindow, nameof(errorRateWindow));
-            GetSetting(config, ref this.tendInterval, nameof(tendInterval));
-            GetSetting(config, ref this.EnableDriverCompression, nameof(EnableDriverCompression));
+            GetSetting(config, ref this.DBHost, nameof(DBHost));
+            GetSetting(config, ref this.DBPort, nameof(DBPort));
+            GetSetting(config, ref this.DBUseExternalIPAddresses, nameof(DBUseExternalIPAddresses));
+
             GetSetting(config, ref this.ConnectionTimeout, nameof(ConnectionTimeout));
             GetSetting(config, ref this.DBOperationTimeout, nameof(DBOperationTimeout));
+            GetSetting(config, ref this.MaxConnectionPerNode, nameof(MaxConnectionPerNode));
+            GetSetting(config, ref this.MinConnectionPerNode, nameof(MinConnectionPerNode));
+            GetSetting(config, ref this.MaxSocketIdle, nameof(MaxSocketIdle));
+            GetSetting(config, ref this.totalTimeout, nameof(totalTimeout));
+            GetSetting(config, ref this.asyncMaxCommands, nameof(asyncMaxCommands));
+            GetSetting(config, ref this.EnableDriverCompression, nameof(EnableDriverCompression));
 
+            GetSetting(config, ref this.asyncBufferSize, nameof(asyncBufferSize));
+            GetSetting(config, ref this.connPoolsPerNode, nameof(connPoolsPerNode));
+            GetSetting(config, ref this.maxRetries, nameof(maxRetries));
+            GetSetting(config, ref this.maxErrorRate, nameof(maxErrorRate));
+            GetSetting(config, ref this.errorRateWindow, nameof(errorRateWindow));
+            GetSetting(config, ref this.tendInterval, nameof(tendInterval));
+            
             GetSetting(config, ref this.CurrentPlayersSetName, nameof(CurrentPlayersSetName));
             GetSetting(config, ref this.PlayersHistorySetName, nameof(PlayersHistorySetName));
             GetSetting(config, ref this.PlayersTransHistorySetName, nameof(PlayersTransHistorySetName));

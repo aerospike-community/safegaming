@@ -454,19 +454,13 @@ namespace PlayerGeneration
             await InterventionThresholds.Initialize(dbConnection, cancellationTokenSource.Token);
             DateTimeSimulation.Initialize();
 
-#endregion
-
-            var enableDBUpdate = dbConnection != null;
-
-            var startPlayerProcessingTime = Stopwatch.StartNew();
-            Logger.Instance.InfoFormat("Main Starting Player Processing {0} Generation",
-                                            Settings.Instance.NbrPlayers);
+            #endregion
 
             var maxDegreeOfParallelism = Settings.Instance.MaxDegreeOfParallelismGeneration;
 
             if (SyncMode)
                 maxDegreeOfParallelism = 1;
-            else if(Settings.Instance.ContinuousSessions)
+            else if (Settings.Instance.ContinuousSessions)
             {
                 maxDegreeOfParallelism = Settings.Instance.NbrPlayers;
             }
@@ -476,6 +470,17 @@ namespace PlayerGeneration
                 CancellationToken = cancellationTokenSource.Token,
                 MaxDegreeOfParallelism = maxDegreeOfParallelism
             };
+
+            Logger.Instance.Dump(parallelOptions,
+                                    Logger.DumpType.Info);
+            Logger.Instance.Dump(parallelOptions.TaskScheduler,
+                                    Logger.DumpType.Info);
+
+            var enableDBUpdate = dbConnection != null;
+
+            var startPlayerProcessingTime = Stopwatch.StartNew();
+            Logger.Instance.InfoFormat("Main Starting Player Processing {0} Generation",
+                                            Settings.Instance.NbrPlayers);
 
             var idxs = new int[Settings.Instance.NbrPlayers];
             Player.CurrentPlayerId = Settings.Instance.PlayerIdStartRange - 1;

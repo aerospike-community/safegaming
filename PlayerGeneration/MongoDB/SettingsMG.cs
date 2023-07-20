@@ -68,6 +68,7 @@ namespace PlayerGeneration
 
         public readonly string DBConnectionString = "mongodb://localhost";
         public readonly MGDriverSettings ConnectionSettings = null;
+        public readonly MGWriteConcern WriteConcern = null;
 
         public readonly string DBName = "safegaming";
         public readonly string CurrentPlayersCollection = "CurrentPlayers";

@@ -163,11 +163,19 @@ namespace PlayerGeneration
 
             driverSettings?.SetConnectionSettings(mgConnectionString);
 
-            this.Client = new MongoClient(mgConnectionString);
-            
-            Logger.Instance.Dump(this.Client.Settings, comments: "MongoDB Connection Settings:");
-           
-            this.Database = this.Client.GetDatabase(dbName);
+            {
+                var client = new MongoClient(mgConnectionString);
+
+                this.ClientSession = client.StartSession();
+                this.Client = this.ClientSession.Client;
+                this.Database = this.Client.GetDatabase(dbName);                
+            }
+
+            Logger.Instance.Dump(this.ClientSession, comments: "MongoDB Client Session:");
+            Logger.Instance.Dump(this.ClientSession.ServerSession, comments: "MongoDB Server Session:");
+
+            Logger.Instance.Dump(this.ClientSession.Options, comments: "MongoDB Client Session Settings:");
+            Logger.Instance.Dump(this.Client.Settings, comments: "MongoDB Client Settings:");
 
             this.CurrentPlayersCollection = new DBCollection<Player>(dbName,
                                                                         Settings.Instance.CurrentPlayersCollection,
@@ -243,7 +251,8 @@ namespace PlayerGeneration
 
         public IMongoClient Client { get; }
         public IMongoDatabase Database { get; }
-       
+        public IClientSessionHandle ClientSession { get; }
+
         public readonly DBCollection<Player> CurrentPlayersCollection;
         public readonly DBCollection<PlayerHistory> PlayersHistoryCollection;
         public readonly DBCollection<PlayersTransHistory> PlayersTransHistoryCollection;
@@ -1214,6 +1223,7 @@ namespace PlayerGeneration
             {
                 if (disposing)
                 {                    
+                    this.ClientSession?.Dispose();
                     this.ConsoleProgression?.End();
                 }
                

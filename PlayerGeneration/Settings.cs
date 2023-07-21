@@ -357,7 +357,7 @@ namespace PlayerGeneration
         {
             var section = config.GetSection(propName);
             
-            if (section is null) return;
+            if (section is null || string.IsNullOrEmpty(section.Value)) return;
 
             var json = BuildJson(section);
             var value = json.ToJsonString();

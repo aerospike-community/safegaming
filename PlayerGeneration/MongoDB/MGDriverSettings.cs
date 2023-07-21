@@ -71,10 +71,11 @@ namespace PlayerGenerationMG
         public int? WaitQueueTimeout;
 
         public MGWriteConcern WriteConcern;
-
+        
         public void SetConnectionSettings(MongoClientSettings settings)
         {
             var thisFields = typeof(MGDriverSettings).GetFields();
+            bool ignoreWriteConcern = false;
 
             foreach (var fld in thisFields)
             {
@@ -90,8 +91,8 @@ namespace PlayerGenerationMG
                                                     .Where(c => c != CompressorType.Noop)
                                                     .Select(c => new CompressorConfiguration(c))
                                                     .ToList());
-                    }
-                    else if(fld.Name == "WriteConcern" && fldValue is not null)
+                    }                    
+                    else if (!ignoreWriteConcern && fld.Name == "WriteConcern" && fldValue is not null)
                     {
                         prop.SetValue(settings,
                                         ((MGWriteConcern)fldValue).CreateWriteConcern());
@@ -113,19 +114,30 @@ namespace PlayerGenerationMG
         public MGWriteConcern()
         { }
 
+        public string UseConst;
         public int? timeout;
         public bool? journal;
         public bool? fsync;
         public string WValue;
 
         public WriteConcern CreateWriteConcern()
-        {
+        {            
+            if(!string.IsNullOrEmpty(this.UseConst)) 
+            {
+                var constProp = typeof(WriteConcern).GetProperty(this.UseConst);
+
+                if (constProp is null)
+                    throw new ArgumentException($"Invalid \"{this.UseConst}\" as a constant for WriteConcern within DB Connection Setting");
+
+                return constProp.GetValue(null) as WriteConcern;
+            }
+
             Optional<TimeSpan?> wTimeout = default(Optional<TimeSpan?>);
             Optional<bool?> journal = default(Optional<bool?>);
             Optional<bool?> fsync = default(Optional<bool?>);
             Optional<WValue> wValue = default(Optional<WValue>);
 
-            if(this.timeout.HasValue)
+            if (this.timeout.HasValue)
             {
                 wTimeout = new Optional<TimeSpan?>(TimeSpan.FromMilliseconds(this.timeout.Value));
             }

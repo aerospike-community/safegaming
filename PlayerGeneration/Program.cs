@@ -24,17 +24,20 @@ namespace PlayerGeneration
 
         public async static Task Main(string[] args)
         {
-            #region Initialization            
+            #region Initialization
+            var debugFlg = false;
 #if DEBUG
             Logger.Instance.SetDebugLevel();
+            debugFlg = true;
 #endif
 
             Logger.Instance.InfoFormat("PlayerGeneration Main Start");
 
-            Logger.Instance.InfoFormat("Starting {0} ({1}) Version: {2} ",
+            Logger.Instance.InfoFormat("Starting {0} ({1}) Version: {2} {3}",
                                             Common.Functions.Instance.ApplicationName,
                                             Common.Functions.Instance.AssemblyFullName,
-                                            Common.Functions.Instance.ApplicationVersion);
+                                            Common.Functions.Instance.ApplicationVersion,
+                                            debugFlg ? "Debug Version" : string.Empty);
             Logger.Instance.InfoFormat("\t\tOS: {0} Framework: {1}",
                                            GetOSInfo(),
                                            GetFrameWorkInfo());
@@ -169,6 +172,10 @@ namespace PlayerGeneration
             ConsoleDisplay.Console.AdjustScreenStartBlock();
 
             ConsoleDisplay.Console.WriteLine(" ");
+#if DEBUG
+            ConsoleDisplay.Console.WriteLine("**Debug Version**");
+            ConsoleDisplay.Console.WriteLine(" ");
+#endif
             if (Settings.Instance.UpdateDB)
             {
 #if MONGODB
@@ -718,7 +725,7 @@ namespace PlayerGeneration
 
             ConsoleDisplay.Console.SetReWriteToWriterPosition();
 
-            ConsoleDisplay.Console.WriteLine();
+            ConsoleDisplay.Console.WriteLine(" ");
             ConsoleDisplay.Console.WriteLine("Completed {0} Players in {1} (rate {2:###,##0.000} players/sec)",
                                                    actualPlayersProcessed,
                                                    startPlayerProcessingTime.Elapsed,
@@ -727,7 +734,7 @@ namespace PlayerGeneration
 
             if (!string.IsNullOrEmpty(histogramOutput))
             {
-                ConsoleDisplay.Console.WriteLine();
+                ConsoleDisplay.Console.WriteLine(" ");
                 ConsoleDisplay.Console.WriteLine($"Histogram Output ({Settings.Instance.HGReportTickToUnitRatio}):");
                 
                 ConsoleDisplay.Console.WriteLine(histogramOutput);
@@ -745,9 +752,9 @@ namespace PlayerGeneration
                 else
                     System.Console.ForegroundColor = ConsoleColor.Green;
 
-                ConsoleDisplay.Console.WriteLine();
+                ConsoleDisplay.Console.WriteLine(" ");
                 ConsoleDisplay.Console.WriteLine("Application Logs \"{0}\"", Helpers.MakeRelativePath(logFilePath));
-                ConsoleDisplay.Console.WriteLine();
+                ConsoleDisplay.Console.WriteLine(" ");
             }
             finally
             {

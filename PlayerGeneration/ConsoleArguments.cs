@@ -29,9 +29,9 @@ namespace PlayerGeneration
             {
                 Optional = true, //Required                
                 DefaultValue = appSettings.NbrPlayers,
-                Description = "The number of players generated"
+                Description = "The number of players generated (NbrPlayers)"
             });
-
+           
             this._cmdLineParser.Arguments.Add(new SwitchArgument('r', "RealTime", false)
             {
                 Optional = true, //Required                
@@ -52,32 +52,32 @@ namespace PlayerGeneration
                 Description = "Players will have unlimited session play"
             });
 
-            this._cmdLineParser.Arguments.Add(new SwitchArgument("DisableTimings", false)
+            this._cmdLineParser.Arguments.Add(new ValueArgument<bool>("DetailTimings")
             {
                 DefaultValue = appSettings.TimeEvents,
                 Optional = true, //Required                
-                Description = "Disable Event Timings around the API"
+                Description = "Enable/Disable Detail Pref Timings"
             });
                       
             this._cmdLineParser.Arguments.Add(new ValueArgument<string>("TimingJsonFile")
             {
                 DefaultValue = appSettings.TimingJsonFile,
                 Optional = true, //Required                
-                Description = "JSON DetailFile where the timings will be stored"
+                Description = "JSON DetailFile where the Pref timings will be stored"
             });
 
             this._cmdLineParser.Arguments.Add(new ValueArgument<string>("TimingCSVFile")
             {
                 DefaultValue = appSettings.TimingCSVFile,
                 Optional = true, //Required                
-                Description = "CSV DetailFile where the timings will be stored"
+                Description = "CSV DetailFile where the Pref timings will be stored"
             });
 
-            this._cmdLineParser.Arguments.Add(new ValueArgument<bool>("EnableHistogram")
+            this._cmdLineParser.Arguments.Add(new ValueArgument<bool>("Histogram")
             {
                 DefaultValue = appSettings.EnableHistogram,
                 Optional = true, //Required                
-                Description = "True/False to enable/disable histogram support"
+                Description = "Enable/disable histogram recording"
             });
 
             this._cmdLineParser.Arguments.Add(new ValueArgument<string>("HGRMFile")
@@ -85,6 +85,41 @@ namespace PlayerGeneration
                 DefaultValue = appSettings.HGRMFile,
                 Optional = true, //Required                
                 Description = "Histogram Output File"
+            });
+
+            this._cmdLineParser.Arguments.Add(new ValueArgument<int>('d', "MaxDegreeOfParallelismGeneration")
+            {
+                DefaultValue = appSettings.MaxDegreeOfParallelismGeneration,
+                Optional = true, //Required                
+                Description = "Max Degree Of Parallelism to Generate Players"
+            });
+
+            this._cmdLineParser.Arguments.Add(new ValueArgument<int>('t', "CompletionPortThreads")
+            {
+                DefaultValue = appSettings.CompletionPortThreads,
+                Optional = true, //Required                
+                Description = "Nbr of Completion Ports"
+            });
+
+            this._cmdLineParser.Arguments.Add(new ValueArgument<int>("WorkerThreads")
+            {
+                DefaultValue = appSettings.WorkerThreads,
+                Optional = true, //Required                
+                Description = ".Net Thread Pool Worker Threads"
+            });
+
+            this._cmdLineParser.Arguments.Add(new ValueArgument<bool>("TruncateSets")
+            {
+                DefaultValue = appSettings.TruncateSets,
+                Optional = true, //Required                
+                Description = "True to Truncate the Sets"
+            });
+
+            this._cmdLineParser.Arguments.Add(new ValueArgument<bool>("IgnoreFaults")
+            {
+                DefaultValue = appSettings.IgnoreFaults,
+                Optional = true, //Required                
+                Description = "True to Ignore any Exceptions during an DB Operation (continue running and log fault))"
             });
 
             this._cmdLineParser.Arguments.Add(new SwitchArgument("Debug", false)
@@ -176,9 +211,7 @@ namespace PlayerGeneration
             //{
             //    this._cmdLineParser.ShowUsage();
             //    return false;
-            //}
-            bool explictDisableTiming = false;
-
+            //}            
             var results = this._cmdLineParser.Arguments
                                                 .Where(a => a.Parsed)
                                                 .OrderBy(a => a.LongName);
@@ -205,9 +238,8 @@ namespace PlayerGeneration
                     case "Continuous":
                         this.AppSettings.ContinuousSessions = true;
                         break;
-                    case "DisableTimings":
-                        this.AppSettings.TimeEvents = false;
-                        explictDisableTiming = true;
+                    case "DetailTimings":
+                        this.AppSettings.TimeEvents = ((ValueArgument<bool>)item).Value;                        
                         break;
                     case "TimingJsonFile":
                         this.AppSettings.TimingJsonFile = ((ValueArgument<string>)item).Value;
@@ -215,11 +247,26 @@ namespace PlayerGeneration
                     case "TimingCSVFile":
                         this.AppSettings.TimingCSVFile = ((ValueArgument<string>)item).Value;
                         break;
-                    case "EnableHistogram":
+                    case "Histogram":
                         this.AppSettings.EnableHistogram = ((ValueArgument<bool>)item).Value;
                         break;
                     case "HGRMFile":
                         this.AppSettings.HGRMFile = ((ValueArgument<string>)item).Value;
+                        break;
+                    case "MaxDegreeOfParallelismGeneration":
+                        this.AppSettings.MaxDegreeOfParallelismGeneration = ((ValueArgument<int>)item).Value;
+                        break;
+                    case "CompletionPortThreads":
+                        this.AppSettings.CompletionPortThreads = ((ValueArgument<int>)item).Value;
+                        break;
+                    case "WorkerThreads":
+                        this.AppSettings.WorkerThreads = ((ValueArgument<int>)item).Value;
+                        break;
+                    case "TruncateSets":
+                        this.AppSettings.TruncateSets = ((ValueArgument<bool>)item).Value;
+                        break;
+                    case "IgnoreFaults":
+                        this.AppSettings.IgnoreFaults = ((ValueArgument<bool>)item).Value;
                         break;
                     case "Debug":
                         this.Debug = true;
@@ -243,7 +290,7 @@ namespace PlayerGeneration
                 }
             }
             
-            if(!explictDisableTiming && this.AppSettings.TimeEvents)
+            if(this.AppSettings.TimeEvents)
             {
                 this.AppSettings.TimeEvents = !(string.IsNullOrEmpty(this.AppSettings.TimingJsonFile)
                                                     && string.IsNullOrEmpty(this.AppSettings.TimingCSVFile));

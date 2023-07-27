@@ -270,7 +270,7 @@ namespace PlayerGeneration
             {
                 if(!collectionTruncate.IsEmpty)
                 {
-                    this.Database.DropCollection(collectionTruncate.CollectionName);        
+                    collectionTruncate.Collection.DeleteMany(collectionTruncate.FilterEmpty);       
                 }
             }
 

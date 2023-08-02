@@ -1,0 +1,102 @@
+db.CurrentPlayers.drop()
+db.GlobalIncrement.drop()
+db.Intervention.drop()
+db.LiveWager.drop()
+db.PlayersHistory.drop()
+db.PlayersTransHistory.drop()
+
+db.CurrentPlayers.createIndex(
+  {
+      "_id": 1
+  }
+)
+db.GlobalIncrement.createIndex(
+  {
+      "_id": "hashed"
+  }
+)
+db.Intervention.createIndex(
+  {
+      "_id": "hashed"
+  }
+)
+db.LiveWager.createIndex(
+  {
+      "_id": 1
+  }
+)
+db.PlayersHistory.createIndex(
+  {
+      "_id": 1
+  }
+)
+db.PlayersTransHistory.createIndex(
+  {
+      "_id": "hashed"
+  }
+)
+
+sh.shardCollection("safegaming.CurrentPlayers", {_id: 1}, true)
+sh.shardCollection("safegaming.GlobalIncrement", {_id: "hashed"})
+sh.shardCollection("safegaming.Intervention", {_id: "hashed"})
+sh.shardCollection("safegaming.LiveWager", {_id: 1})
+sh.shardCollection("safegaming.PlayersHistory", {_id: 1}, true)
+sh.shardCollection("safegaming.PlayersTransHistory", {_id: "hashed"})
+
+//Range
+db.CurrentPlayers.createIndex(
+  {
+      "_id": 1
+  }
+)
+db.GlobalIncrement.createIndex(
+  {
+      "_id": 1
+  }
+)
+db.Intervention.createIndex(
+  {
+      "_id": 1
+  }
+)
+db.LiveWager.createIndex(
+  {
+      "_id": 1
+  }
+)
+db.PlayersHistory.createIndex(
+  {
+      "_id": 1
+  }
+)
+db.PlayersTransHistory.createIndex(
+  {
+      "_id": "hashed"
+  }
+)
+
+sh.shardCollection("safegaming.CurrentPlayers", {_id: 1})
+sh.shardCollection("safegaming.GlobalIncrement", {_id: 1})
+sh.shardCollection("safegaming.Intervention", {_id: 1})
+sh.shardCollection("safegaming.LiveWager", {_id: 1})
+sh.shardCollection("safegaming.PlayersHistory", {_id: 1})
+sh.shardCollection("safegaming.PlayersTransHistory", {_id: "hashed"})
+
+
+
+
+CurrentPlayers
+GlobalIncrement
+Intervention
+LiveWager
+PlayersHistory
+PlayersTransHistory
+
+./PlayerGenerationMG --TruncateSets false -s 800000000 -k 100000 -d 1000 --WorkerThreads 10000 -t 10000 --Histogram false
+
+dotnet tool install dotnet-monitor --tool-path .
+
+export jarfile=./latest-version/mongodb-performance-test.jar
+java -jar $jarfile -m insert -o 100000000 -t 100 -db test -c perf -url "mongodb+srv://testing:qFL7Br1PHldHGeC1@philtest.szvon.mongodb.net"
+
+./dotnet-counters monitor -p $(pidof 'PlayerGenerationMG')

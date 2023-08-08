@@ -78,6 +78,10 @@ namespace PlayerGeneration
                            ref this.HGRMFile,
                            ref this.UpdatedHGRMFile,
                            nameof(HGRMFile));
+            GetSetting(config,
+                           ref this.LiveFireForgetTasks,
+                           ref this.UpdatedLiveFireForgetTasks,
+                           nameof(LiveFireForgetTasks));
         }
 
         public readonly ECM.IConfigurationBuilder ConfigBuilder;

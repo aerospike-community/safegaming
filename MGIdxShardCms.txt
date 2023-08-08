@@ -100,3 +100,5 @@ export jarfile=./latest-version/mongodb-performance-test.jar
 java -jar $jarfile -m insert -o 100000000 -t 100 -db test -c perf -url "mongodb+srv://testing:qFL7Br1PHldHGeC1@philtest.szvon.mongodb.net"
 
 ./dotnet-counters monitor -p $(pidof 'PlayerGenerationMG')
+
+mongosh "mongodb+srv://philtest.szvon.mongodb.net/" --apiVersion 1 --username testing --password qFL7Br1PHldHGeC1

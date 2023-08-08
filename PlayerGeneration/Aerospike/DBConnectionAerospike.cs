@@ -33,6 +33,9 @@ namespace PlayerGeneration
                 {
                     var splitName = fullSetName.Split('.');
 
+                    if (splitName.Length <= 1)
+                        throw new ArgumentException($"Either the Namespace or the Set Name is missing. Name provided: \"{fullSetName}\"", "Namepace.Set Name");
+
                     Namespace = splitName[0].Trim();
                     SetName = splitName[1].Trim();
                 }

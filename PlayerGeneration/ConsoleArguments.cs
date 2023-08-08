@@ -115,6 +115,13 @@ namespace PlayerGeneration
                 Description = "True to Truncate the Sets"
             });
 
+            this._cmdLineParser.Arguments.Add(new ValueArgument<bool>("LiveFireForgetTasks")
+            {
+                DefaultValue = appSettings.LiveFireForgetTasks,
+                Optional = true, //Required                
+                Description = "True to Fire and Forget Live Sets"
+            });
+
             this._cmdLineParser.Arguments.Add(new ValueArgument<bool>("IgnoreFaults")
             {
                 DefaultValue = appSettings.IgnoreFaults,
@@ -264,6 +271,9 @@ namespace PlayerGeneration
                         break;
                     case "TruncateSets":
                         this.AppSettings.TruncateSets = ((ValueArgument<bool>)item).Value;
+                        break;
+                    case "LiveFireForgetTasks":
+                        this.AppSettings.LiveFireForgetTasks = ((ValueArgument<bool>)item).Value;
                         break;
                     case "IgnoreFaults":
                         this.AppSettings.IgnoreFaults = ((ValueArgument<bool>)item).Value;

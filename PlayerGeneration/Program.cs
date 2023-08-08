@@ -10,6 +10,7 @@ using System.Threading;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Collections.Concurrent;
 
 namespace PlayerGeneration
 {
@@ -21,6 +22,7 @@ namespace PlayerGeneration
         private static readonly string CommandLineArgsString = null;
         private static bool DebugMode = false;
         private static bool SyncMode = false;
+        private static readonly ConcurrentBag<Task> LiveFireForgetTasks = new ConcurrentBag<Task>();
 
         public async static Task Main(string[] args)
         {
@@ -646,6 +648,8 @@ namespace PlayerGeneration
                     ConsoleGenerating.Decrement("Player " + email);
                 });
 
+            Task.WaitAll(LiveFireForgetTasks.ToArray());
+
             startPlayerProcessingTime.Stop();
             ConsolePuttingDB.TaskEndAll();
             dbConnection.Dispose();
@@ -956,14 +960,18 @@ namespace PlayerGeneration
 
                 await Intervention.Determine(player, resultingWager, dbConnection, token);
                 if (Settings.Instance.GlobalIncremenIntervals > TimeSpan.Zero)
+                {
                     await GlobalIncrement.AddUpdate(player,
                                                         resultingWager,
                                                         Settings.Instance.GlobalIncremenIntervals,
                                                         dbConnection,
+                                                        Settings.Instance.LiveFireForgetTasks 
+                                                            ? LiveFireForgetTasks : null,
                                                         token);
+                }
 
                 await dbConnection.UpdateLiveWager(player, resultingWager, wager, token);
-
+                
                 if (player.UseTime.IsRealtime)
                 {
                     await dbConnection.UpdateChangedCurrentPlayer(player, token,

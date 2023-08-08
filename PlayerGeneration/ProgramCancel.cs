@@ -41,7 +41,7 @@ namespace PlayerGeneration
                         //GCMonitor.GetInstance().StopGCMonitoring();
                         Logger.Instance.Info("PlayerGeneration Main Ended from Fault or Canceled");
                         Logger.Instance.Flush(5000);
-
+                        ConsoleDisplay.Console.SetReWriteToWriterPosition();
                         Environment.Exit(-1);
                     }
                 }

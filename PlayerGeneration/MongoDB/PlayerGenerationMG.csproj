@@ -7,9 +7,9 @@
     <Authors>Richard Andersen</Authors>
     <Copyright>2023</Copyright>
     <Title>SafeGaming Generator MongoDB</Title>
-    <Version>1.2.2.0</Version>
-    <FileVersion>1.2.2.0</FileVersion>
-    <AssemblyVersion>1.2.2.0</AssemblyVersion>
+    <Version>1.2.3.0</Version>
+    <FileVersion>1.2.3.0</FileVersion>
+    <AssemblyVersion>1.2.3.0</AssemblyVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>../PlayerGeneration.snk</AssemblyOriginatorKeyFile>    
   </PropertyGroup>

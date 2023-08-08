@@ -132,6 +132,8 @@ namespace PlayerGeneration
             GetSetting(config, ref this.WorkerThreads, nameof(WorkerThreads));
             GetSetting(config, ref this.CompletionPortThreads, nameof(CompletionPortThreads));
             GetSetting(config, ref this.MaxDegreeOfParallelismGeneration, nameof(MaxDegreeOfParallelismGeneration));
+            if(!UpdatedLiveFireForgetTasks)
+                GetSetting(config, ref this.LiveFireForgetTasks, nameof(LiveFireForgetTasks));
 
             GetSetting(config, ref this.InterventionThresholdsRefreshRateSecs, nameof(InterventionThresholdsRefreshRateSecs));
             GetSetting(config, ref this.GlobalIncrementIntervalSecs, nameof(GlobalIncrementIntervalSecs));
@@ -177,7 +179,7 @@ namespace PlayerGeneration
         public static void GetSetting(ECM.IConfiguration config,
                                             ref int property,
                                             ref bool updatedProperty,
-                                            string propName)            
+                                            string propName)
         {
             var value = config[propName];
 
@@ -203,7 +205,7 @@ namespace PlayerGeneration
         public static void GetSetting(ECM.IConfiguration config,
                                             ref bool property,
                                             ref bool updatedProperty,
-                                            string propName)            
+                                            string propName)
         {
             var value = config[propName];
 
@@ -373,12 +375,14 @@ namespace PlayerGeneration
         public readonly bool UpdatedTimingJsonFile;
         public readonly bool UpdatedEnableHistogram;
         public readonly bool UpdatedHGRMFile;
+        public readonly bool UpdatedLiveFireForgetTasks;
 
         public int MaxDegreeOfParallelismGeneration = -1;
         public int WorkerThreads = -1;
         public int CompletionPortThreads = 1000;
         public bool IgnoreFaults = false;
         public bool TimeEvents = true;
+        public bool LiveFireForgetTasks = true;
 
         public int NbrPlayers = 100;
         public int MinPlayerSessions = 1;

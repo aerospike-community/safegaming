@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Common;
+using System.Collections.Concurrent;
 
 #if MONGODB
 using MongoDB.Bson.Serialization.Attributes;
@@ -120,6 +121,7 @@ namespace PlayerGeneration
                                             WagerResultTransaction wagerTrans,
                                             TimeSpan incrementInterval,
                                             IDBConnection dBConnection,
+                                            ConcurrentBag<Task> livefireforgetCollection,
                                             System.Threading.CancellationToken token)
         {
             var intervalTS = wagerTrans.Timestamp.Round(incrementInterval, MidpointRounding.ToZero);
@@ -127,12 +129,20 @@ namespace PlayerGeneration
                                                         player.CountyFIPSCode,
                                                         intervalTS);
 
-            await dBConnection.IncrementGlobalSet(new GlobalIncrement(player,
-                                                                        wagerTrans,
-                                                                        intervalTS,
-                                                                        (long) incrementInterval.TotalSeconds,
-                                                                        glbKey),                                               
-                                                token);
+            var giInstance = new GlobalIncrement(player,
+                                                    wagerTrans,
+                                                    intervalTS,
+                                                    (long)incrementInterval.TotalSeconds,
+                                                    glbKey);
+
+            if(livefireforgetCollection is null)
+            {
+                await dBConnection.IncrementGlobalSet(giInstance, token);
+            }
+            else
+            {
+                livefireforgetCollection.Add(dBConnection.IncrementGlobalSet(giInstance, token));
+            }
 
             //GlobalIncrementTasks.AddOrUpdate(glbKey,
             //                                new GlobalIncrement(player, wagerTrans, intervalTS, glbKey),

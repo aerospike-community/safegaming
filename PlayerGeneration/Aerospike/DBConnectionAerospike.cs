@@ -330,6 +330,9 @@ namespace PlayerGeneration
         public readonly NamespaceSetName PlayersTransHistorySet;
         public readonly NamespaceSetName UsedEmailCntSet;
         public bool UsedEmailCntEnabled { get => !this.UsedEmailCntSet.IsEmpty(); }
+        public bool IncrementGlobalEnabled { get => !GlobalIncrementSet.IsEmpty(); }
+        public bool LiverWagerEnabled { get => !LiverWagerSet.IsEmpty(); }
+
         public readonly NamespaceSetName GlobalIncrementSet;
         public readonly NamespaceSetName InterventionSet;
         public readonly NamespaceSetName LiverWagerSet;

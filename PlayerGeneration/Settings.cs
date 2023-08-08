@@ -136,7 +136,8 @@ namespace PlayerGeneration
                 GetSetting(config, ref this.LiveFireForgetTasks, nameof(LiveFireForgetTasks));
 
             GetSetting(config, ref this.InterventionThresholdsRefreshRateSecs, nameof(InterventionThresholdsRefreshRateSecs));
-            GetSetting(config, ref this.GlobalIncrementIntervalSecs, nameof(GlobalIncrementIntervalSecs));
+            if(!UpdatedGlobalIncrementIntervalSecs)
+                GetSetting(config, ref this.GlobalIncrementIntervalSecs, nameof(GlobalIncrementIntervalSecs));
             GetSetting(config, ref this.GenerateUniqueEmails, nameof(GenerateUniqueEmails));
             GetSetting(config, ref this.PlayerHistoryLastNbrTrans, nameof(PlayerHistoryLastNbrTrans));
 
@@ -376,6 +377,7 @@ namespace PlayerGeneration
         public readonly bool UpdatedEnableHistogram;
         public readonly bool UpdatedHGRMFile;
         public readonly bool UpdatedLiveFireForgetTasks;
+        public readonly bool UpdatedGlobalIncrementIntervalSecs;
 
         public int MaxDegreeOfParallelismGeneration = -1;
         public int WorkerThreads = -1;

@@ -67,6 +67,12 @@ namespace PlayerGeneration
                            ref this.UpdatedLiveFireForgetTasks,
                            nameof(LiveFireForgetTasks));
 
+            if (string.IsNullOrEmpty(GlobalIncrementCollection))
+            {
+                this.GlobalIncrementIntervalSecs = 0;
+                this.UpdatedGlobalIncrementIntervalSecs = true;
+            }
+
         }
         public readonly ECM.IConfigurationBuilder ConfigBuilder;
 

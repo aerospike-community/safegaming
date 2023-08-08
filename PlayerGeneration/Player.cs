@@ -150,7 +150,6 @@ namespace PlayerGeneration
 		[BsonIgnore]
         internal DateTimeSimulation UseTime { get; }
         [Newtonsoft.Json.JsonIgnore]
-
 		[BsonIgnore]
         internal int NbrSessionsToday { get; private set; }
 

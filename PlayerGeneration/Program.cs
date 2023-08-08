@@ -380,25 +380,25 @@ namespace PlayerGeneration
             var logFilePath = Logger.GetSetEnvVarLoggerFile();
 
 #if MONGODB
-            IDBConnection dbConnection = Settings.Instance.UpdateDB
-                                            ? new DBConnection(Settings.Instance.DBConnectionString,
-                                                                Settings.Instance.DBName,
-                                                                Settings.Instance.ConnectionSettings,
-                                                                displayProgression: ConsolePuttingDB,
-                                                                playerProgression: ConsolePuttingPlayer,
-                                                                historyProgression: ConsolePuttingHistory)
-                                            : null;
+            using IDBConnection dbConnection = Settings.Instance.UpdateDB
+                                                ? new DBConnection(Settings.Instance.DBConnectionString,
+                                                                    Settings.Instance.DBName,
+                                                                    Settings.Instance.ConnectionSettings,
+                                                                    displayProgression: ConsolePuttingDB,
+                                                                    playerProgression: ConsolePuttingPlayer,
+                                                                    historyProgression: ConsolePuttingHistory)
+                                                : null;
 #else
-             IDBConnection dbConnection = Settings.Instance.UpdateDB
-                                            ? new DBConnection(Settings.Instance.DBHost,
-                                                                Settings.Instance.DBPort,
-                                                                Settings.Instance.ConnectionTimeout,
-                                                                Settings.Instance.DBOperationTimeout,
-                                                                Settings.Instance.DBUseExternalIPAddresses,                                                        
-                                                                displayProgression: ConsolePuttingDB,
-                                                                playerProgression: ConsolePuttingPlayer,
-                                                                historyProgression: ConsolePuttingHistory)
-                                            : null;
+             using IDBConnection dbConnection = Settings.Instance.UpdateDB
+                                                    ? new DBConnection(Settings.Instance.DBHost,
+                                                                        Settings.Instance.DBPort,
+                                                                        Settings.Instance.ConnectionTimeout,
+                                                                        Settings.Instance.DBOperationTimeout,
+                                                                        Settings.Instance.DBUseExternalIPAddresses,                                                        
+                                                                        displayProgression: ConsolePuttingDB,
+                                                                        playerProgression: ConsolePuttingPlayer,
+                                                                        historyProgression: ConsolePuttingHistory)
+                                                    : null;
 #endif
 
             State[] stateDB;
@@ -787,8 +787,6 @@ namespace PlayerGeneration
             };
         }
 
-
-
         private static async Task RanSession(IDBConnection dbConnection,
                                                 bool enableDBUpdate,
                                                 bool continuePlay,
@@ -959,7 +957,7 @@ namespace PlayerGeneration
                 player.NewWagerResultTransaction(resultingWager);
 
                 await Intervention.Determine(player, resultingWager, dbConnection, token);
-                if (Settings.Instance.GlobalIncremenIntervals > TimeSpan.Zero)
+                if (dbConnection.IncrementGlobalEnabled && Settings.Instance.GlobalIncremenIntervals > TimeSpan.Zero)
                 {
                     await GlobalIncrement.AddUpdate(player,
                                                         resultingWager,
@@ -970,8 +968,14 @@ namespace PlayerGeneration
                                                         token);
                 }
 
-                await dbConnection.UpdateLiveWager(player, resultingWager, wager, token);
-                
+                if (dbConnection.LiverWagerEnabled)
+                {
+                    if (Settings.Instance.LiveFireForgetTasks)
+                        LiveFireForgetTasks.Add(dbConnection.UpdateLiveWager(player, resultingWager, wager, token));
+                    else
+                        await dbConnection.UpdateLiveWager(player, resultingWager, wager, token);
+                }
+
                 if (player.UseTime.IsRealtime)
                 {
                     await dbConnection.UpdateChangedCurrentPlayer(player, token,

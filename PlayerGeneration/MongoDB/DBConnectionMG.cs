@@ -258,6 +258,9 @@ namespace PlayerGeneration
         public readonly DBCollection<PlayersTransHistory> PlayersTransHistoryCollection;
         public readonly DBCollection<UsedEmailCnt> UsedEmailCntCollection;
         public bool UsedEmailCntEnabled { get => !this.UsedEmailCntCollection.IsEmpty; }
+        public bool IncrementGlobalEnabled { get => !GlobalIncrementCollection.IsEmpty; }
+        public bool LiverWagerEnabled { get => !LiverWagerCollection.IsEmpty; }
+
         public readonly DBCollection<GlobalIncrement> GlobalIncrementCollection;
         public readonly DBCollection<Intervention> InterventionCollection;
         public readonly DBCollection<LiveWager> LiverWagerCollection;

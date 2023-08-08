@@ -17,6 +17,8 @@ namespace PlayerGeneration
         ConsoleDisplay HistoryProgression { get; }
 
         bool UsedEmailCntEnabled { get; }
+        bool IncrementGlobalEnabled { get; }
+        bool LiverWagerEnabled { get; }
 
         void Truncate();
 

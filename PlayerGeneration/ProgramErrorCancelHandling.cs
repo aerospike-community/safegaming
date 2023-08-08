@@ -16,7 +16,7 @@ namespace PlayerGeneration
             Logger.Instance.Warn("Application Aborted");
             Program.ConsoleErrors?.Increment("Aborted");
             cancellationTokenSource.Cancel();
-
+            
             Logger.Instance.Flush(5000);
         }
 

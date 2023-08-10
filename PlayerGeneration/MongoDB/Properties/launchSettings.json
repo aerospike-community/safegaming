@@ -22,6 +22,10 @@
     "PG Real": {
       "commandName": "Project",
       "commandLineArgs": "--keys 10 --RealTime"
+    },
+    "Debug": {
+      "commandName": "Project",
+      "commandLineArgs": "--Debug"
     }
   }
 }

@@ -23,7 +23,8 @@ namespace PlayerGeneration
             DebugMode = 1,
             DebugModeConsole = 2,
             NormalMode = 3,
-            ExitProgram = 4
+            LaunchDebugger = 4,
+            ExitProgram = 5
         }
     }
 }

@@ -52,7 +52,11 @@ namespace PlayerGeneration
                                         String.Join(", ", Common.Functions.Instance.IPAddresses?.Select(n => n.ToString())));
             Logger.Instance.InfoFormat("\t\tRunTime Dir: {0}",
                                             Common.Functions.Instance.ApplicationRunTimeDir);
-
+            if(args is null || args.Length == 0)
+                Logger.Instance.Info("\t\tArguments: N/A");
+            else
+                Logger.Instance.InfoFormat("\t\tArguments: {0}",
+                                            string.Join(" ", args));
 
             {
                 var (dbName, driverName, driverVersion) = DBConnection.GetInfo();
@@ -85,7 +89,9 @@ namespace PlayerGeneration
                         Settings.Instance.IgnoreFaults = false;
                         Logger.Instance.Warn("Ignore Faults disabled (exceptions will be thrown)");
                         ConsoleDisplay.Console.WriteLine("Application Log Level set to Debug");
-                        Common.ConsoleHelper.PrintToConsole("Attach Remote Debugger before Menu Selection", ConsoleColor.Gray, ConsoleColor.DarkRed);
+                        var currentProcess = Process.GetCurrentProcess();
+                        ConsoleDisplay.Console.WriteLine($"Process Id: {currentProcess.Id} Session Id: {currentProcess.SessionId} Working Set: {currentProcess.WorkingSet64}");
+                        ConsoleHelper.PrintToConsole("Attach Remote Debugger before Menu Selection", ConsoleColor.Gray, ConsoleColor.DarkRed);
                         ConsoleDisplay.Console.WriteLine();
 
                         var consoleMenu = new Common.ConsoleMenu<DebugMenuItems>()
@@ -105,6 +111,13 @@ namespace PlayerGeneration
                             case DebugMenuItems.DebugModeConsole:
                                 DebugMode = true;
                                 break;
+                            case DebugMenuItems.LaunchDebugger:
+                                DebugMode = true;
+                                if(Debugger.IsAttached)
+                                    Debugger.Break();
+                                else
+                                    Debugger.Launch();                                
+                                break;                            
                             case DebugMenuItems.ExitProgram:
                                 Logger.Instance.Debug("Debug Mode Application Exit");
                                 return;

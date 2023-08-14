@@ -9,7 +9,7 @@ namespace PlayerGeneration
 {
     partial class Program
     {
-        static readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        static readonly CancellationTokenSource cancellationTokenSource = new();
 
         private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
@@ -123,6 +123,7 @@ namespace PlayerGeneration
                 if (item.Level == log4net.Core.Level.Error || item.Level == log4net.Core.Level.Fatal)
                 {
                     ExceptionCount++;
+                    Interlocked.MemoryBarrier();
                     if (item.ExceptionObject == null)
                         ConsoleErrors?.Increment(string.Format(@"Log: {0:yyyy-MM-dd\ HH\:mm\:ss.fff}", item.TimeStamp));
                     else
@@ -131,6 +132,7 @@ namespace PlayerGeneration
                 else if (item.Level == log4net.Core.Level.Warn)
                 {
                     WarningCount++;
+                    Interlocked.MemoryBarrier();
                     ConsoleWarnings?.Increment(string.Format(@"Log: {0:yyyy-MM-dd\ HH\:mm\:ss.fff}", item.TimeStamp));
                 }
 

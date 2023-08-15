@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +27,9 @@ namespace PlayerCommon
             catch { }
             return path;
         }
+
+        public static T FromJson<T>(string json, JsonSerializerOptions deserializerOptions = null)
+            => (T)JsonSerializer.Deserialize(json, typeof(T), deserializerOptions ?? Settings.jsonSerializerOptions);
 
         public static double GetRandomNumber(double minimum, double maximum, Random random = null)
         {

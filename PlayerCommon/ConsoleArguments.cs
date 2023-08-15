@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Common;
 using CommandLineParser.Arguments;
+using System.Diagnostics.CodeAnalysis;
 
 namespace PlayerCommon
 {
@@ -120,7 +121,9 @@ namespace PlayerCommon
             set;
         }
 
-        public virtual bool ParseSetArguments(string[] args)
+        protected List<Argument> RemainingArgs { get; } = new List<Argument>();
+
+        public virtual bool ParseSetArguments(string[] args, bool throwIfNotMpaaed = true)
         {
            
             if (args.Any(i => i.Any(c => c == '"')))
@@ -215,11 +218,11 @@ namespace PlayerCommon
                         ShowDefaults();
                         return false;                    
                     default:
+                        if (throwIfNotMpaaed)
+                            ThrowArgumentException(item);
 
-                        throw new ArgumentException(string.Format("Do not know how to map {0} ({1}) to a setting!",
-                                                                    item.LongName,
-                                                                    item.GetType().Name),
-                                                                    item.LongName);
+                        RemainingArgs.Add(item);
+                        break;
                 }
             }
             
@@ -230,6 +233,14 @@ namespace PlayerCommon
             }
 
             return true;
+        }
+
+        public void ThrowArgumentException([NotNull] Argument item)
+        {
+            throw new ArgumentException(string.Format("Do not know how to map {0} ({1}) to a setting!",
+                                                                        item.LongName,
+                                                                        item.GetType().Name),
+                                                                        item.LongName);
         }
 
         public void ShowDefaults()

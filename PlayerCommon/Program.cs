@@ -4,13 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
-using Common.Patterns.Tasks;
 using Common.File;
 using System.Threading;
 using System.Data;
 using System.Diagnostics;
-using System.IO;
-using System.Data.Common;
 
 namespace PlayerCommon
 {
@@ -74,10 +71,8 @@ namespace PlayerCommon
             return Logger.GetSetEnvVarLoggerFile();
         }
 
-        public static void InitialazationArguments(string[] args)
+        public static void InitialazationArguments(string[] args, ConsoleArguments consoleArgs)
         {
-            var consoleArgs = new ConsoleArguments(Settings.Instance);
-
             try
             {
                 if (!consoleArgs.ParseSetArguments(args))

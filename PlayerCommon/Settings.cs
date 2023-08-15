@@ -12,11 +12,10 @@ namespace PlayerCommon
     public partial class Settings
     {
 
-        private static readonly Lazy<Settings> lazy = new(() => new Settings());
         private static readonly Lazy<ECM.IConfigurationBuilder> configurationBuilder = new(() => new ECM.ConfigurationBuilder());
         public static Settings Instance
         {
-            get => lazy.Value;
+            get; private set;
         }
 
         public static ECM.IConfigurationBuilder ConfigurationBuilder
@@ -24,25 +23,32 @@ namespace PlayerCommon
             get => configurationBuilder.Value;
         }
 
+        public ECM.IConfiguration ConfigurationBuilderFile { get; }
+        
         public Settings(string appJsonFile = "appsettings.json")
         {
-            var configBuilderFile = ECM.JsonConfigurationExtensions.AddJsonFile(ConfigurationBuilder, appJsonFile);
-            ECM.IConfiguration config = configBuilderFile.Build();
+            lock(ConfigurationBuilder)
+            {
+                Instance = this;
+            }
 
-            GetSetting(config, ref this.IgnoreFaults, nameof(IgnoreFaults));            
-            GetSetting(config, ref this.WarnMaxMSLatencyDBExceeded, nameof(WarnMaxMSLatencyDBExceeded));            
-            GetSetting(config, ref this.TimeStampFormatString, nameof(TimeStampFormatString));
-            GetSetting(config, ref this.TimeEvents, nameof(TimeEvents));
-            GetSetting(config, ref this.TimingCSVFile, nameof(TimingCSVFile));
-            GetSetting(config, ref this.TimingJsonFile, nameof(TimingJsonFile));
-            GetSetting(config, ref EnableHistogram, nameof(EnableHistogram));
-            GetSetting(config, ref HGRMFile, nameof(HGRMFile));
-            GetSetting(config, ref HGRMFile, nameof(HGRMFile));
-            GetSetting(config, ref HGPrecision, nameof(HGPrecision));
-            GetSetting(config, ref HGLowestTickValue, nameof(HGLowestTickValue));
-            GetSetting(config, ref HGHighestTickValue, nameof(HGHighestTickValue));
-            GetSetting(config, ref HGReportPercentileTicksPerHalfDistance, nameof(HGReportPercentileTicksPerHalfDistance));
-            GetSetting(config, ref HGReportTickToUnitRatio, nameof(HGReportTickToUnitRatio));
+            var configBuilderFile = ECM.JsonConfigurationExtensions.AddJsonFile(ConfigurationBuilder, appJsonFile);
+            this.ConfigurationBuilderFile = configBuilderFile.Build();
+
+            GetSetting(this.ConfigurationBuilderFile, ref this.IgnoreFaults, nameof(IgnoreFaults));            
+            GetSetting(this.ConfigurationBuilderFile, ref this.WarnMaxMSLatencyDBExceeded, nameof(WarnMaxMSLatencyDBExceeded));            
+            GetSetting(this.ConfigurationBuilderFile, ref this.TimeStampFormatString, nameof(TimeStampFormatString));
+            GetSetting(this.ConfigurationBuilderFile, ref this.TimeEvents, nameof(TimeEvents));
+            GetSetting(this.ConfigurationBuilderFile, ref this.TimingCSVFile, nameof(TimingCSVFile));
+            GetSetting(this.ConfigurationBuilderFile, ref this.TimingJsonFile, nameof(TimingJsonFile));
+            GetSetting(this.ConfigurationBuilderFile, ref EnableHistogram, nameof(EnableHistogram));
+            GetSetting(this.ConfigurationBuilderFile, ref HGRMFile, nameof(HGRMFile));
+            GetSetting(this.ConfigurationBuilderFile, ref HGRMFile, nameof(HGRMFile));
+            GetSetting(this.ConfigurationBuilderFile, ref HGPrecision, nameof(HGPrecision));
+            GetSetting(this.ConfigurationBuilderFile, ref HGLowestTickValue, nameof(HGLowestTickValue));
+            GetSetting(this.ConfigurationBuilderFile, ref HGHighestTickValue, nameof(HGHighestTickValue));
+            GetSetting(this.ConfigurationBuilderFile, ref HGReportPercentileTicksPerHalfDistance, nameof(HGReportPercentileTicksPerHalfDistance));
+            GetSetting(this.ConfigurationBuilderFile, ref HGReportTickToUnitRatio, nameof(HGReportTickToUnitRatio));
 
             if (string.IsNullOrEmpty(HGReportTickToUnitRatio))
             {
@@ -90,9 +96,9 @@ namespace PlayerCommon
                 }
             }
             
-            GetSetting(config, ref this.WorkerThreads, nameof(WorkerThreads));
-            GetSetting(config, ref this.CompletionPortThreads, nameof(CompletionPortThreads));
-            GetSetting(config, ref this.MaxDegreeOfParallelism, nameof(MaxDegreeOfParallelism));
+            GetSetting(this.ConfigurationBuilderFile, ref this.WorkerThreads, nameof(WorkerThreads));
+            GetSetting(this.ConfigurationBuilderFile, ref this.CompletionPortThreads, nameof(CompletionPortThreads));
+            GetSetting(this.ConfigurationBuilderFile, ref this.MaxDegreeOfParallelism, nameof(MaxDegreeOfParallelism));
             
             TimeZoneFormatWoZone = TimeStampFormatString.Replace('z', ' ').TrimEnd();
 
@@ -170,7 +176,6 @@ namespace PlayerCommon
             property = long.Parse(value);
         }
 
-
         public static void GetSetting(ECM.IConfiguration config, ref decimal property, string propName)
         {
             var value = config[propName];
@@ -219,7 +224,7 @@ namespace PlayerCommon
             property =  items;
         }
 
-        private readonly static JsonSerializerOptions jsonSerializerOptions = new()
+        public readonly static JsonSerializerOptions jsonSerializerOptions = new()
         {
             IncludeFields = true,
             UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
@@ -311,5 +316,7 @@ namespace PlayerCommon
 
         public string TimeStampFormatString = "yyyy-MM-ddTHH:mm:ss.ffffzzz";
         public string TimeZoneFormatWoZone = "yyyy-MM-ddTHH:mm:ss.ffff";
+
+        public string DBConnectionString;
     }
 }

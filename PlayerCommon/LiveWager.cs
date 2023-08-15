@@ -9,7 +9,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using PlayerCommonDummy;
 #endif
 
-namespace PlayerGeneration
+namespace PlayerCommon
 {
     public sealed partial class LiveWager
     {

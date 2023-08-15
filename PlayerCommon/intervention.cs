@@ -16,8 +16,7 @@ namespace PlayerCommon
     {
 
 		[BsonConstructor]
-        public Intervention(long primaryKey,
-                                int playerId, 
+        public Intervention(int playerId, 
                                 decimal cLV,
                                 DateTimeOffset sessionTimestamp,
                                 DateTimeOffset interventionTimeStamp,
@@ -34,7 +33,7 @@ namespace PlayerCommon
                                 string stateName,
                                 long transId)
         {
-            PrimaryKey = primaryKey;
+            PrimaryKey = Helpers.GetLongHash(playerId);            
             PlayerId = playerId;
             CLV = cLV;
             SessionTimestamp = sessionTimestamp;

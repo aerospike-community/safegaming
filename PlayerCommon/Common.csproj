@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <RootNamespace>PlayerCommon</RootNamespace>  
+    <OutputType>Library</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>PlayerGeneration.snk</AssemblyOriginatorKeyFile>
+    <Company>Aerospike</Company>
+    <Authors>Richard Andersen</Authors>
+    <Copyright>2023</Copyright>
+    <Title>SafeGaming Generator</Title>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>1701;1702;CS8002</NoWarn>
+  </PropertyGroup>   
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
+    <PackageReference Include="Common.Console" Version="5.31.10" />
+    <PackageReference Include="Common.Functions" Version="5.31.10" />
+    <PackageReference Include="Common.Logger" Version="5.31.15" />
+    <PackageReference Include="Common.Path" Version="5.31.5" />
+    <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />
+    <PackageReference Include="Common.Patterns.Threading" Version="5.31.1" />
+    <PackageReference Include="HdrHistogram" Version="2.5.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+  </ItemGroup>
+</Project>

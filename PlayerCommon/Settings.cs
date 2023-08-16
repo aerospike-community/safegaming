@@ -6,6 +6,8 @@ using System.Text.Json;
 using ECM = Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Text.Json.Nodes;
+using System.Collections;
+using System.Xml;
 
 namespace PlayerCommon
 {
@@ -35,12 +37,12 @@ namespace PlayerCommon
             var configBuilderFile = ECM.JsonConfigurationExtensions.AddJsonFile(ConfigurationBuilder, appJsonFile);
             this.ConfigurationBuilderFile = configBuilderFile.Build();
 
-            GetSetting(this.ConfigurationBuilderFile, ref this.IgnoreFaults, nameof(IgnoreFaults));            
-            GetSetting(this.ConfigurationBuilderFile, ref this.WarnMaxMSLatencyDBExceeded, nameof(WarnMaxMSLatencyDBExceeded));            
-            GetSetting(this.ConfigurationBuilderFile, ref this.TimeStampFormatString, nameof(TimeStampFormatString));
-            GetSetting(this.ConfigurationBuilderFile, ref this.TimeEvents, nameof(TimeEvents));
-            GetSetting(this.ConfigurationBuilderFile, ref this.TimingCSVFile, nameof(TimingCSVFile));
-            GetSetting(this.ConfigurationBuilderFile, ref this.TimingJsonFile, nameof(TimingJsonFile));
+            GetSetting(this.ConfigurationBuilderFile, ref IgnoreFaults, nameof(IgnoreFaults));            
+            GetSetting(this.ConfigurationBuilderFile, ref WarnMaxMSLatencyDBExceeded, nameof(WarnMaxMSLatencyDBExceeded));            
+            GetSetting(this.ConfigurationBuilderFile, ref TimeStampFormatString, nameof(TimeStampFormatString));
+            GetSetting(this.ConfigurationBuilderFile, ref TimeEvents, nameof(TimeEvents));
+            GetSetting(this.ConfigurationBuilderFile, ref TimingCSVFile, nameof(TimingCSVFile));
+            GetSetting(this.ConfigurationBuilderFile, ref TimingJsonFile, nameof(TimingJsonFile));
             GetSetting(this.ConfigurationBuilderFile, ref EnableHistogram, nameof(EnableHistogram));
             GetSetting(this.ConfigurationBuilderFile, ref HGRMFile, nameof(HGRMFile));
             GetSetting(this.ConfigurationBuilderFile, ref HGRMFile, nameof(HGRMFile));
@@ -103,7 +105,6 @@ namespace PlayerCommon
             TimeZoneFormatWoZone = TimeStampFormatString.Replace('z', ' ').TrimEnd();
 
             TimeEvents = !(string.IsNullOrEmpty(TimingJsonFile) && string.IsNullOrEmpty(TimingCSVFile));
-
         }
 
         public static void GetSetting(ECM.IConfiguration config,
@@ -185,6 +186,15 @@ namespace PlayerCommon
             property = decimal.Parse(value);
         }
 
+        public static void GetSetting(ECM.IConfiguration config, ref double property, string propName)
+        {
+            var value = config[propName];
+
+            if (string.IsNullOrEmpty(value)) return;
+
+            property = double.Parse(value);
+        }
+
         public static void GetSetting(ECM.IConfiguration config, ref bool property, string propName)
         {
             var value = config[propName];
@@ -232,68 +242,147 @@ namespace PlayerCommon
             //NumberHandling = JsonNumberHandling.AllowReadingFromString,
             WriteIndented = true
         };
-
-        private static JsonNode BuildJson(ECM.IConfiguration configuration)
-        {
-            if (configuration is ECM.IConfigurationSection configurationSection)
-            {
-                if (configurationSection.Value != null)
-                {
-                    var value = configurationSection.Value;
-
-                    if(string.IsNullOrEmpty(value)) return null;
-                    
-                    if(long.TryParse(value, out var lngValue))
-                        return JsonValue.Create(lngValue);
-                    if (double.TryParse(value, out var dblValue))
-                        return JsonValue.Create(dblValue);
-                    if (bool.TryParse(value, out var bValue))
-                        return JsonValue.Create(bValue);
-
-                    return JsonValue.Create(configurationSection.Value);                    
-                }
-            }
-
-            var children = configuration.GetChildren().AsEnumerable();
-            if (!children.Any())
-            {                
-                return null;
-            }
-
-            if (children.First().Key == "0")
-            {
-                var result = new JsonArray();
-                foreach (var child in children)
-                {
-                    result.Add(BuildJson(child));
-                }
-
-                return result;
-            }
-            else
-            {
-                var result = new JsonObject();
-                foreach (var child in children)
-                {                   
-                    result.Add(new KeyValuePair<string, JsonNode>(child.Key, BuildJson(child)));
-                }
-
-                return result;
-            }
-        }
-
-        public static void GetSetting<T>(ECM.IConfiguration config, ref T property, string propName, JsonSerializerOptions deserializerOptions = null)
+        
+        public static void GetSetting<T>(ECM.IConfiguration config, ref T property, string propName)
                             where T : new()
         {
-            var section = config.GetSection(propName);
+            var findProp = config is ECM.IConfigurationSection configSection
+                                ? configSection
+                                : config.GetChildren().FirstOrDefault(x => x.Key == propName);
+
+            if(findProp is null) return;
+
+            var propType = property?.GetType() ?? typeof(T);
+            var instanceProps = TypeHelpers.GetPropertyFields(propType);
+            var newInstance = property is null ? (T)Activator.CreateInstance(propType) : property;
             
-            if (section is null || string.IsNullOrEmpty(section.Value)) return;
+            object ConvertValue(Type propertyType, string configValue)
+            {
+                if(configValue is null) return null;
 
-            var json = BuildJson(section);
-            var value = json.ToJsonString();
+                if (propertyType == typeof(string))
+                {
+                    return configValue;
+                }
 
-            property = (T) JsonSerializer.Deserialize(value, typeof(T), deserializerOptions ?? jsonSerializerOptions);
+                if (configValue == string.Empty) return null;
+
+                if (propertyType == typeof(DateTimeOffset))
+                {
+                    return DateTimeOffset.Parse(configValue);
+                }
+                else if (propertyType == typeof(TimeSpan))
+                {
+                    return TimeSpan.Parse(configValue);
+                }
+                else if(propertyType.IsEnum)
+                {
+                    return Enum.Parse(propertyType, configValue);
+                }
+                else if (propertyType.IsAssignableTo(typeof(IConvertible)))
+                {                    
+                    if (propertyType == typeof(Int32))
+                        return Convert.ToInt32(configValue);
+                    else if (propertyType == typeof(Int16))
+                        return Convert.ToInt16(configValue);
+                    else if (propertyType == typeof(Int64))
+                        return Convert.ToInt64(configValue);
+                    else if (propertyType == typeof(Decimal))
+                        return Convert.ToDecimal(configValue);
+                    else if (propertyType == typeof(Double))
+                        return Convert.ToDouble(configValue);
+                    else if (propertyType == typeof(bool))
+                        return Convert.ToBoolean(configValue);
+                    else if (propertyType == typeof(DateTime))
+                        return Convert.ToDateTime(configValue);                    
+                }
+
+                throw new NotImplementedException($"Cannot convert \"appsetting\" Property Type {propertyType.Name}");
+            }
+          
+            object CreateObject(Type type, ECM.IConfigurationSection childSection)
+            {
+                var instance = Activator.CreateInstance(type);
+                GetSetting(childSection, ref instance, childSection.Key);
+                return instance;
+            }
+
+            void SetValue(PropertyFieldInfo propertyFieldInfo, ECM.IConfigurationSection childSection, object instance)
+            {
+                if(childSection.Value is null)
+                {
+                    var convertedValue = CreateObject(propertyFieldInfo.ItemType, childSection);
+
+                    if (convertedValue is null) return;
+
+                    propertyFieldInfo.SetValue(instance, convertedValue);                                        
+                }
+                else
+                {
+                    var convertedValue = ConvertValue(propertyFieldInfo.ItemType,
+                                                        childSection.Value);
+
+                    if (convertedValue is null) return;
+
+                    propertyFieldInfo.SetValue(instance, convertedValue);
+                }
+            }
+
+            var children = findProp.GetChildren();
+            PropertyFieldInfo instanceProp = null;
+
+            try
+            {
+                if (newInstance is IList itemList)
+                {
+                    int idx = 0;
+                    string value;
+
+                    do
+                    {
+                        value = children.FirstOrDefault(k => k.Key == idx.ToString())?.Value;
+
+                        if (value is not null)
+                        {
+                            var convertedValue = ConvertValue(propType.GenericTypeArguments[0], value);
+                            if (convertedValue is not null)
+                                itemList.Add(convertedValue);
+                        }
+                        ++idx;
+                    }
+                    while (value != null);
+                }
+                else
+                {
+                    foreach (var child in children)
+                    {
+                        instanceProp = instanceProps.FirstOrDefault(p => p.Name == child.Key);
+                        if (instanceProp is null)
+                        {
+                            NotFoundSettingClassProps.Add(child.Path);
+                            continue;
+                        }
+                        SetValue(instanceProp, child, newInstance);
+                    }
+                }
+            }
+            catch(System.Exception ex)
+            {
+                var exceptionFldName = propName;
+                var exceptionType = propType;
+                if (instanceProp is not null)
+                {
+                    exceptionFldName += $":{instanceProp.Name}";
+                    exceptionType = instanceProp.ItemType;
+                }
+
+                throw new ArgumentException($"Invalid \"appsetting\" Property \"{exceptionFldName}\" of type {exceptionType.Name}", ex);
+            }
+
+            property = newInstance;
         }
+
+        public static List<string> NotFoundSettingClassProps { get; } = new List<string>();
 
         public int MaxDegreeOfParallelism = -1;
         public int WorkerThreads = -1;

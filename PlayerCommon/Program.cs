@@ -160,6 +160,13 @@ namespace PlayerCommon
                                     "Json Configuration Settings:",
                                     ignoreFldPropNames: "Instance");
 
+            if(Settings.NotFoundSettingClassProps.Any())
+            {
+                Logger.Instance.WarnFormat("AppSetting Properties were not matched to an actual config settings. They are: {0}",
+                                                string.Join(',', Settings.NotFoundSettingClassProps));
+                ConsoleDisplay.Console.WriteLine("Warning: unmatched appsetting properties found. Check log file...");
+            }
+
             System.Console.CancelKeyPress += Console_CancelKeyPress;
             Logger.Instance.OnLoggingEvent += Instance_OnLoggingEvent;
 

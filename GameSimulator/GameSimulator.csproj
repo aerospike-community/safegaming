@@ -42,7 +42,7 @@
     <Compile Include="..\PlayerCommon\PrefStat.cs" Link="PrefStat.cs" />
     <Compile Include="..\PlayerCommon\Progression.cs" Link="Progression.cs" />
     <Compile Include="..\PlayerCommon\Settings.cs" Link="Settings.cs" />
-    
+    <Compile Include="..\PlayerCommon\GlobalSuppressions.cs" Link="GlobalSuppressionsCommon.cs" />
   </ItemGroup>
 
   <ItemGroup>

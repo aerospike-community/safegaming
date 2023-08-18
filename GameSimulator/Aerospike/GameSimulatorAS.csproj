@@ -52,6 +52,7 @@
     <Compile Include="..\..\PlayerCommon\PrefStat.cs" Link="PrefStat.cs" />
     <Compile Include="..\..\PlayerCommon\Progression.cs" Link="Progression.cs" />
     <Compile Include="..\..\PlayerCommon\Settings.cs" Link="Settings.cs" />
+    <Compile Include="..\..\PlayerCommon\GlobalSuppressions.cs" Link="GlobalSuppressionsCommon.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,6 +75,7 @@
     <Compile Include="..\StateCountyDB.cs" Link="StateCountyDB.cs" />
     <Compile Include="..\UsedEmailCnt.cs" Link="UsedEmailCnt.cs" />
     <Compile Include="..\WagerResultTransactionSim.cs" Link="WagerResultTransactionSim.cs" />
+    <Compile Include="..\GlobalSuppressions.cs" Link="GlobalSuppressionsSim.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -14,7 +14,12 @@ namespace PlayerCommon
 {
     public partial class Program
     {
-        
+        public static Func<string, Settings> CreateAppSettingsInstance =
+            (appJsonFile) =>
+                string.IsNullOrEmpty(appJsonFile)
+                    ? new Settings()
+                    : new Settings(appJsonFile);
+
         private readonly static DateTime RunDateTime = DateTime.Now;
         private static readonly string CommandLineArgsString = null;
         private static bool DebugMode = false;
@@ -161,7 +166,7 @@ namespace PlayerCommon
                                     "Json Configuration Settings:",
                                     ignoreFldPropNames: "Instance");
 
-            void DumpSettingsNested(object instance, IEnumerable<PropertyFieldInfo> settingItems, int tabPos = 1)
+            static void DumpSettingsNested(object instance, IEnumerable<PropertyFieldInfo> settingItems, int tabPos = 1)
             {
                 foreach (var item in settingItems.Where(i => i.ItemType.IsClass
                                                                 && !i.IsStatic

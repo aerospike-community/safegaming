@@ -20,7 +20,6 @@ namespace PlayerCommon
         public static Action InitializationAction = () => { };
         public static Action PreConsoleDisplayAction = delegate { };
         public static Func<ConsoleDisplay, ConsoleDisplay, ConsoleDisplay, IDBConnectionSim> CreateDBConnection = null;
-        public static Func<string, SettingsSim> CreateAppSettingsInstance = delegate (string appJsonFile) { if (string.IsNullOrEmpty(appJsonFile)) return new SettingsSim(); else return new SettingsSim(appJsonFile); };
         public static Action PostConsoleDisplayAction = delegate { };
 
         static readonly string[] Games = new string[] { "Slots", "Roulette", "Roulette", "Slots", "Slots", "Roulette", "Roulette", "Slots", };

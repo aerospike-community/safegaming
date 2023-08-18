@@ -13,7 +13,7 @@ namespace PlayerCommon
                             WagerResultTransaction wager,
                             string timeZoneFormatWoZone)
         {
-            this.Id = Helpers.GetLongHash(Thread.CurrentThread.ManagedThreadId);
+            this.Id = Helpers.GetLongHash(Environment.CurrentManagedThreadId);
 
             var tsWoZone = wagerResult.Timestamp.UtcDateTime.ToString(timeZoneFormatWoZone);
 

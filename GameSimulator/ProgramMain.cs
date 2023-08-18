@@ -17,8 +17,11 @@ namespace PlayerCommon
 {
     public partial class Program
     {
-        internal static Action PreConsoleDisplayAction = delegate { };
-        internal static Func<ConsoleDisplay, ConsoleDisplay, ConsoleDisplay, IDBConnectionSim> CreateDBConnection = null;
+        public static Action InitializationAction = () => { };
+        public static Action PreConsoleDisplayAction = delegate { };
+        public static Func<ConsoleDisplay, ConsoleDisplay, ConsoleDisplay, IDBConnectionSim> CreateDBConnection = null;
+        public static Func<string, SettingsSim> CreateAppSettingsInstance = delegate (string appJsonFile) { if (string.IsNullOrEmpty(appJsonFile)) return new SettingsSim(); else return new SettingsSim(appJsonFile); };
+        public static Action PostConsoleDisplayAction = delegate { };
 
         static readonly string[] Games = new string[] { "Slots", "Roulette", "Roulette", "Slots", "Slots", "Roulette", "Roulette", "Slots", };
         static readonly ConcurrentBag<Task> LiveFireForgetTasks = new();
@@ -27,10 +30,13 @@ namespace PlayerCommon
         {
             #region Initialization
 
+            var settings = CreateAppSettingsInstance(null);
             var logFile = InitialazationLogs(args);
             InitialazationArguments(args, new ConsoleArgumentsSim(SettingsSim.Instance));
             InitialazationConfig();
             InitialazationEventPref();
+
+            InitializationAction?.Invoke();
 
             #endregion
 
@@ -433,7 +439,7 @@ namespace PlayerCommon
 
             startPlayerProcessingTime.Stop();
             ConsolePuttingDB.TaskEndAll();
-            dbConnection.Dispose();
+            dbConnection?.Dispose();
 
             var histogramOutput = WritePrefFiles();
             
@@ -441,7 +447,7 @@ namespace PlayerCommon
 
             var playerRate = (decimal)actualPlayersProcessed / (decimal)startPlayerProcessingTime.Elapsed.TotalSeconds;
 
-            Logger.Instance.Info($"PlayerGeneration Main End. Processed {actualPlayersProcessed} Players in {startPlayerProcessingTime.Elapsed} (rate {playerRate:###,##0.000} players/sec).");
+            Logger.Instance.Info($"{Common.Functions.Instance.ApplicationName} Main End. Processed {actualPlayersProcessed} Players in {startPlayerProcessingTime.Elapsed} (rate {playerRate:###,##0.000} players/sec).");
 
             Logger.Instance.Flush(5000);
 
@@ -455,6 +461,8 @@ namespace PlayerCommon
                                                    actualPlayersProcessed,
                                                    startPlayerProcessingTime.Elapsed,
                                                    playerRate);
+
+            PostConsoleDisplayAction?.Invoke();
 
             Terminate(histogramOutput, logFilePath);
 
@@ -649,7 +657,7 @@ namespace PlayerCommon
                 player.NewWagerResultTransaction(resultingWager);
 
                 await Intervention.Determine(player, resultingWager, dbConnection, token);
-                if (dbConnection.IncrementGlobalEnabled && SettingsSim.Instance.Config.GlobalIncremenIntervals > TimeSpan.Zero)
+                if ((dbConnection?.IncrementGlobalEnabled ?? false) && SettingsSim.Instance.Config.GlobalIncremenIntervals > TimeSpan.Zero)
                 {
                     await GlobalIncrement.AddUpdate(player,
                                                         resultingWager,
@@ -660,7 +668,7 @@ namespace PlayerCommon
                                                         token);
                 }
 
-                if (dbConnection.LiverWagerEnabled)
+                if (dbConnection?.LiverWagerEnabled ?? false)
                 {
                     if (SettingsSim.Instance.Config.LiveFireForgetTasks)
                         LiveFireForgetTasks.Add(dbConnection.UpdateLiveWager(player, resultingWager, wager, token));

@@ -33,6 +33,7 @@ namespace PlayerCommon
             {
                 Instance = this;
             }
+            this.AppJsonFile = appJsonFile;
 
             var configBuilderFile = ECM.JsonConfigurationExtensions.AddJsonFile(ConfigurationBuilder, appJsonFile);
             this.ConfigurationBuilderFile = configBuilderFile.Build();
@@ -383,6 +384,8 @@ namespace PlayerCommon
         }
 
         public static List<string> NotFoundSettingClassProps { get; } = new List<string>();
+
+        public string AppJsonFile { get; }
 
         public int MaxDegreeOfParallelism = -1;
         public int WorkerThreads = -1;

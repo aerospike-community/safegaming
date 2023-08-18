@@ -161,7 +161,32 @@ namespace PlayerCommon
                                     "Json Configuration Settings:",
                                     ignoreFldPropNames: "Instance");
 
-            if(Settings.NotFoundSettingClassProps.Any())
+            void DumpSettingsNested(object instance, IEnumerable<PropertyFieldInfo> settingItems, int tabPos = 1)
+            {
+                foreach (var item in settingItems.Where(i => i.ItemType.IsClass
+                                                                && !i.IsStatic
+                                                                && i.IsPublic
+                                                                && i.ItemType.Name.Contains("Settings")))
+                {
+                    Logger.Instance.Dump(item.GetValue(instance),
+                                            Logger.DumpType.Info,
+                                            item.Name,
+                                            ignoreFldPropNames: "Instance",
+                                            tabs: tabPos);
+                    if(item.ItemType.IsClass
+                        && item.ItemType.Name.Contains("Settings")) 
+                    {
+                        DumpSettingsNested(item.GetValue(instance),
+                                            new PropertyFieldInfoCollection(item.ItemType),
+                                            tabPos + 1);
+                    }
+                }
+            }
+
+            DumpSettingsNested(Settings.Instance,
+                                new PropertyFieldInfoCollection(Settings.Instance.GetType()));
+
+            if (Settings.NotFoundSettingClassProps.Any())
             {
                 Logger.Instance.WarnFormat("AppSetting Properties were not matched to an actual config settings. They are: {0}",
                                                 string.Join(',', Settings.NotFoundSettingClassProps));

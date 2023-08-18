@@ -83,6 +83,14 @@ namespace PlayerCommon
                 Description = "True to Ignore any Exceptions during an DB Operation (continue running and log fault))"
             });
 
+            this._cmdLineParser.Arguments.Add(new FileArgument("AppConfigJsonFile")
+            {
+                DefaultValue = new System.IO.FileInfo(appSettings.AppJsonFile),
+                Optional = true, //Required
+                FileMustExist = true,
+                Description = "The Application Configuration Json File"
+            });
+
             this._cmdLineParser.Arguments.Add(new SwitchArgument("Debug", false)
             {
                 Optional = true, //Required                
@@ -109,7 +117,12 @@ namespace PlayerCommon
             });
         }
 
-        public Settings AppSettings { get; }
+        public Settings AppSettings
+        {
+            get;
+            private set;
+        }
+
         public bool Debug
         {
             get;
@@ -204,6 +217,14 @@ namespace PlayerCommon
                         break;                    
                     case "IgnoreFaults":
                         this.AppSettings.IgnoreFaults = ((ValueArgument<bool>)item).Value;
+                        break;
+                    case "AppConfigJsonFile":
+                        var appConfigFile = ((FileArgument)item).Value;
+                        if(appConfigFile is not null
+                            && appConfigFile.FullName != this.AppSettings.AppJsonFile)
+                        {
+                            this.AppSettings = Program.CreateAppSettingsInstance(appConfigFile.FullName);
+                        }
                         break;
                     case "Debug":
                         this.Debug = true;

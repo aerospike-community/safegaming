@@ -50,23 +50,24 @@ namespace PlayerCommon
                 player.Metrics.Interventions++;
                 player.Session.InterventionType = "SOFT";
 
-                await dBConnection.UpdateIntervention(new Intervention(player.PlayerId,
-                                                                        player.Metrics.CLV,
-                                                                        player.Session.StartTimeStamp,
-                                                                        player.UseTime.Current,
-                                                                        "SOFT",
-                                                                        null,
-                                                                        "Heavy Session Losses",
-                                                                        player.Session.GGR,
-                                                                        wagerTrans.Game,
-                                                                        wagerTrans.BetType,
-                                                                        player.County,
-                                                                        player.CountryCode,
-                                                                        player.CountyFIPSCode,
-                                                                        player.State,
-                                                                        player.State,
-                                                                        wagerTrans.Id),
-                                                        token);
+                if(dBConnection is not null)
+                    await dBConnection.UpdateIntervention(new Intervention(player.PlayerId,
+                                                                            player.Metrics.CLV,
+                                                                            player.Session.StartTimeStamp,
+                                                                            player.UseTime.Current,
+                                                                            "SOFT",
+                                                                            null,
+                                                                            "Heavy Session Losses",
+                                                                            player.Session.GGR,
+                                                                            wagerTrans.Game,
+                                                                            wagerTrans.BetType,
+                                                                            player.County,
+                                                                            player.CountryCode,
+                                                                            player.CountyFIPSCode,
+                                                                            player.State,
+                                                                            player.State,
+                                                                            wagerTrans.Id),
+                                                            token);
             }
 
         }

@@ -24,6 +24,9 @@ namespace PlayerCommon
                                                     CancellationToken token,
                                                     bool forceRefresh = false)
         {
+            if(dbConnection is null)
+                return false;
+
             return await dbConnection.InterventionThresholdsRefreshCheck(Instance,
                                                                             token,
                                                                             forceRefresh);

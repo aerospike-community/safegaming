@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PlayerCommon
+namespace GameSimulator
 {
-    public sealed partial class DBConnection
+    public partial class DBConnection
     {
         public static readonly Type ClientDriverClass;
         public static readonly string ClientDriverName;

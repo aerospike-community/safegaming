@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayerCommon", "..\PlayerCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameSimulatorTests", "..\GameSimulatorTests\GameSimulatorTests.csproj", "{22751345-EEA3-4202-AA03-679B05467084}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameSimulatorAS", "Aerospike\GameSimulatorAS.csproj", "{C45DC3D6-73B8-4473-8750-63DBFC6DC251}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{22751345-EEA3-4202-AA03-679B05467084}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22751345-EEA3-4202-AA03-679B05467084}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22751345-EEA3-4202-AA03-679B05467084}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C45DC3D6-73B8-4473-8750-63DBFC6DC251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C45DC3D6-73B8-4473-8750-63DBFC6DC251}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C45DC3D6-73B8-4473-8750-63DBFC6DC251}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C45DC3D6-73B8-4473-8750-63DBFC6DC251}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

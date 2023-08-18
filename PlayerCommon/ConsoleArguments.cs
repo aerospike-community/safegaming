@@ -5,6 +5,7 @@ using System.Text;
 using Common;
 using CommandLineParser.Arguments;
 using System.Diagnostics.CodeAnalysis;
+using GameSimulator;
 
 namespace PlayerCommon
 {
@@ -235,7 +236,7 @@ namespace PlayerCommon
             return true;
         }
 
-        public void ThrowArgumentException([NotNull] Argument item)
+        public static void ThrowArgumentException([NotNull] Argument item)
         {
             throw new ArgumentException(string.Format("Do not know how to map {0} ({1}) to a setting!",
                                                                         item.LongName,

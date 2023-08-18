@@ -97,7 +97,7 @@ namespace GameSimulator
                         break;                    
                     default:
                         if(throwIfNotMpaaed)
-                            this.ThrowArgumentException(item);
+                            ConsoleArgumentsSim.ThrowArgumentException(item);
                         break;
                 }
             }

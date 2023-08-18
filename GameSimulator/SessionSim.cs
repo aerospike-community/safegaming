@@ -10,7 +10,7 @@ namespace PlayerCommon
 {
     public partial class Session
     {
-        static readonly Random TriggerRandom = new Random();
+        static readonly Random TriggerRandom = new();
 
         public Session(DateTimeOffset startTimeStamp,
                         Player player)

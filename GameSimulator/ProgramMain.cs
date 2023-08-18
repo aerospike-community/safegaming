@@ -21,7 +21,7 @@ namespace PlayerCommon
         internal static Func<ConsoleDisplay, ConsoleDisplay, ConsoleDisplay, IDBConnectionSim> CreateDBConnection = null;
 
         static readonly string[] Games = new string[] { "Slots", "Roulette", "Roulette", "Slots", "Slots", "Roulette", "Roulette", "Slots", };
-        static readonly ConcurrentBag<Task> LiveFireForgetTasks = new ConcurrentBag<Task>();
+        static readonly ConcurrentBag<Task> LiveFireForgetTasks = new();
 
         public async static Task Main(string[] args)
         {

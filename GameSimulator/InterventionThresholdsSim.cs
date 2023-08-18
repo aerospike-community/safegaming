@@ -12,8 +12,6 @@ namespace PlayerCommon
     public partial class InterventionThresholds
     {
         internal static InterventionThresholds Instance = null;
-        private static int Updating = 0;
-        private static long UpdateCnt = 0;
         
         private InterventionThresholds()
         {
@@ -27,9 +25,6 @@ namespace PlayerCommon
                                                     bool forceRefresh = false)
         {
             return await dbConnection.InterventionThresholdsRefreshCheck(Instance,
-                                                                            ref Instance,
-                                                                            ref Updating,
-                                                                            ref UpdateCnt,
                                                                             token,
                                                                             forceRefresh);
         }

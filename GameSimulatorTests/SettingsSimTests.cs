@@ -23,19 +23,19 @@ namespace GameSimulator.Tests
 
             public class TestSettingsCls1
             {                
-                public string? stringFld;
+                public string stringFld;
                 public int intFld;
                 public decimal decimalFld;
                 public double doubleFld;
                 public long longFld;
-                public List<int>? listInts;
+                public List<int> listInts;
                 public List<string> stringList;
                 public TestSettingsCls instanceTestSettings;
             }
 
             public class TestSettingsCls
             {
-                public string? stringFld;
+                public string stringFld;
                 public int intFld;
                 public decimal decimalFld;
                 public double doubleFld;

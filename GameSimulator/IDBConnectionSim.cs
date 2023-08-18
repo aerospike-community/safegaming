@@ -6,8 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using PlayerCommon;
 
-namespace PlayerCommon
+namespace GameSimulator
 {
     public interface IDBConnectionSim : IDBConnection
     {        
@@ -44,9 +45,6 @@ namespace PlayerCommon
                                                                     CancellationToken cancellationToken);
 
         Task<bool> InterventionThresholdsRefreshCheck(InterventionThresholds current,
-                                                        ref InterventionThresholds instance,
-                                                        ref int updating,
-                                                        ref long updateCnt,
                                                         CancellationToken token,
                                                         bool forceRefresh = false);
 

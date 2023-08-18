@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Aerospike\**" />
+    <EmbeddedResource Remove="Aerospike\**" />
+    <None Remove="Aerospike\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\PlayerCommon\Attributes.cs" Link="Attributes.cs" />
     <Compile Include="..\PlayerCommon\DateTimeSimulation.cs" Link="DateTimeSimulation.cs" />
     <Compile Include="..\PlayerCommon\DBConnection.cs" Link="DBConnection.cs" />
@@ -43,7 +49,7 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="county_gaming_database.json"/>
+    <Content Include="county_gaming_database.json" />
     <Content Include="state_database.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

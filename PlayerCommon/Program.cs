@@ -8,6 +8,7 @@ using Common.File;
 using System.Threading;
 using System.Data;
 using System.Diagnostics;
+using GameSimulator;
 
 namespace PlayerCommon
 {

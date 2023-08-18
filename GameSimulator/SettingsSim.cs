@@ -42,9 +42,7 @@ namespace GameSimulator
         public TimeSpan GlobalIncremenIntervals { get => new(0, 0, GlobalIncrementIntervalSecs); }
         public int InterventionThresholdsRefreshRateSecs = 300;
         public TimeSpan InterventionThresholdsRefreshRate { get => new(0, 0, InterventionThresholdsRefreshRateSecs); }
-
-        public int WarnMaxMSLatencyDBExceeded = 50;
-        public int WarnIfObjectSizeBytes = -1;
+        
         public int KeepNbrWagerResultTransActions = 10;
         public int KeepNbrFinTransActions = 2;
         public bool UpdateDB = true;
@@ -78,6 +76,6 @@ namespace GameSimulator
                                                 "GameSimulator");
         }
         
-        public GameSimulatorSettings Config = new GameSimulatorSettings();
+        public GameSimulatorSettings Config = new();
     }
 }

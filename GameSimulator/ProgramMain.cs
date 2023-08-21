@@ -77,6 +77,21 @@ namespace PlayerCommon
 
             ConsoleDisplay.Console.WriteLine("Ignore Faults: {0}", Settings.Instance.IgnoreFaults);
 
+
+            if (Settings.NotFoundSettingClassProps.Any())
+            {
+                var consoleColor1 = System.Console.ForegroundColor;
+                try
+                {
+                    System.Console.ForegroundColor = ConsoleColor.Red;
+                    ConsoleDisplay.Console.WriteLine("Warning: unmatched appsetting properties found. Check log file...");
+                }
+                finally
+                {
+                    System.Console.ForegroundColor = consoleColor1;
+                }                
+            }
+
             {
                 var currentTimeUTC = DateTimeOffset.UtcNow;
                 //Logger.Instance.InfoFormat("Start Time Local: {0} UTC: {1}",

@@ -232,15 +232,6 @@ namespace PlayerCommon
 
             property =  items;
         }
-
-        public readonly static JsonSerializerOptions jsonSerializerOptions = new()
-        {
-            IncludeFields = true,
-            UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-            //NumberHandling = JsonNumberHandling.AllowReadingFromString,
-            WriteIndented = true
-        };
         
         public static void GetSetting<T>(ECM.IConfiguration config, ref T property, string propName)
                             where T : new()
@@ -310,11 +301,20 @@ namespace PlayerCommon
             {
                 if(childSection.Value is null)
                 {
-                    var convertedValue = CreateObject(propertyFieldInfo.ItemType, childSection);
+                    var fndInstance = propertyFieldInfo.GetValue(instance);
 
-                    if (convertedValue is null) return;
+                    if (fndInstance is null)
+                    {
+                        var convertedValue = CreateObject(propertyFieldInfo.ItemType, childSection);
 
-                    propertyFieldInfo.SetValue(instance, convertedValue);                                        
+                        if (convertedValue is null) return;
+
+                        propertyFieldInfo.SetValue(instance, convertedValue);
+                    }
+                    else
+                    {
+                        GetSetting(childSection, ref fndInstance, childSection.Key);
+                    }
                 }
                 else
                 {
@@ -380,6 +380,10 @@ namespace PlayerCommon
 
             property = newInstance;
         }
+
+        public static void RemoveNotFoundSettingClassProps(IEnumerable<string> removeProps)
+                                => NotFoundSettingClassProps.RemoveAll(p => removeProps.Any(r => p.StartsWith(r)));
+        
 
         public static List<string> NotFoundSettingClassProps { get; } = new List<string>();
 

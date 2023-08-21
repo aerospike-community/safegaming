@@ -18,7 +18,7 @@ namespace PlayerCommon
         {
             this.AppSettings = appSettings;
 
-            this._cmdLineParser.ShowUsageOnEmptyCommandline = true;
+            this._cmdLineParser.ShowUsageOnEmptyCommandline = false;
             
             this._cmdLineParser.Arguments.Add(new ValueArgument<bool>("DetailTimings")
             {

@@ -156,11 +156,17 @@ namespace PlayerCommon
                 ConsoleDisplay.Console.WriteLine("CommandLine: '{0}'", CommandLineArgsString);
                 Common.ConsoleHelper.Prompt("Press Return to Exit", ConsoleColor.Gray, ConsoleColor.DarkRed);
                 return;
-            }        
+            }            
         }
 
         public static void InitialazationConfig()
         {
+            if (Settings.NotFoundSettingClassProps.Any())
+            {
+                Logger.Instance.WarnFormat("AppSetting Properties were not matched to an actual config settings. They are: {0}",
+                                                string.Join(',', Settings.NotFoundSettingClassProps));
+            }
+
             Logger.Instance.Dump(Settings.Instance,
                                     Logger.DumpType.Info,
                                     "Json Configuration Settings:",
@@ -194,14 +200,7 @@ namespace PlayerCommon
 
             DumpSettingsNested(Settings.Instance,
                                 new PropertyFieldInfoCollection(Settings.Instance.GetType()));
-
-            if (Settings.NotFoundSettingClassProps.Any())
-            {
-                Logger.Instance.WarnFormat("AppSetting Properties were not matched to an actual config settings. They are: {0}",
-                                                string.Join(',', Settings.NotFoundSettingClassProps));
-                ConsoleDisplay.Console.WriteLine("Warning: unmatched appsetting properties found. Check log file...");
-            }
-
+            
             System.Console.CancelKeyPress += Console_CancelKeyPress;
             Logger.Instance.OnLoggingEvent += Instance_OnLoggingEvent;
 

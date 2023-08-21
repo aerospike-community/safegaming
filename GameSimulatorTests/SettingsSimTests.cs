@@ -121,6 +121,10 @@ namespace GameSimulator.Tests
 
             Assert.AreEqual(1, PlayerCommon.Settings.NotFoundSettingClassProps.Count);
             Assert.AreEqual("TestSettings:NotValidProperty", PlayerCommon.Settings.NotFoundSettingClassProps.First());
+
+            PlayerCommon.Settings.RemoveNotFoundSettingClassProps(new List<string>() { "TestSettings:" });
+            Assert.AreEqual(0, PlayerCommon.Settings.NotFoundSettingClassProps.Count);
+
         }
     }
 }

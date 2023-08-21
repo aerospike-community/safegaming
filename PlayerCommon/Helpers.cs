@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,8 +29,17 @@ namespace PlayerCommon
             return path;
         }
 
+        public readonly static JsonSerializerOptions jsonSerializerOptions = new()
+        {
+            IncludeFields = true,
+            UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
+            DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+            //NumberHandling = JsonNumberHandling.AllowReadingFromString,
+            WriteIndented = true
+        };
+
         public static T FromJson<T>(string json, JsonSerializerOptions deserializerOptions = null)
-            => (T)JsonSerializer.Deserialize(json, typeof(T), deserializerOptions ?? Settings.jsonSerializerOptions);
+            => (T)JsonSerializer.Deserialize(json, typeof(T), deserializerOptions ?? jsonSerializerOptions);
 
         public static double GetRandomNumber(double minimum, double maximum, Random random = null)
         {

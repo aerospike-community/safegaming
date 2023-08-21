@@ -74,8 +74,13 @@ namespace GameSimulator
             PlayerCommon.Settings.GetSetting(this.ConfigurationBuilderFile,
                                                 ref this.Config,
                                                 "GameSimulator");
+#if MONGODB
+            PlayerCommon.Settings.RemoveNotFoundSettingClassProps(new List<string>() {"Aerospike:"});
+#else
+            PlayerCommon.Settings.RemoveNotFoundSettingClassProps(new List<string>() { "Mongodb:" });
+#endif
         }
-        
+
         public GameSimulatorSettings Config = new();
     }
 }

@@ -173,17 +173,21 @@ namespace PlayerCommon
                                                                 && i.IsPublic
                                                                 && i.ItemType.Name.Contains("Settings")))
                 {
-                    Logger.Instance.Dump(item.GetValue(instance),
-                                            Logger.DumpType.Info,
-                                            item.Name,
-                                            ignoreFldPropNames: "Instance",
-                                            tabs: tabPos);
-                    if(item.ItemType.IsClass
-                        && item.ItemType.Name.Contains("Settings")) 
+                    var itemValue = item.GetValue(instance);
+                    if (itemValue is not null)
                     {
-                        DumpSettingsNested(item.GetValue(instance),
-                                            new PropertyFieldInfoCollection(item.ItemType),
-                                            tabPos + 1);
+                        Logger.Instance.Dump(item.GetValue(instance),
+                                                Logger.DumpType.Info,
+                                                item.Name,
+                                                ignoreFldPropNames: "Instance",
+                                                tabs: tabPos);
+                        if (item.ItemType.IsClass
+                            && item.ItemType.Name.Contains("Settings"))
+                        {
+                            DumpSettingsNested(item.GetValue(instance),
+                                                new PropertyFieldInfoCollection(item.ItemType),
+                                                tabPos + 1);
+                        }
                     }
                 }
             }
@@ -338,7 +342,7 @@ namespace PlayerCommon
             return histogramOutput;
         }
 
-        public static void Terminate(string histogramOutput, string logFilePath)
+        public static void Terminate(string histogramOutput, string logFilePath, string errorTermination = null)
         {
             ConsoleDisplay.Console.SetReWriteToWriterPosition();
 
@@ -355,7 +359,7 @@ namespace PlayerCommon
             var consoleColor = System.Console.ForegroundColor;
             try
             {
-                if (ExceptionCount > 0)
+                if (!string.IsNullOrEmpty(errorTermination) || ExceptionCount > 0)
                     System.Console.ForegroundColor = ConsoleColor.Red;
                 else if (WarningCount > 0)
                     System.Console.ForegroundColor = ConsoleColor.Yellow;
@@ -363,8 +367,23 @@ namespace PlayerCommon
                     System.Console.ForegroundColor = ConsoleColor.Green;
 
                 ConsoleDisplay.Console.WriteLine(" ");
-                ConsoleDisplay.Console.WriteLine("Application Logs \"{0}\"", 
-                                                    Helpers.MakeRelativePath(logFilePath));
+
+                if(!string.IsNullOrEmpty(errorTermination))
+                {
+                    ConsoleDisplay.Console.WriteLine($"Application Terminated due to \"{errorTermination}\"...");
+                    ConsoleDisplay.Console.WriteLine(" ");
+                }
+
+                if (!string.IsNullOrEmpty(logFilePath))
+                {
+                    ConsoleDisplay.Console.WriteLine("Application Logs \"{0}\"",
+                                                        Helpers.MakeRelativePath(logFilePath));
+                }
+                else
+                {
+                    ConsoleDisplay.Console.WriteLine("Check Application Log file for detail results.");
+                }
+
                 ConsoleDisplay.Console.WriteLine(" ");
             }
             finally

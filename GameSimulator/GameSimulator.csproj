@@ -9,8 +9,15 @@
 
   <ItemGroup>
     <Compile Remove="Aerospike\**" />
+    <Compile Remove="Monogodb\**" />
     <EmbeddedResource Remove="Aerospike\**" />
+    <EmbeddedResource Remove="Monogodb\**" />
     <None Remove="Aerospike\**" />
+    <None Remove="Monogodb\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="App.config" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,14 +53,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="county_gaming_database.json" />
     <Content Include="state_database.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

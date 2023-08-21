@@ -23,13 +23,9 @@
       "commandName": "Project",
       "commandLineArgs": "--keys 10 --RealTime"
     },
-    "PG No Timers": {
+    "Debug": {
       "commandName": "Project",
-      "commandLineArgs": "--DisableTimings"
-    },
-    "PG TimingJson": {
-      "commandName": "Project",
-      "commandLineArgs": "--TimingJsonFile ./Timings.json"
+      "commandLineArgs": "--Debug"
     }
   }
 }

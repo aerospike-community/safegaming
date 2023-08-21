@@ -1,0 +1,117 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <Company>Aerospike</Company>
+    <Authors>Richard Andersen</Authors>
+    <Copyright>2022</Copyright>
+    <Title>SafeGaming Simulator Monogodb</Title>
+    <Version>1.2.4.0</Version>
+    <FileVersion>1.2.4.0</FileVersion>
+    <AssemblyVersion>1.2.4.0</AssemblyVersion>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>../../PlayerCommon/PlayerGeneration.snk</AssemblyOriginatorKeyFile> 
+    <RootNamespace>GameSimulator</RootNamespace>   
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CS8002</NoWarn>
+    <DefineConstants>$(DefineConstants);MONGODB</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;CS8002</NoWarn>
+    <DefineConstants>$(DefineConstants);MONGODB</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\PlayerCommon\DateTimeSimulation.cs" Link="DateTimeSimulation.cs" />
+    <Compile Include="..\..\PlayerCommon\DBConnection.cs" Link="DBConnection.cs" />
+    <Compile Include="..\..\PlayerCommon\FinTransaction.cs" Link="FinTransaction.cs" />
+    <Compile Include="..\..\PlayerCommon\Game.cs" Link="Game.cs" />
+    <Compile Include="..\..\PlayerCommon\GlobalIncrement.cs" Link="GlobalIncrement.cs" />
+    <Compile Include="..\..\PlayerCommon\intervention.cs" Link="intervention.cs" />
+    <Compile Include="..\..\PlayerCommon\InterventionThresholds.cs" Link="InterventionThresholds.cs" />
+    <Compile Include="..\..\PlayerCommon\LiveWager.cs" Link="LiveWager.cs" />
+    <Compile Include="..\..\PlayerCommon\Metrics.cs" Link="Metrics.cs" />
+    <Compile Include="..\..\PlayerCommon\Player.cs" Link="Player.cs" />
+    <Compile Include="..\..\PlayerCommon\PlayerHistory.cs" Link="PlayerHistory.cs" />
+    <Compile Include="..\..\PlayerCommon\PlayersTransHistory.cs" Link="PlayersTransHistory.cs" />
+    <Compile Include="..\..\PlayerCommon\Program.cs" Link="Program.cs" />
+    <Compile Include="..\..\PlayerCommon\ProgramCancel.cs" Link="ProgramCancel.cs" />
+    <Compile Include="..\..\PlayerCommon\ProgramConsole.cs" Link="ProgramConsole.cs" />
+    <Compile Include="..\..\PlayerCommon\ProgramErrorCancelHandling.cs" Link="ProgramErrorCancelHandling.cs" />
+    <Compile Include="..\..\PlayerCommon\Session.cs" Link="Session.cs" />
+    <Compile Include="..\..\PlayerCommon\WagerResultTransaction.cs" Link="WagerResultTransaction.cs" />
+
+    <Compile Include="..\..\PlayerCommon\ConsoleArguments.cs" Link="ConsoleArguments.cs" />
+    <Compile Include="..\..\PlayerCommon\GCMonitor.cs" Link="GCMonitor.cs" />
+    <Compile Include="..\..\PlayerCommon\Helpers.cs" Link="Helpers.cs" />
+    <Compile Include="..\..\PlayerCommon\IDBConnection.cs" Link="IDBConnection.cs" />
+    <Compile Include="..\..\PlayerCommon\Logger.cs" Link="Logger.cs" />
+    <Compile Include="..\..\PlayerCommon\PrefStat.cs" Link="PrefStat.cs" />
+    <Compile Include="..\..\PlayerCommon\Progression.cs" Link="Progression.cs" />
+    <Compile Include="..\..\PlayerCommon\Settings.cs" Link="Settings.cs" />
+    <Compile Include="..\..\PlayerCommon\GlobalSuppressions.cs" Link="GlobalSuppressionsCommon.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ConsoleArgumentsSim.cs" Link="ConsoleArgumentsSim.cs" />
+    <Compile Include="..\DateTimeHistory.cs" Link="DateTimeHistory.cs" />
+    <Compile Include="..\DateTimeRealTime.cs" Link="DateTimeRealTime.cs" />
+    <Compile Include="..\DateTimeSimulationSim.cs" Link="DateTimeSimulationSim.cs" />
+    <Compile Include="..\GameSim.cs" Link="GameSim.cs" />
+    <Compile Include="..\GlobalIncrementSim.cs" Link="GlobalIncrementSim.cs" />
+    <Compile Include="..\IDBConnectionSim.cs" Link="IDBConnectionSim.cs" />
+    <Compile Include="..\interventionSim.cs" Link="interventionSim.cs" />
+    <Compile Include="..\InterventionThresholdsSim.cs" Link="InterventionThresholdsSim.cs" />
+    <Compile Include="..\LiveWagerSim.cs" Link="LiveWagerSim.cs" />
+    <Compile Include="..\MetricsSim.cs" Link="MetricsSim.cs" />
+    <Compile Include="..\PlayerSim.cs" Link="PlayerSim.cs" />
+    <Compile Include="..\ProgramConsoleSim.cs" Link="ProgramConsoleSim.cs" />
+    <Compile Include="..\ProgramMain.cs" Link="ProgramMain.cs" />
+    <Compile Include="..\SessionSim.cs" Link="SessionSim.cs" />
+    <Compile Include="..\SettingsSim.cs" Link="SettingsSim.cs" />
+    <Compile Include="..\StateCountyDB.cs" Link="StateCountyDB.cs" />
+    <Compile Include="..\UsedEmailCnt.cs" Link="UsedEmailCnt.cs" />
+    <Compile Include="..\WagerResultTransactionSim.cs" Link="WagerResultTransactionSim.cs" />
+    <Compile Include="..\GlobalSuppressions.cs" Link="GlobalSuppressionsSim.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\county_gaming_database.json" Link="county_gaming_database.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\state_database.json" Link="state_database.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.20.0" />
+    <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
+    <PackageReference Include="Common.Console" Version="5.31.10" />
+    <PackageReference Include="Common.Functions" Version="5.31.10" />
+    <PackageReference Include="Common.Logger" Version="5.31.15" />
+    <PackageReference Include="Common.Path" Version="5.31.5" />
+    <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />
+    <PackageReference Include="Common.Patterns.Threading" Version="5.31.1" />
+    <PackageReference Include="Faker.Net" Version="2.0.154" />
+    <PackageReference Include="HdrHistogram" Version="2.5.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+  </ItemGroup>  
+
+  <ItemGroup>
+    <None Update="publishrelease-linux.sh">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

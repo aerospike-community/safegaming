@@ -39,9 +39,13 @@ namespace PlayerCommon
                     {
                         ConsoleDisplay.End();
                         //GCMonitor.GetInstance().StopGCMonitoring();
-                        Logger.Instance.Info("PlayerGeneration Main Ended from Fault or Canceled");
+                        Logger.Instance.Info($"{Common.Functions.Instance.ApplicationName} Main Ended from Fault or Canceled");
                         Logger.Instance.Flush(5000);
                         ConsoleDisplay.Console.SetReWriteToWriterPosition();
+
+                        var histOutputFile = WritePrefFiles();
+                        Terminate(histOutputFile, Logger.GetApplicationLogFile(), ex.GetType().Name);
+
                         Environment.Exit(-1);
                     }
                 }

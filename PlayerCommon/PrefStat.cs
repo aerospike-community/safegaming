@@ -9,7 +9,8 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.IO;
 using HdrHistogram;
-
+using Common;
+using System.Runtime.InteropServices;
 
 namespace PlayerCommon
 {
@@ -102,8 +103,33 @@ namespace PlayerCommon
 
                 if(CaptureType.HasFlag(CaptureTypes.Histogram))
                 {
-                    HdrHistogram.RecordValue(stopWatch.ElapsedTicks);
+                    HdrHistogramRecordValue(stopWatch.ElapsedTicks);                    
                 }
+            }
+        }
+
+        private static long MaxHdrHistogramTickErrorValue = Settings.Instance.HGHighestTickValue;
+        private static long MinHdrHistogramTickErrorValue = Settings.Instance.HGLowestTickValue;
+        private static int HdrHistogramTickErrorCnt = 0;
+        private static void HdrHistogramRecordValue(long elapsedTicks)
+        {
+            try
+            {
+                HdrHistogram.RecordValue(elapsedTicks);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                HdrHistogramTickErrorCnt++;
+                if (elapsedTicks > Interlocked.Read(ref MaxHdrHistogramTickErrorValue))
+                {
+                    Interlocked.Exchange(ref MaxHdrHistogramTickErrorValue, elapsedTicks);
+                    Logger.Instance.Warn($"HdrHistogram application setting \"HGHighestTickValue\" needs to be greater than {elapsedTicks:###,###,###,##0}. Error Cnt: {HdrHistogramTickErrorCnt}");
+                }
+                else if (elapsedTicks < Interlocked.Read(ref MinHdrHistogramTickErrorValue))
+                {
+                    Interlocked.Exchange(ref MinHdrHistogramTickErrorValue, elapsedTicks);
+                    Logger.Instance.Warn($"HdrHistogram application setting \"HGLowestTickValue\" needs to be less than {elapsedTicks:###,###,###,##0}. Error Cnt: {HdrHistogramTickErrorCnt}");
+                }               
             }
         }
 

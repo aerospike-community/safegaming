@@ -5,9 +5,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using ECM = Microsoft.Extensions.Configuration;
 using System.Linq;
-using System.Text.Json.Nodes;
 using System.Collections;
-using System.Xml;
 
 namespace PlayerCommon
 {

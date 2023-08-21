@@ -106,7 +106,7 @@ namespace PlayerCommon
                 ConsoleDisplay.Console.WriteLine("Unhandled Exception Message \"{0}\"", exTypeObj.Message);
             }
 
-            Logger.Instance.Info("PlayerGeneration Console Application Main Ended due to unhandled exception");
+            Logger.Instance.Info($"{Common.Functions.Instance.ApplicationName} Console Application Main Ended due to unhandled exception");
             Logger.Instance.Flush(5000);
 
             Environment.Exit(-1);

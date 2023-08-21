@@ -18,8 +18,6 @@ namespace PlayerCommon
             NextRefreshTime = DateTime.Now + SettingsSim.Instance.Config.InterventionThresholdsRefreshRate;
         }
         
-#pragma warning restore IDE1006 // Naming Styles
-
         public static async Task<bool> RefreshCheck(IDBConnectionSim dbConnection,
                                                     CancellationToken token,
                                                     bool forceRefresh = false)

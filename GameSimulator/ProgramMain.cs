@@ -676,6 +676,7 @@ namespace PlayerCommon
                     await GlobalIncrement.AddUpdate(player,
                                                         resultingWager,
                                                         SettingsSim.Instance.Config.GlobalIncremenIntervals,
+                                                        Settings.Instance.TimeZoneFormatWoZone,
                                                         dbConnection,
                                                         SettingsSim.Instance.Config.LiveFireForgetTasks 
                                                             ? LiveFireForgetTasks : null,

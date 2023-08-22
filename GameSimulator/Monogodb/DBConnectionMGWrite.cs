@@ -622,6 +622,7 @@ namespace GameSimulator
                                                 .SetOnInsert(t => t.County, glbIncr.County)
                                                 .SetOnInsert(t => t.CountyCode, glbIncr.CountyCode)
                                                 .Set(t => t.IntervalTimeStamp, glbIncr.IntervalTimeStamp)
+                                                .Set(t => t.IntervalUnixSecs, glbIncr.IntervalUnixSecs)
                                                 .Inc(t => t.GGR, glbIncr.GGR)
                                                 .Inc(t => t.Interventions, glbIncr.Interventions)
                                                 .Inc(t => t.Transactions, glbIncr.Transactions),
@@ -748,9 +749,10 @@ namespace GameSimulator
             if (!this.LiverWagerCollection.IsEmpty)
             {
                 var liveWager = new LiveWager(player,
+                                                SettingsSim.Instance.Config.GlobalIncremenIntervals,                                                
+                                                Settings.Instance.TimeZoneFormatWoZone,
                                                 wagerResult,
-                                                wager,
-                                                Settings.Instance.TimeZoneFormatWoZone);
+                                                wager);
                 var stopWatch = Stopwatch.StartNew();
 
                 await LiverWagerCollection.Collection

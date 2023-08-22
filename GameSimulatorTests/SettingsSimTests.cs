@@ -53,6 +53,7 @@ namespace GameSimulator.Tests
             }
 
             public TestSettingsCls instanceTestSettings;
+
         }
 
         [TestMethod()]

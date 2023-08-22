@@ -50,6 +50,10 @@ namespace PlayerCommon
         [BsonElement("process_time")]
         public DateTimeOffset IntervalTimeStamp { get; }
 
+        [JsonPropertyName("process_unixts")]
+        [BsonElement("process_unixts")]
+        public long IntervalUnixSecs{ get => this.IntervalTimeStamp.ToUnixTimeSeconds(); }
+
         [JsonPropertyName("state_code")]
         [BsonElement("state_code")]
         public string State { get; }

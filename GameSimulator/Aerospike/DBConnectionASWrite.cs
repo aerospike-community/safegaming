@@ -827,6 +827,7 @@ namespace GameSimulator
                                             ExpOperation.Write("interventions", interventionsExp, ExpWriteFlags.DEFAULT),
                                             ExpOperation.Write("trn_count", trn_countExp, ExpWriteFlags.DEFAULT),
                                             ExpOperation.Write("process_time", Exp.Build(Exp.Val(glbIncr.IntervalTimeStamp.ToString(Settings.Instance.TimeStampFormatString))), ExpWriteFlags.DEFAULT),
+                                            ExpOperation.Write("process_unixts", Exp.Build(Exp.Val(glbIncr.IntervalUnixSecs)), ExpWriteFlags.DEFAULT),
                                             ExpOperation.Write("state_code", Exp.Build(Exp.Val(glbIncr.State)), ExpWriteFlags.DEFAULT),
                                             ExpOperation.Write("county_code", Exp.Build(Exp.Val(glbIncr.CountyCode)), ExpWriteFlags.DEFAULT),
                                             ExpOperation.Write("county_name", Exp.Build(Exp.Val(glbIncr.County)), ExpWriteFlags.DEFAULT),
@@ -956,8 +957,7 @@ namespace GameSimulator
 
             return;
         }
-
-        private static string TimeZoneFormatWoZone = null;
+        
         public async Task UpdateLiveWager(Player player,
                                             WagerResultTransaction wagerResult,
                                             WagerResultTransaction wager,
@@ -977,9 +977,10 @@ namespace GameSimulator
 
                 var ts = wagerResult.Timestamp.ToString(Settings.Instance.TimeStampFormatString);
 
-                TimeZoneFormatWoZone ??= Settings.Instance.TimeStampFormatString.Replace('z', ' ').TrimEnd();
-
-                var tsWoZone = wagerResult.Timestamp.UtcDateTime.ToString(TimeZoneFormatWoZone);
+                var tsWoZone = wagerResult.Timestamp
+                                            .Round(SettingsSim.Instance.Config.GlobalIncremenIntervals, MidpointRounding.ToZero)
+                                            .UtcDateTime
+                                            .ToString(Settings.Instance.TimeZoneFormatWoZone);
                 var pk = Helpers.GetLongHash(Environment.CurrentManagedThreadId);
 
                 await this.Connection.Put(WritePolicy,
@@ -994,6 +995,7 @@ namespace GameSimulator
                                                     new Bin("risk_score", wagerResult.RiskScore),
                                                     new Bin("stake_amount", (double)wager.Amount),
                                                     new Bin("txn_ts", ts),
+                                                    new Bin("txn_unixts", wagerResult.Timestamp.ToUnixTimeSeconds()),
                                                     new Bin("win_amount",
                                                                 wagerResult.Type == WagerResultTransaction.Types.Win
                                                                     ? (double)wagerResult.Amount

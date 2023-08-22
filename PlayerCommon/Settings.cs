@@ -105,157 +105,49 @@ namespace PlayerCommon
 
             TimeEvents = !(string.IsNullOrEmpty(TimingJsonFile) && string.IsNullOrEmpty(TimingCSVFile));
         }
-
-        public static void GetSetting(ECM.IConfiguration config,
-                                            ref int property,
-                                            ref bool updatedProperty,
-                                            string propName)
-        {
-            var value = config[propName];
-
-            if (string.IsNullOrEmpty(value)) return;
-            
-            property = int.Parse(value);
-            updatedProperty = true;
-        }
-
-        public static void GetSetting(ECM.IConfiguration config,
-                                            ref long property,
-                                            ref bool updatedProperty,
-                                            string propName)
-        {
-            var value = config[propName];
-
-            if (string.IsNullOrEmpty(value)) return;
-
-            property = long.Parse(value);
-            updatedProperty = true;
-        }
-
-        public static void GetSetting(ECM.IConfiguration config,
-                                            ref bool property,
-                                            ref bool updatedProperty,
-                                            string propName)
-        {
-            var value = config[propName];
-
-            if (string.IsNullOrEmpty(value)) return;
-
-            property = bool.Parse(value);
-            updatedProperty = true;
-        }
-
-        public static void GetSetting(ECM.IConfiguration config,
-                                            ref string property,
-                                            ref bool updatedProperty,
-                                            string propName)
-        {
-            var value = config[propName];
-
-            if (string.IsNullOrEmpty(value)) return;
-
-            property = value;
-            updatedProperty = true;
-        }
-
-        public static void GetSetting(ECM.IConfiguration config, ref int property, string propName)
-        {
-            var value = config[propName];
-
-            if (string.IsNullOrEmpty(value)) return;
-
-            property = int.Parse(value);
-        }
-
-        public static void GetSetting(ECM.IConfiguration config, ref long property, string propName)
-        {
-            var value = config[propName];
-
-            if (string.IsNullOrEmpty(value)) return;
-
-            property = long.Parse(value);
-        }
-
-        public static void GetSetting(ECM.IConfiguration config, ref decimal property, string propName)
-        {
-            var value = config[propName];
-
-            if (string.IsNullOrEmpty(value)) return;
-
-            property = decimal.Parse(value);
-        }
-
-        public static void GetSetting(ECM.IConfiguration config, ref double property, string propName)
-        {
-            var value = config[propName];
-
-            if (string.IsNullOrEmpty(value)) return;
-
-            property = double.Parse(value);
-        }
-
-        public static void GetSetting(ECM.IConfiguration config, ref bool property, string propName)
-        {
-            var value = config[propName];
-
-            if (string.IsNullOrEmpty(value)) return;
-
-            property = bool.Parse(value);
-        }
-
+        
         public static void GetSetting(ECM.IConfiguration config, ref string property, string propName)
         {
-            var value = config[propName];
+            var configValue = config[propName];
 
-            if(value == null) return;
+            if(string.IsNullOrEmpty(configValue)
+                || configValue[0] == '#'
+                || configValue.ToLower() == "<ignore>") return;
+            
+            if (configValue.ToLower() == "<default>"
+                    || configValue.ToLower() == "<null>")
+                configValue = null;
+            else if (configValue.ToLower() == "<empty>")
+                configValue = string.Empty;
 
-            property = value == String.Empty ? null : value;
-        }
-
-        public static void GetSetting(ECM.IConfiguration config, ref List<string> property, string propName)
-        {
-            //{[OnlyTheseGamingStates:0, 1]}
-            string value;
-            var items = new List<string>();
-            int idx = 0;
-
-            do
-            {
-                value = config[$"{propName}:{idx++}"];
-
-                if (value != null)
-                    items.Add(value);
-            }
-            while (value != null);
-           
-            if (items.IsEmpty()) return;
-
-            property =  items;
+            property = configValue;
+            updatedProps.Add(propName);
         }
         
         public static void GetSetting<T>(ECM.IConfiguration config, ref T property, string propName)
                             where T : new()
         {
-            var findProp = config is ECM.IConfigurationSection configSection
-                                ? configSection
-                                : config.GetChildren().FirstOrDefault(x => x.Key == propName);
-
-            if(findProp is null) return;
-
-            var propType = property?.GetType() ?? typeof(T);
-            var instanceProps = TypeHelpers.GetPropertyFields(propType);
-            var newInstance = property is null ? (T)Activator.CreateInstance(propType) : property;
-            
             object ConvertValue(Type propertyType, string configValue)
             {
-                if(configValue is null) return null;
+                if (string.IsNullOrEmpty(configValue)) return null;
+
+                if (configValue[0] == '#') return null;
+                if (configValue.ToLower() == "<ignore>") return null;
+                if (configValue.ToLower() == "<default>")
+                {
+                    if (propertyType.IsValueType)
+                        return propertyType.GetDefaultValue();
+                    return "!<null>!";
+                }
+                if (configValue.ToLower() == "<null>") return "!<null>!";
 
                 if (propertyType == typeof(string))
                 {
+                    if (configValue.ToLower() == "<empty>")
+                        return string.Empty;
+
                     return configValue;
                 }
-
-                if (configValue == string.Empty) return null;
 
                 if (propertyType == typeof(DateTimeOffset))
                 {
@@ -265,12 +157,12 @@ namespace PlayerCommon
                 {
                     return TimeSpan.Parse(configValue);
                 }
-                else if(propertyType.IsEnum)
+                else if (propertyType.IsEnum)
                 {
                     return Enum.Parse(propertyType, configValue);
                 }
                 else if (propertyType.IsAssignableTo(typeof(IConvertible)))
-                {                    
+                {
                     if (propertyType == typeof(Int32))
                         return Convert.ToInt32(configValue);
                     else if (propertyType == typeof(Int16))
@@ -284,12 +176,52 @@ namespace PlayerCommon
                     else if (propertyType == typeof(bool))
                         return Convert.ToBoolean(configValue);
                     else if (propertyType == typeof(DateTime))
-                        return Convert.ToDateTime(configValue);                    
+                        return Convert.ToDateTime(configValue);
+
+                    return Convert.ChangeType(configValue, propertyType);
+                }
+
+                var underNllableType = Nullable.GetUnderlyingType(propertyType);
+
+                if (underNllableType is not null)
+                {
+                    return ConvertValue(underNllableType, configValue);
                 }
 
                 throw new NotImplementedException($"Cannot convert \"appsetting\" Property Type {propertyType.Name}");
             }
-          
+
+            if (typeof(T).IsValueType
+                || typeof(T).IsEnum
+                || Nullable.GetUnderlyingType(typeof(T)) is not null)
+            {
+                try
+                {
+                    var convertedValue = ConvertValue(typeof(T), config[propName]);
+
+                    if(convertedValue is null) return;
+                    if (convertedValue.Equals("!<null>!"))
+                        convertedValue = null;
+
+                    property = (T) convertedValue;                    
+                }
+                catch (System.Exception ex)
+                {                   
+                    throw new ArgumentException($"Invalid \"appsetting\" Property \"{propName}\" of type {typeof(T).Name}", ex);
+                }
+                return;
+            }
+
+            var findProp = config is ECM.IConfigurationSection configSection
+                                ? configSection
+                                : config.GetChildren().FirstOrDefault(x => x.Key == propName);
+
+            if(findProp is null) return;
+
+            var propType = property?.GetType() ?? typeof(T);
+            var instanceProps = TypeHelpers.GetPropertyFields(propType);
+            var newInstance = property is null ? (T)Activator.CreateInstance(propType) : property;
+                        
             object CreateObject(Type type, ECM.IConfigurationSection childSection)
             {
                 var instance = Activator.CreateInstance(type);
@@ -310,6 +242,7 @@ namespace PlayerCommon
                         if (convertedValue is null) return;
 
                         propertyFieldInfo.SetValue(instance, convertedValue);
+                        updatedProps.Add(childSection.Path);
                     }
                     else
                     {
@@ -322,8 +255,11 @@ namespace PlayerCommon
                                                         childSection.Value);
 
                     if (convertedValue is null) return;
+                    if(convertedValue.Equals("!<null>!"))
+                        convertedValue = null;
 
                     propertyFieldInfo.SetValue(instance, convertedValue);
+                    updatedProps.Add(childSection.Path);
                 }
             }
 
@@ -379,13 +315,16 @@ namespace PlayerCommon
             }
 
             property = newInstance;
+            updatedProps.Add(propName);
         }
 
         public static void RemoveNotFoundSettingClassProps(IEnumerable<string> removeProps)
                                 => NotFoundSettingClassProps.RemoveAll(p => removeProps.Any(r => p.StartsWith(r)));
         
 
-        public static List<string> NotFoundSettingClassProps { get; } = new List<string>();
+        public static List<string> NotFoundSettingClassProps { get; } = new();
+        private static readonly List<string> updatedProps = new();
+        public static IEnumerable<string> UpdatedProps { get =>  updatedProps; }
 
         public string AppJsonFile { get; }
 

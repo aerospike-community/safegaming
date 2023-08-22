@@ -15,11 +15,12 @@ namespace PlayerCommon
         public GlobalIncrement(Player player,
                                 WagerResultTransaction wagerTranx,
                                 DateTimeOffset intervalTimeStamp,
-                                long intervalUsed,
+                                TimeSpan intervalUsed,
+                                string tzFormatWoZone,
                                 string key = null)
         {
             this.IntervalTimeStamp = intervalTimeStamp;
-            this.IntervalUsed = intervalUsed;
+            this.IntervalUsed = (long) intervalUsed.TotalSeconds;
             this.State = this.StateName = player.State;
             this.County = player.County;
             this.CountyCode = player.CountyFIPSCode;
@@ -27,7 +28,11 @@ namespace PlayerCommon
             this.Interventions = wagerTranx.Intervention ? 1 : 0;
             this.Transactions = 1;
 
-            this.Key = key ?? GenerateKey(State, CountyCode, IntervalTimeStamp);
+            this.Key = key ?? GenerateKey(State,
+                                            CountyCode,
+                                            IntervalTimeStamp,
+                                            intervalUsed,
+                                            tzFormatWoZone);
         }
         
         public GlobalIncrement Increment(WagerResultTransaction wagerTransaction)
@@ -42,28 +47,30 @@ namespace PlayerCommon
 
         public static string GenerateKey(string state,
                                             int countyCode,
-                                            DateTimeOffset timestamp)
+                                            DateTimeOffset timestamp,
+                                            TimeSpan incrementInterval,
+                                            string tzFormatWoZone)
         {
-            return $"{state}|{countyCode}|{timestamp.ToString(Settings.Instance.TimeStampFormatString)}";
+            var ts = timestamp.UtcDateTime
+                                .Round(incrementInterval, MidpointRounding.ToZero)
+                                .ToString(tzFormatWoZone);
+
+            return $"{state}|{countyCode}|{ts}";
         }
 
         public async static Task AddUpdate(Player player,
                                             WagerResultTransaction wagerTrans,
                                             TimeSpan incrementInterval,
+                                            string tzFormatWoZone,
                                             IDBConnectionSim dBConnection,
-                                            ConcurrentBag<Task> livefireforgetCollection,
+                                            ConcurrentBag<Task> livefireforgetCollection,                                            
                                             System.Threading.CancellationToken token)
-        {
-            var intervalTS = wagerTrans.Timestamp.Round(incrementInterval, MidpointRounding.ToZero);
-            var glbKey = GlobalIncrement.GenerateKey(player.State,
-                                                        player.CountyFIPSCode,
-                                                        intervalTS);
-
+        {            
             var giInstance = new GlobalIncrement(player,
                                                     wagerTrans,
-                                                    intervalTS,
-                                                    (long)incrementInterval.TotalSeconds,
-                                                    glbKey);
+                                                    wagerTrans.Timestamp,
+                                                    incrementInterval,
+                                                    tzFormatWoZone);
 
             if (livefireforgetCollection is null)
             {

@@ -61,7 +61,7 @@ namespace PlayerCommon
         public string AggKey
         {
             get{
-                return $"{PlayerId}:{InterventionTimeStamp.ToString(Settings.Instance.TimeStampFormatString)}:{Type}";
+                return $"{PlayerId}:{InterventionTimeStamp.UtcDateTime.ToString(Settings.Instance.TimeZoneFormatWoZone)}:{Type}";
             }
         }
 
@@ -79,6 +79,10 @@ namespace PlayerCommon
         [JsonPropertyName("interv_time")]
         [BsonElement("interv_time")]
         public DateTimeOffset InterventionTimeStamp { get; }
+
+        [JsonPropertyName("interv_unixts")]
+        [BsonElement("interv_unixts")]
+        public long InterventionTimeStampUnixSecs { get => this.InterventionTimeStamp.ToUnixTimeSeconds(); }
 
         /// <summary>
         /// HARD/SOFT

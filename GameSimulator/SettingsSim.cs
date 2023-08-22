@@ -7,7 +7,7 @@ namespace GameSimulator
 {
     public partial class GameSimulatorSettings
     {
-        public bool LiveFireForgetTasks = true;
+        public bool LiveFireForgetTasks = false;
 
         public int NbrPlayers = 100;
         public int MinPlayerSessions = 1;
@@ -24,8 +24,8 @@ namespace GameSimulator
         public int BetweenBetTimeIntervalMaxSecs = 10;
         public int PlayTimeIntervalMinSecs = 6;
         public int PlayTimeIntervalMaxSecs = 10;
-        public string HistoricFromDate = "2022-06-01 00:00";
-        public string HistoricToDate = "Now";
+        public string HistoricFromDate = "Now";
+        public string HistoricToDate = "now";
         public bool? EnableRealtime = null;
 
         public int SleepBetweenTransMS = 0;

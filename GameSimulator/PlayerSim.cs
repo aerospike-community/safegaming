@@ -158,7 +158,7 @@ namespace PlayerCommon
                 this.NbrSessionsToday = 1;
             }
 
-            this.Session = new Session(this.UseTime.Current, this);
+            this.Session = new(this.UseTime.Current, this);
             this.Session.StartingBalance = this.Metrics.CurrentBalance;
             this.ActiveSession = true;
             this.Metrics.CurrentDay = Session.StartTimeStamp.Day;

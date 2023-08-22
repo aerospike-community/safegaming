@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 
 #if MONGODB
 using MongoDB.Bson.Serialization.Attributes;
@@ -65,7 +66,10 @@ namespace PlayerCommon
 		[BsonElement]
         public DateTimeOffset txn_ts { get; }
 
-		[BsonElement]
+        [BsonElement]
+        public long txn_unixts { get => this.txn_ts.ToUnixTimeSeconds(); }
+
+        [BsonElement]
         public decimal win_amount { get; }
 
 		[BsonElement]

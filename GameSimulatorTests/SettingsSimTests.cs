@@ -13,9 +13,78 @@ namespace GameSimulator.Tests
     {
         public class TestSettings : PlayerCommon.Settings
         {
-            public TestSettings(string appJsonFile = "appsettings.json")
+            public TestSettings(string appJsonFile = "appsettings.json", int testFuncInvoke = 0)
             : base(appJsonFile)
             {
+                if(testFuncInvoke == 1)
+                    PlayerCommon.Settings.AddFuncPathAction("TestSettings:testSettingsCls:instanceTestSettings",
+                        (config, propName, propType, prop, propParent) =>
+                        {
+                            Assert.IsNotNull(config);
+                            Assert.IsNotNull(propName);
+                            Assert.IsNotNull(propType);
+                            Assert.IsNotNull(propParent);
+                            Assert.IsInstanceOfType(propParent, typeof(TestSettingsCls1));
+                            Assert.AreEqual(typeof(TestSettingsCls), propType);
+                            Assert.AreEqual("instanceTestSettings", propName);
+                            Assert.IsNull(prop);
+
+                            return (prop, InvokePathActions.Ignore);
+                        });
+                else if (testFuncInvoke == 2)
+                    PlayerCommon.Settings.AddFuncPathAction("TestSettings:testSettingsCls:instanceTestSettings",
+                        (config, propName, propType, prop, propParent) =>
+                        {
+                            Assert.IsNotNull(config);
+                            Assert.IsNotNull(propName);
+                            Assert.IsNotNull(propType);
+                            Assert.IsNotNull(propParent);
+                            Assert.IsInstanceOfType(propParent, typeof(TestSettingsCls1));
+                            Assert.AreEqual(typeof(TestSettingsCls), propType);
+                            Assert.AreEqual("instanceTestSettings", propName);
+                            Assert.IsNull(prop);
+
+                            var newInstance = new TestSettingsCls();
+
+                            newInstance.invoke2 = "Invoke2";
+
+                            return (newInstance, InvokePathActions.Update);                            
+                        });
+                else if (testFuncInvoke == 3)
+                    PlayerCommon.Settings.AddFuncPathAction("TestSettings:testSettingsCls:instanceTestSettings",
+                        (config, propName, propType, prop, propParent) =>
+                        {
+                            Assert.IsNotNull(config);
+                            Assert.IsNotNull(propName);
+                            Assert.IsNotNull(propType);
+                            Assert.AreEqual(typeof(TestSettingsCls), propType);
+                            Assert.AreEqual("instanceTestSettings", propName);
+
+                            if (prop is not null)
+                            {
+                                Assert.IsNull(propParent);
+
+                                Assert.IsInstanceOfType(prop, typeof(TestSettingsCls));
+                                Assert.AreEqual("Invoke3", ((TestSettingsCls)prop).invoke3);
+                                Assert.IsNull(((TestSettingsCls)prop).invoke2);
+                                Assert.IsNull(((TestSettingsCls)prop).invoke1);
+                                Assert.IsNull(((TestSettingsCls)prop).invoke4);
+                            }
+                            else
+                            {
+                                Assert.IsNotNull(propParent);
+                                Assert.IsInstanceOfType(propParent, typeof(TestSettingsCls1));
+
+                                var newInstance = new TestSettingsCls();
+
+                                newInstance.invoke3 = "Invoke3";
+
+                                return (newInstance, InvokePathActions.ContinueAndUseValue);
+                            }
+                            return (prop, InvokePathActions.ContinueAndUseValue);
+                        });
+
+
                 PlayerCommon.Settings.GetSetting(this.ConfigurationBuilderFile,
                                                     ref this.instanceTestSettings,
                                                     "TestSettings");
@@ -50,6 +119,10 @@ namespace GameSimulator.Tests
                 public TestSettingsCls1 testSettingsCls;
 
                 public bool boolFld;
+                public string invoke1;
+                public string invoke2;
+                public string invoke3;
+                public string invoke4;
             }
 
             public TestSettingsCls instanceTestSettings;
@@ -62,7 +135,8 @@ namespace GameSimulator.Tests
             var testAppSettingSim = new SettingsSim("appSettings1.json");
 
             Assert.IsNotNull(testAppSettingSim);
-            
+            Assert.IsTrue(testAppSettingSim.IgnoreFaults);
+
             var testAppSetting2 = new TestSettings("appSettings2.json");
 
             Assert.AreEqual(-1, testAppSetting2.MaxDegreeOfParallelism);
@@ -125,6 +199,52 @@ namespace GameSimulator.Tests
 
             PlayerCommon.Settings.RemoveNotFoundSettingClassProps(new List<string>() { "TestSettings:" });
             Assert.AreEqual(0, PlayerCommon.Settings.NotFoundSettingClassProps.Count);
+
+            Assert.IsNull(testAppSetting2.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke1);
+            Assert.IsNull(testAppSetting2.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke2);
+            Assert.IsNull(testAppSetting2.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke3);
+            Assert.IsNull(testAppSetting2.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke4);
+
+            var testAppSetting2Invoke1 = new TestSettings("appSettings2.json", 1);
+
+            Assert.IsNull(testAppSetting2Invoke1.instanceTestSettings.testSettingsCls.instanceTestSettings);
+            
+            var testAppSetting2Invoke2 = new TestSettings("appSettings2.json", 2);
+
+            Assert.IsNotNull(testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings);
+
+            Assert.IsNull(testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke1);
+            Assert.AreEqual("Invoke2", testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke2);
+            Assert.IsNull(testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke3);
+            Assert.IsNull(testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke4);
+
+            Assert.IsNull(testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.stringFld);
+            Assert.AreEqual(0, testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.intFld);
+            Assert.AreEqual(0m, testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.decimalFld);
+            Assert.AreEqual(0d, testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.doubleFld);
+            Assert.AreEqual(0, testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.longFld);
+            Assert.IsNull(testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.listInts);
+            Assert.IsNull(testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.stringList);
+
+
+            var testAppSetting2Invoke3 = new TestSettings("appSettings2.json", 3);
+
+            Assert.IsNotNull(testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings);
+
+            Assert.IsNull(testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke1);
+            Assert.AreEqual("Invoke3", testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke3);
+            Assert.IsNull(testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke2);
+            Assert.IsNull(testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.invoke4);
+
+            Assert.AreEqual("lmnop", testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.stringFld);
+            Assert.AreEqual(3, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.intFld);
+            Assert.AreEqual(890.123m, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.decimalFld);
+            Assert.AreEqual(101.234d, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.doubleFld);
+            Assert.AreEqual(89012, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.longFld);
+            CollectionAssert.AreEquivalent(new List<int>() { 9, 0, 1, 0 }, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.listInts);
+            CollectionAssert.AreEquivalent(new List<string>() { "g", "h", "i" }, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.stringList);
+
+
 
         }
     }

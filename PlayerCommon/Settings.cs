@@ -447,8 +447,20 @@ namespace PlayerCommon
         /// </summary>
         public static readonly List<KeyValuePair<string, Func<ECM.IConfiguration, string, Type, object, object, (object,InvokePathActions)>>> PathActions = new();
 
+        public static int RemoveFuncPathAction(string path)
+                            => PathActions.RemoveAll(kvp => kvp.Key == path
+                                                            || (path[0] == '*'
+                                                                    && kvp.Key.Remove('*').EndsWith(path[1..]))
+                                                            || (path.Last() == '*'
+                                                                    && kvp.Key.Remove('*').EndsWith(path[..^1])));        
+
         public static void AddFuncPathAction(string path, Func<ECM.IConfiguration, string, Type, object, object, (object, InvokePathActions)> action)
-                            => PathActions.Add(new KeyValuePair<string, Func<ECM.IConfiguration, string, Type, object, object, (object, InvokePathActions)>>(path, action));
+        {
+            RemoveFuncPathAction(path);
+
+            PathActions.Add(new KeyValuePair<string, Func<ECM.IConfiguration, string, Type, object, object, (object, InvokePathActions)>>(path, action));
+        }
+
         [Flags]
         public enum InvokePathActions
         {

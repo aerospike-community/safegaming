@@ -123,6 +123,116 @@ namespace PlayerCommon
             return strValue;            
         }
 
+        public static object SettingConvertValue(Type propertyType, string configValue)
+        {
+
+            if (string.IsNullOrEmpty(configValue))
+                return null;
+
+            {
+                var checkedValue = CheckSpecialValue(configValue);
+
+                if (checkedValue is null) return null;
+                if (checkedValue == ConfigNullValue)
+                    configValue = null;
+            }
+
+            if (propertyType == typeof(string))
+                return configValue;
+
+            if (propertyType == typeof(DateTimeOffset))
+            {
+                return DateTimeOffset.Parse(configValue);
+            }
+            else if (propertyType == typeof(TimeSpan))
+            {
+                return TimeSpan.Parse(configValue);
+            }
+            else if (propertyType.IsEnum)
+            {
+                return Enum.Parse(propertyType, configValue);
+            }
+            else if (propertyType.IsAssignableTo(typeof(IConvertible)))
+            {
+                if (propertyType == typeof(Int32))
+                    return Convert.ToInt32(configValue);
+                else if (propertyType == typeof(Int16))
+                    return Convert.ToInt16(configValue);
+                else if (propertyType == typeof(Int64))
+                    return Convert.ToInt64(configValue);
+                else if (propertyType == typeof(Decimal))
+                    return Convert.ToDecimal(configValue);
+                else if (propertyType == typeof(Double))
+                    return Convert.ToDouble(configValue);
+                else if (propertyType == typeof(bool))
+                    return Convert.ToBoolean(configValue);
+                else if (propertyType == typeof(DateTime))
+                    return Convert.ToDateTime(configValue);
+
+                return Convert.ChangeType(configValue, propertyType);
+            }
+
+            var underNllableType = Nullable.GetUnderlyingType(propertyType);
+
+            if (underNllableType is not null)
+            {
+                return SettingConvertValue(underNllableType, configValue);
+            }
+
+            throw new NotImplementedException($"Cannot convert \"appsetting\" Property Type {propertyType.Name}");
+        }
+
+        public static (object value, bool handled) SettingConvertValueType(Type propertyType,
+                                                            ECM.IConfiguration config,
+                                                            string value,
+                                                            string fullPath,
+                                                            string propName,
+                                                            bool noTypeCheck = false)
+        {
+
+            if (noTypeCheck
+                || propertyType.IsValueType
+                || propertyType.IsEnum
+                || propertyType == typeof(string)
+                || Nullable.GetUnderlyingType(propertyType) is not null)
+            {
+                try
+                {
+                    var funcActions = InvokeFuncPathAction(fullPath,
+                                                            config,
+                                                            propName,
+                                                            propertyType,
+                                                            value);
+                    switch (funcActions.actions)
+                    {
+                        case InvokePathActions.ContinueAndUseValue:
+                        case InvokePathActions.Update:
+                            return (funcActions.value, true);
+                        case InvokePathActions.Ignore:
+                            return (null, false);
+                        default:
+                            break;
+                    }
+
+                    value = CheckSpecialValue(value);
+
+                    if (value is null) return (null, false);
+                    if (value == ConfigNullValue)
+                    {
+                        return (propertyType.GetDefaultValue(), true);
+                    }
+
+                    return (SettingConvertValue(propertyType, value), true);
+                }
+                catch (System.Exception ex)
+                {
+                    throw new ArgumentException($"Invalid \"appsetting\" Property \"{fullPath ?? propName}\" of type {propertyType.Name} with value \"{value}\"", ex);
+                }
+
+            }
+            return (null, false);
+        }
+
         public static void GetSetting(ECM.IConfiguration config, ref string property, string propName)
         {
             var value = config[propName];
@@ -157,119 +267,9 @@ namespace PlayerCommon
         
         public static void GetSetting<T>(ECM.IConfiguration config, ref T property, string propName, string fullPath = null)
                             where T : new()
-        {
-            object ConvertValue(Type propertyType, string configValue)
+        {          
             {
-                
-                if (string.IsNullOrEmpty(configValue))
-                    return null;
-
-                {
-                    var checkedValue = CheckSpecialValue(configValue);
-
-                    if (checkedValue is null) return null;
-                    if (checkedValue == ConfigNullValue)
-                        configValue = null;
-                }
-
-                if (propertyType == typeof(string))                                    
-                    return configValue;
-
-                if (propertyType == typeof(DateTimeOffset))
-                {
-                    return DateTimeOffset.Parse(configValue);
-                }
-                else if (propertyType == typeof(TimeSpan))
-                {
-                    return TimeSpan.Parse(configValue);
-                }
-                else if (propertyType.IsEnum)
-                {
-                    return Enum.Parse(propertyType, configValue);
-                }
-                else if (propertyType.IsAssignableTo(typeof(IConvertible)))
-                {
-                    if (propertyType == typeof(Int32))
-                        return Convert.ToInt32(configValue);
-                    else if (propertyType == typeof(Int16))
-                        return Convert.ToInt16(configValue);
-                    else if (propertyType == typeof(Int64))
-                        return Convert.ToInt64(configValue);
-                    else if (propertyType == typeof(Decimal))
-                        return Convert.ToDecimal(configValue);
-                    else if (propertyType == typeof(Double))
-                        return Convert.ToDouble(configValue);
-                    else if (propertyType == typeof(bool))
-                        return Convert.ToBoolean(configValue);
-                    else if (propertyType == typeof(DateTime))
-                        return Convert.ToDateTime(configValue);
-
-                    return Convert.ChangeType(configValue, propertyType);
-                }
-
-                var underNllableType = Nullable.GetUnderlyingType(propertyType);
-
-                if (underNllableType is not null)
-                {
-                    return ConvertValue(underNllableType, configValue);
-                }
-
-                throw new NotImplementedException($"Cannot convert \"appsetting\" Property Type {propertyType.Name}");
-            }
-
-            (object value, bool handled) ConvertValueType(Type propertyType,
-                                                            ECM.IConfiguration config,
-                                                            string value,
-                                                            string fullPath,
-                                                            string propName,
-                                                            bool noTypeCheck = false)
-            {
-
-                if (noTypeCheck
-                    || propertyType.IsValueType
-                    || propertyType.IsEnum
-                    || propertyType == typeof(string)
-                    || Nullable.GetUnderlyingType(propertyType) is not null)
-                {                    
-                    try
-                    {
-                        var funcActions = InvokeFuncPathAction(fullPath,
-                                                                config,
-                                                                propName,
-                                                                propertyType,
-                                                                value);
-                        switch (funcActions.actions)
-                        {
-                            case InvokePathActions.ContinueAndUseValue:
-                            case InvokePathActions.Update:
-                                return (funcActions.value, true);                                
-                            case InvokePathActions.Ignore:
-                                return (null, false);
-                            default:
-                                break;
-                        }
-
-                        value = CheckSpecialValue(value);
-
-                        if (value is null) return (null, false);
-                        if (value == ConfigNullValue)
-                        {
-                            return (propertyType.GetDefaultValue(), true);
-                        }
-
-                        return (ConvertValue(propertyType, value), true);
-                    }
-                    catch (System.Exception ex)
-                    {
-                        throw new ArgumentException($"Invalid \"appsetting\" Property \"{fullPath ?? propName}\" of type {propertyType.Name} with value \"{value}\"", ex);
-                    }
-
-                }
-                return (null, false);
-            }
-
-            {
-                var checkValueType = ConvertValueType(typeof(T),
+                var checkValueType = SettingConvertValueType(typeof(T),
                                                         config,
                                                         config[propName],
                                                         fullPath,
@@ -357,7 +357,7 @@ namespace PlayerCommon
                 }
                 else
                 {
-                    var checkValueType = ConvertValueType(propertyFieldInfo.ItemType,
+                    var checkValueType = SettingConvertValueType(propertyFieldInfo.ItemType,
                                                             childSection,
                                                             childSection.Value,
                                                             childSection.Path,
@@ -387,7 +387,7 @@ namespace PlayerCommon
 
                         if (value is not null)
                         {
-                            var convertedValue = ConvertValue(propType.GenericTypeArguments[0], value);
+                            var convertedValue = SettingConvertValue(propType.GenericTypeArguments[0], value);
                             if (convertedValue is not null)
                                 itemList.Add(convertedValue);
                         }

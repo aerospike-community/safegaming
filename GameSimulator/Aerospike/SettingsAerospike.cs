@@ -41,4 +41,12 @@ namespace GameSimulator
 
         public AerospikeSettings Aerospike;
     }
+
+    partial class SettingsSim
+    {
+        static SettingsSim()
+        {
+            RemoveFromNotFoundSettings.Add("Mongodb:");
+        }
+    }
 }

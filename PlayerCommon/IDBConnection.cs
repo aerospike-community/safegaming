@@ -17,6 +17,7 @@ namespace PlayerCommon
         bool UsedEmailCntEnabled { get; }
         bool IncrementGlobalEnabled { get; }
         bool LiverWagerEnabled { get; }
+        bool InterventionEnabled { get; }
 
     }
     

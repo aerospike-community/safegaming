@@ -5,7 +5,6 @@ using System.Text;
 using Common;
 using CommandLineParser.Arguments;
 using System.Diagnostics.CodeAnalysis;
-using GameSimulator;
 
 namespace PlayerCommon
 {

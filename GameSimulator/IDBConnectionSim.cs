@@ -6,9 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using PlayerCommon;
 
-namespace GameSimulator
+namespace PlayerCommon
 {
     public interface IDBConnectionSim : IDBConnection
     {        

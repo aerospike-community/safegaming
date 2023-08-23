@@ -1,0 +1,90 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <Company>Aerospike</Company>
+    <Authors>Richard Andersen</Authors>
+    <Copyright>2023</Copyright>
+    <Title>SafeGaming Dash Board Aerospike</Title>
+    <Version>1.2.4.0</Version>
+    <FileVersion>1.2.4.0</FileVersion>
+    <AssemblyVersion>1.2.4.0</AssemblyVersion>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>../../PlayerCommon/PlayerGeneration.snk</AssemblyOriginatorKeyFile> 
+    <RootNamespace>GameDashBoard</RootNamespace>   
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CS8002</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;CS8002</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\PlayerCommon\Attributes.cs" Link="Attributes.cs" />
+    <Compile Include="..\..\PlayerCommon\DBConnection.cs" Link="DBConnection.cs" />
+    <Compile Include="..\..\PlayerCommon\GlobalIncrement.cs" Link="GlobalIncrement.cs" />
+    <Compile Include="..\..\PlayerCommon\intervention.cs" Link="intervention.cs" />
+    <Compile Include="..\..\PlayerCommon\LiveWager.cs" Link="LiveWager.cs" />
+    <Compile Include="..\..\PlayerCommon\Program.cs" Link="Program.cs" />
+    <Compile Include="..\..\PlayerCommon\ProgramCancel.cs" Link="ProgramCancel.cs" />
+    <Compile Include="..\..\PlayerCommon\ProgramConsole.cs" Link="ProgramConsole.cs" />
+    <Compile Include="..\..\PlayerCommon\ProgramErrorCancelHandling.cs" Link="ProgramErrorCancelHandling.cs" />
+    
+    <Compile Include="..\..\PlayerCommon\ConsoleArguments.cs" Link="ConsoleArguments.cs" />
+    <Compile Include="..\..\PlayerCommon\GCMonitor.cs" Link="GCMonitor.cs" />
+    <Compile Include="..\..\PlayerCommon\Helpers.cs" Link="Helpers.cs" />
+    <Compile Include="..\..\PlayerCommon\IDBConnection.cs" Link="IDBConnection.cs" />
+    <Compile Include="..\..\PlayerCommon\Logger.cs" Link="Logger.cs" />
+    <Compile Include="..\..\PlayerCommon\PrefStat.cs" Link="PrefStat.cs" />
+    <Compile Include="..\..\PlayerCommon\Progression.cs" Link="Progression.cs" />
+    <Compile Include="..\..\PlayerCommon\Settings.cs" Link="Settings.cs" />
+    <Compile Include="..\..\PlayerCommon\GlobalSuppressions.cs" Link="GlobalSuppressionsCommon.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\GameSimulator\Aerospike\DBConnectionAerospike.cs" Link="DBConnectionAerospike.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ConsoleArgumentsGDB.cs" Link="ConsoleArgumentsGDB.cs" />
+    <Compile Include="..\IDBConnectionGDB.cs" Link="IDBConnectionGDB.cs" />
+    <Compile Include="..\Player.cs" Link="Player.cs" />
+    <Compile Include="..\ProgramMain.cs" Link="ProgramMain.cs" />
+    <Compile Include="..\ProgramGDB.cs" Link="ProgramGDB.cs" />
+    <Compile Include="..\SettingsGDB.cs" Link="SettingsGDB.cs" />
+    <Compile Include="..\GlobalSuppressions.cs" Link="GlobalSuppressionsGDB.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>    
+    <Content Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aerospike.Client" Version="6.0.1" />
+    <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
+    <PackageReference Include="Common.Console" Version="5.31.10" />
+    <PackageReference Include="Common.Functions" Version="5.31.10" />
+    <PackageReference Include="Common.Logger" Version="5.31.15" />
+    <PackageReference Include="Common.Path" Version="5.31.5" />
+    <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />
+    <PackageReference Include="Common.Patterns.Threading" Version="5.31.1" />
+    <PackageReference Include="HdrHistogram" Version="2.5.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+  </ItemGroup>  
+
+  <ItemGroup>
+    <None Update="publishrelease-linux.sh">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -4,11 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
-using Common.File;
-using System.Threading;
-using System.Data;
 using System.Diagnostics;
-using GameSimulator;
+using System.Threading;
 
 namespace PlayerCommon
 {
@@ -24,9 +21,7 @@ namespace PlayerCommon
         private static readonly string CommandLineArgsString = null;
         private static bool DebugMode = false;
 
-#pragma warning disable CS0414, IDE0052 
         private static bool SyncMode = false;
-#pragma warning restore CS0414, IDE0052
 
         /// <summary>
         /// 

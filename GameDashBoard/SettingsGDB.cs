@@ -6,7 +6,43 @@ using System.Threading.Tasks;
 
 namespace GameDashBoard
 {
-    internal class SettingsGDB
+    public partial class GameDashBoardSettings
     {
+        public bool ReadDB = true;
+        public bool CreateIdxs = true;
+        public bool UseIdxs = true;
+
+        public List<string> OnlyPlayerIds;
+        public List<string> OnlyStateCounties;
+        public int NumberOfDashboardSessions;
+        public int SessionRefreshRateSecs;
+        public int MaxNbrTransPerSession;
+        public int MinNbrTransPerSession;
+        public int SleepBetweenTransMS;
+
+        public DateTimeOffset StartDate = DateTimeOffset.Now;
+        public bool ContinuousSessions;
+    }
+
+    public partial class SettingsGDB : PlayerCommon.Settings
+    {
+        public new static SettingsGDB Instance
+        {
+            get => (SettingsGDB)PlayerCommon.Settings.Instance;
+        }
+
+        public static List<string> RemoveFromNotFoundSettings = new List<string>();
+
+        public SettingsGDB(string appJsonFile = "appsettings.json")
+            : base(appJsonFile)
+        {
+
+            PlayerCommon.Settings.GetSetting(this.ConfigurationBuilderFile,
+                                                ref this.Config,
+                                                "GameDashBoard");
+            PlayerCommon.Settings.RemoveNotFoundSettingClassProps(RemoveFromNotFoundSettings);
+        }
+
+        public GameDashBoardSettings Config = new();
     }
 }

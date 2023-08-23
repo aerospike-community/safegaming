@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Aerospike.Client;
-using PlayerCommon;
+using GameSimulator;
 
-namespace GameSimulator
+namespace PlayerCommon
 {
     partial class DBConnection : IDBConnectionSim
     {

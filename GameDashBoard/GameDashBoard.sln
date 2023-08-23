@@ -5,6 +5,10 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameDashBoard", "GameDashBoard.csproj", "{0B69F727-CF02-40BA-A88C-72B5D7D11311}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayerCommon", "..\PlayerCommon\PlayerCommon.csproj", "{87B1F77A-09EF-4B20-8F07-16F6A82CAB42}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDashBoardAS", "Aerospike\GameDashBoardAS.csproj", "{C207D3AB-9282-4311-AE53-26614DBC28C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{0B69F727-CF02-40BA-A88C-72B5D7D11311}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B69F727-CF02-40BA-A88C-72B5D7D11311}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B69F727-CF02-40BA-A88C-72B5D7D11311}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87B1F77A-09EF-4B20-8F07-16F6A82CAB42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87B1F77A-09EF-4B20-8F07-16F6A82CAB42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87B1F77A-09EF-4B20-8F07-16F6A82CAB42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87B1F77A-09EF-4B20-8F07-16F6A82CAB42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C207D3AB-9282-4311-AE53-26614DBC28C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C207D3AB-9282-4311-AE53-26614DBC28C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C207D3AB-9282-4311-AE53-26614DBC28C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C207D3AB-9282-4311-AE53-26614DBC28C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

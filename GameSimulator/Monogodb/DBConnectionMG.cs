@@ -10,9 +10,9 @@ using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
-using PlayerCommon;
+using GameSimulator;
 
-namespace GameSimulator
+namespace PlayerCommon
 {
     public sealed partial class DBConnection
     {
@@ -238,6 +238,7 @@ namespace GameSimulator
         public bool UsedEmailCntEnabled { get => !this.UsedEmailCntCollection.IsEmpty; }
         public bool IncrementGlobalEnabled { get => !GlobalIncrementCollection.IsEmpty; }
         public bool LiverWagerEnabled { get => !LiverWagerCollection.IsEmpty; }
+        public bool InterventionEnabled { get => !InterventionCollection.IsEmpty; }
 
         public readonly DBCollection<GlobalIncrement> GlobalIncrementCollection;
         public readonly DBCollection<Intervention> InterventionCollection;

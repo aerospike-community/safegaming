@@ -6,7 +6,6 @@ using System.Text.Json;
 using ECM = Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Collections;
-using static Common.ConsoleWriterAsyc;
 
 namespace PlayerCommon
 {
@@ -269,14 +268,14 @@ namespace PlayerCommon
                             where T : new()
         {          
             {
-                var checkValueType = SettingConvertValueType(typeof(T),
-                                                        config,
-                                                        config[propName],
-                                                        fullPath,
-                                                        propName);
-                if(checkValueType.handled)
+                (object value, bool handled) = SettingConvertValueType(typeof(T),
+                                                                config,
+                                                                config[propName],
+                                                                fullPath,
+                                                                propName);
+                if(handled)
                 {
-                    property = (T) checkValueType.value;
+                    property = (T) value;
                     updatedProps.Add(fullPath ?? propName);
                     return;
                 }
@@ -320,19 +319,19 @@ namespace PlayerCommon
 
                     if (fndInstance is null)
                     {
-                        var funcActionsInstance = InvokeFuncPathAction(childSection.Path,
-                                                                        childSection,
-                                                                        childSection.Key,
-                                                                        propertyFieldInfo.ItemType,
-                                                                        null,
-                                                                        instance);
-                        switch (funcActionsInstance.actions)
+                        (object value, InvokePathActions actions) = InvokeFuncPathAction(childSection.Path,
+                                                                                            childSection,
+                                                                                            childSection.Key,
+                                                                                            propertyFieldInfo.ItemType,
+                                                                                            null,
+                                                                                            instance);
+                        switch (actions)
                         {
                             case InvokePathActions.ContinueAndUseValue:
-                                fndInstance = funcActionsInstance.value;
+                                fndInstance = value;
                                 break;
                             case InvokePathActions.Update:
-                                propertyFieldInfo.SetValue(instance, funcActionsInstance.value);
+                                propertyFieldInfo.SetValue(instance, value);
                                 updatedProps.Add(childSection.Path);
                                 return;
                             case InvokePathActions.Ignore:
@@ -357,15 +356,11 @@ namespace PlayerCommon
                 }
                 else
                 {
-                    var checkValueType = SettingConvertValueType(propertyFieldInfo.ItemType,
-                                                            childSection,
-                                                            childSection.Value,
-                                                            childSection.Path,
-                                                            childSection.Key,
-                                                            true);
-                    if (checkValueType.handled)
+                    (object value, bool handled) = SettingConvertValueType(propertyFieldInfo.ItemType, childSection, childSection.Value, childSection.Path, childSection.Key, true);
+
+                    if (handled)
                     {
-                        propertyFieldInfo.SetValue(instance, checkValueType.value);
+                        propertyFieldInfo.SetValue(instance, value);
                         updatedProps.Add(fullPath ?? propName);                        
                     }                    
                 }

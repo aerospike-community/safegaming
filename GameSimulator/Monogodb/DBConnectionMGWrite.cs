@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using Common;
-using PlayerCommon;
+using GameSimulator;
 
-namespace GameSimulator
+namespace PlayerCommon
 {
     partial class DBConnection : IDBConnectionSim
     {

@@ -8,10 +8,10 @@ using Common;
 using Common.Patterns.Tasks;
 using Aerospike.Client;
 using System.Reflection;
-using PlayerCommon;
 using System.Text.Json.Serialization;
+using GameSimulator;
 
-namespace GameSimulator
+namespace PlayerCommon
 {    
     public sealed partial class DBConnection : IDisposable
     {
@@ -323,6 +323,7 @@ namespace GameSimulator
         public bool UsedEmailCntEnabled { get => !this.UsedEmailCntSet.IsEmpty(); }
         public bool IncrementGlobalEnabled { get => !GlobalIncrementSet.IsEmpty(); }
         public bool LiverWagerEnabled { get => !LiverWagerSet.IsEmpty(); }
+        public bool InterventionEnabled { get => !InterventionSet.IsEmpty(); }
 
         public readonly NamespaceSetName GlobalIncrementSet;
         public readonly NamespaceSetName InterventionSet;

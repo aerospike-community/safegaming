@@ -6,6 +6,7 @@ using System.Text.Json;
 using ECM = Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Collections;
+using static Common.ConsoleWriterAsyc;
 
 namespace PlayerCommon
 {
@@ -105,49 +106,74 @@ namespace PlayerCommon
 
             TimeEvents = !(string.IsNullOrEmpty(TimingJsonFile) && string.IsNullOrEmpty(TimingCSVFile));
         }
-        
+
+        const string ConfigNullValue = "!<null>!";
+        static string CheckSpecialValue(string strValue)
+        {
+            if (string.IsNullOrEmpty(strValue)
+                || strValue[0] == '#'
+                || strValue.ToLower() == "<ignore>") return null;
+
+            if (strValue.ToLower() == "<default>"
+                    || strValue.ToLower() == "<null>")
+                strValue = ConfigNullValue;
+            else if (strValue.ToLower() == "<empty>")
+                strValue = string.Empty;
+
+            return strValue;            
+        }
+
         public static void GetSetting(ECM.IConfiguration config, ref string property, string propName)
         {
-            var configValue = config[propName];
+            var value = config[propName];
+            var funcActions = InvokeFuncPathAction(propName,
+                                                    config,
+                                                    propName,
+                                                    typeof(string),
+                                                    value);
 
-            if(string.IsNullOrEmpty(configValue)
-                || configValue[0] == '#'
-                || configValue.ToLower() == "<ignore>") return;
+            switch (funcActions.actions)
+            {
+                case InvokePathActions.ContinueAndUseValue:                        
+                case InvokePathActions.Update:
+                    property = funcActions.value?.ToString();
+                    updatedProps.Add(propName);
+                    return;
+                case InvokePathActions.Ignore:
+                    return;
+                default:
+                    break;
+            }
             
-            if (configValue.ToLower() == "<default>"
-                    || configValue.ToLower() == "<null>")
-                configValue = null;
-            else if (configValue.ToLower() == "<empty>")
-                configValue = string.Empty;
+            value = CheckSpecialValue(value);
 
-            property = configValue;
+            if (value is null) return;
+            if (value == ConfigNullValue)
+                value = null;
+
+            property = value;
             updatedProps.Add(propName);
         }
         
-        public static void GetSetting<T>(ECM.IConfiguration config, ref T property, string propName)
+        public static void GetSetting<T>(ECM.IConfiguration config, ref T property, string propName, string fullPath = null)
                             where T : new()
         {
             object ConvertValue(Type propertyType, string configValue)
             {
-                if (string.IsNullOrEmpty(configValue)) return null;
+                
+                if (string.IsNullOrEmpty(configValue))
+                    return null;
 
-                if (configValue[0] == '#') return null;
-                if (configValue.ToLower() == "<ignore>") return null;
-                if (configValue.ToLower() == "<default>")
                 {
-                    if (propertyType.IsValueType)
-                        return propertyType.GetDefaultValue();
-                    return "!<null>!";
+                    var checkedValue = CheckSpecialValue(configValue);
+
+                    if (checkedValue is null) return null;
+                    if (checkedValue == ConfigNullValue)
+                        configValue = null;
                 }
-                if (configValue.ToLower() == "<null>") return "!<null>!";
 
-                if (propertyType == typeof(string))
-                {
-                    if (configValue.ToLower() == "<empty>")
-                        return string.Empty;
-
+                if (propertyType == typeof(string))                                    
                     return configValue;
-                }
 
                 if (propertyType == typeof(DateTimeOffset))
                 {
@@ -191,25 +217,69 @@ namespace PlayerCommon
                 throw new NotImplementedException($"Cannot convert \"appsetting\" Property Type {propertyType.Name}");
             }
 
-            if (typeof(T).IsValueType
-                || typeof(T).IsEnum
-                || Nullable.GetUnderlyingType(typeof(T)) is not null)
+            (object value, bool handled) ConvertValueType(Type propertyType,
+                                                            ECM.IConfiguration config,
+                                                            string value,
+                                                            string fullPath,
+                                                            string propName,
+                                                            bool noTypeCheck = false)
             {
-                try
+
+                if (noTypeCheck
+                    || propertyType.IsValueType
+                    || propertyType.IsEnum
+                    || propertyType == typeof(string)
+                    || Nullable.GetUnderlyingType(propertyType) is not null)
+                {                    
+                    try
+                    {
+                        var funcActions = InvokeFuncPathAction(fullPath,
+                                                                config,
+                                                                propName,
+                                                                propertyType,
+                                                                value);
+                        switch (funcActions.actions)
+                        {
+                            case InvokePathActions.ContinueAndUseValue:
+                            case InvokePathActions.Update:
+                                return (funcActions.value, true);                                
+                            case InvokePathActions.Ignore:
+                                return (null, false);
+                            default:
+                                break;
+                        }
+
+                        value = CheckSpecialValue(value);
+
+                        if (value is null) return (null, false);
+                        if (value == ConfigNullValue)
+                        {
+                            return (propertyType.GetDefaultValue(), true);
+                        }
+
+                        return (ConvertValue(propertyType, value), true);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        throw new ArgumentException($"Invalid \"appsetting\" Property \"{fullPath ?? propName}\" of type {propertyType.Name} with value \"{value}\"", ex);
+                    }
+
+                }
+                return (null, false);
+            }
+
+            {
+                var checkValueType = ConvertValueType(typeof(T),
+                                                        config,
+                                                        config[propName],
+                                                        fullPath,
+                                                        propName);
+                if(checkValueType.handled)
                 {
-                    var convertedValue = ConvertValue(typeof(T), config[propName]);
-
-                    if(convertedValue is null) return;
-                    if (convertedValue.Equals("!<null>!"))
-                        convertedValue = null;
-
-                    property = (T) convertedValue;                    
+                    property = (T) checkValueType.value;
+                    updatedProps.Add(fullPath ?? propName);
+                    return;
                 }
-                catch (System.Exception ex)
-                {                   
-                    throw new ArgumentException($"Invalid \"appsetting\" Property \"{propName}\" of type {typeof(T).Name}", ex);
-                }
-                return;
             }
 
             var findProp = config is ECM.IConfigurationSection configSection
@@ -218,17 +288,30 @@ namespace PlayerCommon
 
             if(findProp is null) return;
 
-            var propType = property?.GetType() ?? typeof(T);
-            var instanceProps = TypeHelpers.GetPropertyFields(propType);
-            var newInstance = property is null ? (T)Activator.CreateInstance(propType) : property;
-                        
-            object CreateObject(Type type, ECM.IConfigurationSection childSection)
+            var propType = property?.GetType() ?? typeof(T);            
+            var funcActionsInstance = InvokeFuncPathAction(fullPath,
+                                                            config,
+                                                            propName,
+                                                            propType,
+                                                            property);
+            switch (funcActionsInstance.actions)
             {
-                var instance = Activator.CreateInstance(type);
-                GetSetting(childSection, ref instance, childSection.Key);
-                return instance;
+                case InvokePathActions.ContinueAndUseValue:
+                    property = (T) funcActionsInstance.value; 
+                    break;
+                case InvokePathActions.Update:
+                    property = (T)funcActionsInstance.value;
+                    updatedProps.Add(fullPath ?? propName);
+                    return;
+                case InvokePathActions.Ignore:
+                    return;
+                default:
+                    break;
             }
 
+            var instanceProps = TypeHelpers.GetPropertyFields(propType);
+            var newInstance = property is null ? (T)Activator.CreateInstance(propType) : property;
+            
             void SetValue(PropertyFieldInfo propertyFieldInfo, ECM.IConfigurationSection childSection, object instance)
             {
                 if(childSection.Value is null)
@@ -237,35 +320,60 @@ namespace PlayerCommon
 
                     if (fndInstance is null)
                     {
-                        var convertedValue = CreateObject(propertyFieldInfo.ItemType, childSection);
+                        var funcActionsInstance = InvokeFuncPathAction(childSection.Path,
+                                                                        childSection,
+                                                                        childSection.Key,
+                                                                        propertyFieldInfo.ItemType,
+                                                                        null,
+                                                                        instance);
+                        switch (funcActionsInstance.actions)
+                        {
+                            case InvokePathActions.ContinueAndUseValue:
+                                fndInstance = funcActionsInstance.value;
+                                break;
+                            case InvokePathActions.Update:
+                                propertyFieldInfo.SetValue(instance, funcActionsInstance.value);
+                                updatedProps.Add(childSection.Path);
+                                return;
+                            case InvokePathActions.Ignore:
+                                return;
+                            default:
+                                break;
+                        }
 
-                        if (convertedValue is null) return;
+                        fndInstance ??= Activator.CreateInstance(propertyFieldInfo.ItemType);
+                        GetSetting(childSection, ref fndInstance, childSection.Key, childSection.Path);
+                        
+                        if (fndInstance is null
+                                && !updatedProps.Contains(childSection.Path))
+                            return;
 
-                        propertyFieldInfo.SetValue(instance, convertedValue);
-                        updatedProps.Add(childSection.Path);
+                        propertyFieldInfo.SetValue(instance, fndInstance);                        
                     }
                     else
                     {
-                        GetSetting(childSection, ref fndInstance, childSection.Key);
+                        GetSetting(childSection, ref fndInstance, childSection.Key, childSection.Path);
                     }
                 }
                 else
                 {
-                    var convertedValue = ConvertValue(propertyFieldInfo.ItemType,
-                                                        childSection.Value);
-
-                    if (convertedValue is null) return;
-                    if(convertedValue.Equals("!<null>!"))
-                        convertedValue = null;
-
-                    propertyFieldInfo.SetValue(instance, convertedValue);
-                    updatedProps.Add(childSection.Path);
+                    var checkValueType = ConvertValueType(propertyFieldInfo.ItemType,
+                                                            childSection,
+                                                            childSection.Value,
+                                                            childSection.Path,
+                                                            childSection.Key,
+                                                            true);
+                    if (checkValueType.handled)
+                    {
+                        propertyFieldInfo.SetValue(instance, checkValueType.value);
+                        updatedProps.Add(fullPath ?? propName);                        
+                    }                    
                 }
             }
 
             var children = findProp.GetChildren();
             PropertyFieldInfo instanceProp = null;
-
+           
             try
             {
                 if (newInstance is IList itemList)
@@ -315,16 +423,77 @@ namespace PlayerCommon
             }
 
             property = newInstance;
-            updatedProps.Add(propName);
+            updatedProps.Add(fullPath ?? propName);
         }
 
         public static void RemoveNotFoundSettingClassProps(IEnumerable<string> removeProps)
                                 => NotFoundSettingClassProps.RemoveAll(p => removeProps.Any(r => p.StartsWith(r)));
         
 
-        public static List<string> NotFoundSettingClassProps { get; } = new();
+        public static readonly List<string> NotFoundSettingClassProps = new();
         private static readonly List<string> updatedProps = new();
         public static IEnumerable<string> UpdatedProps { get =>  updatedProps; }
+
+        /// <summary>
+        /// A list of <see cref="KeyValuePair"/> where
+        /// Key -- is the complete setting/config path (e.g., root:level1:level2) or wild card value at the start or end of the path like *:level2 or root:*.
+        /// Value is an function with the following arguments:
+        ///     IConfiguration children below this path level,
+        ///     property name,
+        ///     property type,
+        ///     property value,
+        ///     property&apos;s parent
+        ///     returns the object based on type that will be used to set the property. The action is used to determine processing.        
+        /// </summary>
+        public static readonly List<KeyValuePair<string, Func<ECM.IConfiguration, string, Type, object, object, (object,InvokePathActions)>>> PathActions = new();
+
+        public static void AddFuncPathAction(string path, Func<ECM.IConfiguration, string, Type, object, object, (object, InvokePathActions)> action)
+                            => PathActions.Add(new KeyValuePair<string, Func<ECM.IConfiguration, string, Type, object, object, (object, InvokePathActions)>>(path, action));
+        [Flags]
+        public enum InvokePathActions
+        {
+            /// <summary>
+            /// Continue Path Processing (do not update or exist processing)
+            /// </summary>
+            Continue = 0,
+            /// <summary>
+            /// The function handled the request. This is used in conjunction with Update or Ignore.
+            /// </summary>
+            Handled = 0x0001,
+            /// <summary>
+            /// Continue processing but use the value returned by the function
+            /// </summary>
+            ContinueAndUseValue = 0x0010 | Handled,            
+            /// <summary>
+            /// A value is returned from the function and the property should be updated.
+            /// </summary>
+            Update = 0x0100 | Handled,
+            /// <summary>
+            /// Do not continue processing nor update the property.
+            /// </summary>
+            Ignore = 0x1000 | Handled
+        }
+        public static (object value, InvokePathActions actions) InvokeFuncPathAction(string path, ECM.IConfiguration children, string propertyName, Type propertyType, object propertyValue, object propParent = null)
+        {
+            if (PathActions.Count == 0) return (propertyValue, InvokePathActions.Continue);
+
+            var action = PathActions.FirstOrDefault(kvp => kvp.Key == path 
+                                                            || (kvp.Key[0] == '*'
+                                                                    && path.EndsWith(kvp.Key[1..]))
+                                                            || (kvp.Key.Last() == '*'
+                                                                    && path.EndsWith(kvp.Key[..^1])));
+            var actions = InvokePathActions.Continue;
+            object value = null;
+
+            if(action.Value is not null)
+            {
+                var actionValue = action.Value.Invoke(children, propertyName, propertyType, propertyValue, propParent);
+                value = actionValue.Item1;
+                actions = actionValue.Item2;
+            }
+
+            return (value, actions);
+        }
 
         public string AppJsonFile { get; }
 

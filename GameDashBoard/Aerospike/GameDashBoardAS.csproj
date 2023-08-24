@@ -12,14 +12,8 @@
     <AssemblyVersion>1.2.4.0</AssemblyVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>../../PlayerCommon/PlayerGeneration.snk</AssemblyOriginatorKeyFile> 
-    <RootNamespace>GameDashBoard</RootNamespace>   
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;CS8002</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <RootNamespace>GameDashBoard</RootNamespace>
+    <DefineConstants>$(DefineConstants);AEROSPIKE;READDB</DefineConstants>
     <NoWarn>1701;1702;CS8002</NoWarn>
   </PropertyGroup>
 
@@ -46,6 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\GameSimulator\Aerospike\AerospikeSettings.cs" Link="AerospikeSettings.cs"/>
     <Compile Include="..\..\GameSimulator\Aerospike\DBConnectionAerospike.cs" Link="DBConnectionAerospike.cs" />
   </ItemGroup>
 

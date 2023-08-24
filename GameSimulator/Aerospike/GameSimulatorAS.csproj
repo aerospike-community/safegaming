@@ -13,7 +13,7 @@
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>../../PlayerCommon/PlayerGeneration.snk</AssemblyOriginatorKeyFile> 
     <RootNamespace>GameSimulator</RootNamespace>
-    <DefineConstants>$(DefineConstants);WRITEDB</DefineConstants>
+    <DefineConstants>$(DefineConstants);AEROSPIKE;WRITEDB</DefineConstants>
     <NoWarn>1701;1702;CS8002</NoWarn>
   </PropertyGroup>
 

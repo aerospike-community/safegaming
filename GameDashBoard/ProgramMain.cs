@@ -19,7 +19,7 @@ namespace PlayerCommon
     {
         public static Action InitializationAction = () => { };
         public static Action PreConsoleDisplayAction = delegate { };
-        public static Func<IDBConnectionGDB> CreateDBConnection = null;
+        public static Func<SettingsGDB, ConsoleDisplay, IDBConnectionGDB> CreateDBConnection = null;
         public static Action PostConsoleDisplayAction = delegate { };
 
         public static void Main(string[] args)
@@ -174,8 +174,8 @@ namespace PlayerCommon
             var logFilePath = Logger.GetSetEnvVarLoggerFile();
 
             using IDBConnectionGDB dbConnection = SettingsGDB.Instance.Config.ReadDB
-                                                    ? CreateDBConnection?.Invoke()
-                                                    : null;                       
+                                                    ? CreateDBConnection?.Invoke(SettingsGDB.Instance, ConsoleSession)
+                                                    : null;
             
             if (dbConnection != null && SettingsGDB.Instance.Config.CreateIdxs)
             {

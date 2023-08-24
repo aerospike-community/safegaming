@@ -13,14 +13,23 @@ namespace PlayerCommon
         Task<Player> GetPlayer(int playerId,
                                 CancellationToken cancellationToken);
         
-        Task<IEnumerable<LiveWager>> GetLiveWager(DateTimeOffset tranDT,
-                                                    CancellationToken cancellationToken);
+        Task GetLiveWager(DateTimeOffset tranDT,
+                            ref long currentTransCnt,
+                            int maxTransactions,
+                            decimal playerPct,
+                            CancellationToken cancellationToken);
 
-        Task<IEnumerable<GlobalIncrement>> GetGlobalIncrement(DateTimeOffset tranDT,
-                                                                CancellationToken cancellationToken);
+        Task GetGlobalIncrement(DateTimeOffset tranDT,
+                                ref long currentTransCnt,           
+                                int maxTransactions,
+                                decimal playerPct,
+                                CancellationToken cancellationToken);
 
-        Task<IEnumerable<Intervention>> GetIntervention(DateTimeOffset tranDT,
-                                                        CancellationToken cancellationToken);
+        Task GetIntervention(DateTimeOffset tranDT,
+                                ref long currentTransCnt,
+                                int maxTransactions,
+                                decimal playerPct,
+                                CancellationToken cancellationToken);
 
         Task CreateIndexes(CancellationToken cancellationToken);
     }

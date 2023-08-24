@@ -300,12 +300,15 @@ namespace PlayerCommon
         public readonly NamespaceSetName PlayersTransHistorySet;
         public readonly NamespaceSetName UsedEmailCntSet;
         public readonly NamespaceSetName InterventionThresholdsSet;
+        public bool UsedEmailCntEnabled { get => !this.UsedEmailCntSet.IsEmpty(); }
+#else
+        public bool UsedEmailCntEnabled { get => false; }
 #endif
+
         public readonly NamespaceSetName GlobalIncrementSet;
         public readonly NamespaceSetName InterventionSet;
         public readonly NamespaceSetName LiverWagerSet;
-        
-        public bool UsedEmailCntEnabled { get => !this.UsedEmailCntSet.IsEmpty(); }
+                
         public bool IncrementGlobalEnabled { get => !GlobalIncrementSet.IsEmpty(); }
         public bool LiverWagerEnabled { get => !LiverWagerSet.IsEmpty(); }
         public bool InterventionEnabled { get => !InterventionSet.IsEmpty(); }

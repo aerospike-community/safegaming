@@ -19,7 +19,7 @@ namespace PlayerCommon
 
             InitializationAction = () =>
             {
-                Settings.Instance.DBConnectionString = $"Host={SettingsGDB.Instance.Config.Aerospike.DBHost};Port={SettingsSim.Instance.Config.Aerospike.DBPort};";
+                Settings.Instance.DBConnectionString = $"Host={SettingsGDB.Instance.Config.Aerospike.DBHost};Port={SettingsGDB.Instance.Config.Aerospike.DBPort};";
             };
 
             PreConsoleDisplayAction = () =>
@@ -34,15 +34,8 @@ namespace PlayerCommon
                                                     SettingsGDB.Instance.WarnMaxMSLatencyDBExceeded);
             };
 
-            CreateDBConnection = (displayProgression, playerProgression, historyProgression) =>
-                                    new DBConnection(SettingsGDB.Instance.Config.Aerospike.DBHost,
-                                                        SettingsGDB.Instance.Config.Aerospike.DBPort,
-                                                        SettingsGDB.Instance.Config.Aerospike.ConnectionTimeout,
-                                                        SettingsGDB.Instance.Config.Aerospike.DBOperationTimeout,
-                                                        SettingsGDB.Instance.Config.Aerospike.DBUseExternalIPAddresses,
-                                                        displayProgression: displayProgression,
-                                                        playerProgression: playerProgression,
-                                                        historyProgression: historyProgression);
+            CreateDBConnection = (settings, displayProgression) =>
+                                    new DBConnection(settings.Config.Aerospike, displayProgression);
         }
     }
 }

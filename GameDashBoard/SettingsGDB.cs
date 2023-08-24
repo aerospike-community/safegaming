@@ -32,7 +32,7 @@ namespace GameDashBoard
             get => (SettingsGDB)PlayerCommon.Settings.Instance;
         }
 
-        public static List<string> RemoveFromNotFoundSettings = new List<string>();
+        public static List<string> RemoveFromNotFoundSettings = new();
 
         public SettingsGDB(string appJsonFile = "appsettings.json")
             : base(appJsonFile)

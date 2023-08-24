@@ -9,7 +9,6 @@ using Common.Patterns.Tasks;
 using Aerospike.Client;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using GameSimulator;
 
 namespace PlayerCommon
 {    
@@ -234,15 +233,18 @@ namespace PlayerCommon
             this.ASSettings = settings;
             this.ConsoleProgression = new Progression(displayProgression, "Aerospike Connection", null);
             
-            this.CurrentPlayersSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.CurrentPlayersSetName);
-            this.PlayersHistorySet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.PlayersHistorySetName);
-            this.PlayersTransHistorySet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.PlayersTransHistorySetName);
-            this.UsedEmailCntSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.UsedEmailCntSetName);
-            this.GlobalIncrementSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.GlobalIncrementSetName);
-            this.LiverWagerSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.LiveWagerSetName);
-            this.InterventionSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.InterventionSetName);
-            this.InterventionThresholdsSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.InterventionThresholdsSetName);
- 
+            this.CurrentPlayersSet = new NamespaceSetName(this.ASSettings.CurrentPlayersSetName);
+#if WRITEDB
+            this.PlayersHistorySet = new NamespaceSetName(this.ASSettings.PlayersHistorySetName);
+            this.PlayersTransHistorySet = new NamespaceSetName(this.ASSettings.PlayersTransHistorySetName);
+            this.UsedEmailCntSet = new NamespaceSetName(this.ASSettings.UsedEmailCntSetName);
+            this.InterventionThresholdsSet = new NamespaceSetName(this.ASSettings.InterventionThresholdsSetName);
+#endif
+
+            this.GlobalIncrementSet = new NamespaceSetName(this.ASSettings.GlobalIncrementSetName);
+            this.LiverWagerSet = new NamespaceSetName(this.ASSettings.LiveWagerSetName);
+            this.InterventionSet = new NamespaceSetName(this.ASSettings.InterventionSetName);
+            
             Logger.Instance.InfoFormat("DBConnection:");
             Logger.Instance.InfoFormat("\tSeed Node: {0}\tPort: {1} Use Alter Address: {2}",
                                             this.ASSettings.DBHost, 
@@ -255,6 +257,7 @@ namespace PlayerCommon
                 Logger.Instance.Warn("\t\tCurrent Player will NOT be processed (Empty namespace/set)");
             else
                 Logger.Instance.InfoFormat("\t\tPlayer: {0}", this.CurrentPlayersSet);
+#if WRITEDB
             if (this.PlayersHistorySet.IsEmpty())
                 Logger.Instance.Warn("\t\tPlayer History will NOT be processed (Empty namespace/set)");
             else
@@ -267,6 +270,12 @@ namespace PlayerCommon
                 Logger.Instance.Info("\t\tUsed Email Counter will NOT be processed (Empty namespace/set)");
             else
                 Logger.Instance.InfoFormat("\t\tUsedEmailCntSet: {0}", this.UsedEmailCntSet);
+            if (this.InterventionThresholdsSet.IsEmpty())
+                Logger.Instance.Warn("\t\tIntervention Thresholds will NOT be processed (Empty namespace/set)");
+            else
+                Logger.Instance.InfoFormat("\t\tInterventionThresholdsSet: {0}", this.InterventionThresholdsSet);
+#endif
+
             if (this.InterventionSet.IsEmpty())
                 Logger.Instance.Warn("\t\tIntervention Set will NOT be processed (Empty namespace/set)");
             else
@@ -279,30 +288,28 @@ namespace PlayerCommon
                 Logger.Instance.Warn("\t\tLive Wager will NOT be processed (Empty namespace/set)");
             else
                 Logger.Instance.InfoFormat("\t\tLiverWagerSet: {0}", this.LiverWagerSet);
-            if (this.InterventionThresholdsSet.IsEmpty())
-                Logger.Instance.Warn("\t\tIntervention Thresholds will NOT be processed (Empty namespace/set)");
-            else
-                Logger.Instance.InfoFormat("\t\tInterventionThresholdsSet: {0}", this.InterventionThresholdsSet);
-
+            
             if (autoConnect)
                 this.Connect();
         }
        
         public AerospikeSettings ASSettings { get; }
         public readonly NamespaceSetName CurrentPlayersSet;
+#if WRITEDB
         public readonly NamespaceSetName PlayersHistorySet;
         public readonly NamespaceSetName PlayersTransHistorySet;
         public readonly NamespaceSetName UsedEmailCntSet;
+        public readonly NamespaceSetName InterventionThresholdsSet;
+#endif
+        public readonly NamespaceSetName GlobalIncrementSet;
+        public readonly NamespaceSetName InterventionSet;
+        public readonly NamespaceSetName LiverWagerSet;
+        
         public bool UsedEmailCntEnabled { get => !this.UsedEmailCntSet.IsEmpty(); }
         public bool IncrementGlobalEnabled { get => !GlobalIncrementSet.IsEmpty(); }
         public bool LiverWagerEnabled { get => !LiverWagerSet.IsEmpty(); }
         public bool InterventionEnabled { get => !InterventionSet.IsEmpty(); }
-
-        public readonly NamespaceSetName GlobalIncrementSet;
-        public readonly NamespaceSetName InterventionSet;
-        public readonly NamespaceSetName LiverWagerSet;
-        public readonly NamespaceSetName InterventionThresholdsSet;
-
+        
         public Progression ConsoleProgression { get; }
         
         public AsyncClient Connection { get; private set; }
@@ -316,28 +323,28 @@ namespace PlayerCommon
             
             var policy = new AsyncClientPolicy();
 
-            if(SettingsSim.Instance.Config.Aerospike.MaxSocketIdle >= 0)
-                policy.maxSocketIdle = SettingsSim.Instance.Config.Aerospike.MaxSocketIdle;
-            if (SettingsSim.Instance.Config.Aerospike.MaxConnectionPerNode > 0)
-                policy.asyncMaxConnsPerNode = SettingsSim.Instance.Config.Aerospike.MaxConnectionPerNode;
-            if (SettingsSim.Instance.Config.Aerospike.MinConnectionPerNode >= 0)
-                policy.asyncMinConnsPerNode = SettingsSim.Instance.Config.Aerospike.MinConnectionPerNode;
+            if(this.ASSettings.MaxSocketIdle >= 0)
+                policy.maxSocketIdle = this.ASSettings.MaxSocketIdle;
+            if (this.ASSettings.MaxConnectionPerNode > 0)
+                policy.asyncMaxConnsPerNode = this.ASSettings.MaxConnectionPerNode;
+            if (this.ASSettings.MinConnectionPerNode >= 0)
+                policy.asyncMinConnsPerNode = this.ASSettings.MinConnectionPerNode;
             if (Settings.Instance.CompletionPortThreads > 0)
             {               
                 policy.asyncMaxCommands = Settings.Instance.CompletionPortThreads;
                 policy.asyncMaxCommandAction = MaxCommandAction.DELAY;
             }
-            if(SettingsSim.Instance.Config.Aerospike.asyncBufferSize > 0)
-                policy.asyncBufferSize = SettingsSim.Instance.Config.Aerospike.asyncBufferSize;
-            if (SettingsSim.Instance.Config.Aerospike.connPoolsPerNode > 0)
-                policy.connPoolsPerNode = SettingsSim.Instance.Config.Aerospike.connPoolsPerNode;
+            if(this.ASSettings.asyncBufferSize > 0)
+                policy.asyncBufferSize = this.ASSettings.asyncBufferSize;
+            if (this.ASSettings.connPoolsPerNode > 0)
+                policy.connPoolsPerNode = this.ASSettings.connPoolsPerNode;
 
             policy.timeout = this.ASSettings.ConnectionTimeout;
             policy.loginTimeout = this.ASSettings.ConnectionTimeout;
             policy.useServicesAlternate = this.ASSettings.DBUseExternalIPAddresses;
-            policy.maxErrorRate = SettingsSim.Instance.Config.Aerospike.maxErrorRate;
-            policy.errorRateWindow = SettingsSim.Instance.Config.Aerospike.errorRateWindow;
-            policy.tendInterval = SettingsSim.Instance.Config.Aerospike.tendInterval;
+            policy.maxErrorRate = this.ASSettings.maxErrorRate;
+            policy.errorRateWindow = this.ASSettings.errorRateWindow;
+            policy.tendInterval = this.ASSettings.tendInterval;
 
             Logger.Instance.Dump(policy, Logger.DumpType.Info, "\tConnection Policy", 2);            
 

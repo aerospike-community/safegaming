@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 
-namespace GameSimulator
+namespace PlayerCommon
 {
     public partial class MongoDBSettings
     {
@@ -16,13 +16,13 @@ namespace GameSimulator
 
         public string DBConnectionString
         {
-            get => SettingsSim.Instance.DBConnectionString;
+            get => Settings.Instance.DBConnectionString;
             set
             {
                 if (string.IsNullOrEmpty(value)
                         || value == this.DBConnectionString) return;
 
-                SettingsSim.Instance.DBConnectionString = value;
+                Settings.Instance.DBConnectionString = value;
                 this.DriverSettings = MongoClientSettings.FromConnectionString(value);
             }
         }

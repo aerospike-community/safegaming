@@ -19,6 +19,7 @@ namespace GameDashBoard
         public int MaxNbrTransPerSession;
         public int MinNbrTransPerSession;
         public int SleepBetweenTransMS;
+        public int PageSize = -1;
 
         public DateTimeOffset StartDate = DateTimeOffset.Now;
         public bool ContinuousSessions;

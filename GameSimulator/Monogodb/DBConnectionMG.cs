@@ -4,13 +4,16 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using MongoDB.Driver;
 using Common;
+using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
+
+#if WRITEDB
 using GameSimulator;
+#endif
 
 namespace PlayerCommon
 {
@@ -158,6 +161,7 @@ namespace PlayerCommon
             this.CurrentPlayersCollection = new DBCollection<Player>(dbName,
                                                                         this.MGSettings.CurrentPlayersCollection,
                                                                         this.Database);
+#if WRITEDB
             this.PlayersHistoryCollection = new DBCollection<PlayerHistory>(dbName,
                                                                             this.MGSettings.PlayersHistoryCollection,
                                                                             this.Database);
@@ -167,6 +171,10 @@ namespace PlayerCommon
             this.UsedEmailCntCollection = new DBCollection<UsedEmailCnt>(dbName,
                                                                             this.MGSettings.UsedEmailCntCollection,
                                                                             this.Database);
+            this.InterventionThresholdsCollection = new DBCollection<InterventionThresholds>(dbName,
+                                                                                            this.MGSettings.InterventionThresholdsCollection,
+                                                                                            this.Database);
+#endif
             this.GlobalIncrementCollection = new DBCollection<GlobalIncrement>(dbName,
                                                                                 this.MGSettings.GlobalIncrementCollection,
                                                                                 this.Database);
@@ -176,15 +184,14 @@ namespace PlayerCommon
             this.LiverWagerCollection = new DBCollection<LiveWager>(dbName,
                                                                     this.MGSettings.LiveWagerCollection,
                                                                     this.Database);
-            this.InterventionThresholdsCollection = new DBCollection<InterventionThresholds>(dbName,
-                                                                                            this.MGSettings.InterventionThresholdsCollection,
-                                                                                            this.Database);
-
+            
             Logger.Instance.InfoFormat("\tCollections:");
             if(this.CurrentPlayersCollection.IsEmpty)
                 Logger.Instance.Warn("\t\tCurrent Player will NOT be processed (Empty namespace/set)");
             else
                 Logger.Instance.InfoFormat("\t\tPlayer: {0}", this.CurrentPlayersCollection);
+
+#if WRITEDB
             if (this.PlayersHistoryCollection.IsEmpty)
                 Logger.Instance.Warn("\t\tPlayer History will NOT be processed (Empty namespace/set)");
             else
@@ -197,6 +204,12 @@ namespace PlayerCommon
                 Logger.Instance.Info("\t\tUsed Email Counter will NOT be processed (Empty namespace/set)");
             else
                 Logger.Instance.InfoFormat("\t\tUsedEmailCnt: {0}", this.UsedEmailCntCollection);
+            if (this.InterventionThresholdsCollection.IsEmpty)
+                Logger.Instance.Warn("\t\tIntervention Thresholds will NOT be processed (Empty namespace/set)");
+            else
+                Logger.Instance.InfoFormat("\t\tInterventionThresholds: {0}", this.InterventionThresholdsCollection);
+#endif
+
             if (this.InterventionCollection.IsEmpty)
                 Logger.Instance.Warn("\t\tIntervention will NOT be processed (Empty namespace/set)");
             else
@@ -209,11 +222,7 @@ namespace PlayerCommon
                 Logger.Instance.Warn("\t\tLive Wager will NOT be processed (Empty namespace/set)");
             else
                 Logger.Instance.InfoFormat("\t\tLiverWager: {0}", this.LiverWagerCollection);
-            if (this.InterventionThresholdsCollection.IsEmpty)
-                Logger.Instance.Warn("\t\tIntervention Thresholds will NOT be processed (Empty namespace/set)");
-            else
-                Logger.Instance.InfoFormat("\t\tInterventionThresholds: {0}", this.InterventionThresholdsCollection);
-
+            
             Logger.Instance.InfoFormat("\tClusterId: {0} Description: {1}", 
                                         this.Client.Cluster.ClusterId,
                                         this.Client.Cluster.Description);
@@ -229,18 +238,21 @@ namespace PlayerCommon
         public IClientSessionHandle ClientSession { get; }
 
         public readonly DBCollection<Player> CurrentPlayersCollection;
+#if WRITEDB
         public readonly DBCollection<PlayerHistory> PlayersHistoryCollection;
         public readonly DBCollection<PlayersTransHistory> PlayersTransHistoryCollection;
         public readonly DBCollection<UsedEmailCnt> UsedEmailCntCollection;
-        public bool UsedEmailCntEnabled { get => !this.UsedEmailCntCollection.IsEmpty; }
-        public bool IncrementGlobalEnabled { get => !GlobalIncrementCollection.IsEmpty; }
-        public bool LiverWagerEnabled { get => !LiverWagerCollection.IsEmpty; }
-        public bool InterventionEnabled { get => !InterventionCollection.IsEmpty; }
+        public readonly DBCollection<InterventionThresholds> InterventionThresholdsCollection;
+#endif
 
         public readonly DBCollection<GlobalIncrement> GlobalIncrementCollection;
         public readonly DBCollection<Intervention> InterventionCollection;
         public readonly DBCollection<LiveWager> LiverWagerCollection;
-        public readonly DBCollection<InterventionThresholds> InterventionThresholdsCollection;
+
+        public bool UsedEmailCntEnabled { get => !this.UsedEmailCntCollection.IsEmpty; }
+        public bool IncrementGlobalEnabled { get => !GlobalIncrementCollection.IsEmpty; }
+        public bool LiverWagerEnabled { get => !LiverWagerCollection.IsEmpty; }
+        public bool InterventionEnabled { get => !InterventionCollection.IsEmpty; }
         
         #region Disposable
         public bool Disposed { get; private set; }

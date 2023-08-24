@@ -6,6 +6,7 @@ using Faker;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using static MongoDB.Driver.WriteConcern;
+using PlayerCommon;
 
 namespace GameSimulator
 {
@@ -29,20 +30,18 @@ namespace GameSimulator
         {
             if (!string.IsNullOrEmpty(this.UseConst))
             {
-                var constProp = typeof(WriteConcern).GetProperty(this.UseConst);
-
-                if (constProp is null)
-                    throw new ArgumentException($"Invalid \"{this.UseConst}\" as a constant for WriteConcern within DB Connection Setting");
+                var constProp = typeof(WriteConcern).GetProperty(this.UseConst)
+                                    ?? throw new ArgumentException($"Invalid \"{this.UseConst}\" as a constant for WriteConcern within DB Connection Setting");
 
                 return constProp.GetValue(null) as WriteConcern;
             }
 
             bool updated = false;
 
-            Optional<TimeSpan?> wTimeout = default(Optional<TimeSpan?>);
-            Optional<bool?> journal = default(Optional<bool?>);
-            Optional<bool?> fsync = default(Optional<bool?>);
-            Optional<WValue> wValue = default(Optional<WValue>);
+            Optional<TimeSpan?> wTimeout = default;
+            Optional<bool?> journal = default;
+            Optional<bool?> fsync = default;
+            Optional<WValue> wValue = default;
 
             if (this.timeout.HasValue)
             {
@@ -113,10 +112,8 @@ namespace GameSimulator
 
                         if (!string.IsNullOrEmpty(constValue))
                         {
-                            var constProp = typeof(ReadConcern).GetProperty(constValue);
-
-                            if (constProp is null)
-                                throw new ArgumentException($"Invalid \"{constValue}\" as a constant for ReadConcern within DB Connection Setting");
+                            var constProp = typeof(ReadConcern).GetProperty(constValue)
+                                                ?? throw new ArgumentException($"Invalid \"{constValue}\" as a constant for ReadConcern within DB Connection Setting");
 
                             return (constProp.GetValue(null) as ReadConcern,
                                         InvokePathActions.Update);

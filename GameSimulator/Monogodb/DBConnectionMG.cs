@@ -126,21 +126,19 @@ namespace PlayerCommon
             ClientDriverName = "MongoDB Driver";
         }
 
-        public DBConnection(ConsoleDisplay displayProgression = null,
-                            ConsoleDisplay playerProgression = null,
-                            ConsoleDisplay historyProgression = null)
-        {           
+        public DBConnection(ConsoleDisplay displayProgression,
+                                MongoDBSettings settings)
+        {
             this.ConsoleProgression = new Progression(displayProgression, "MongoDB Connection", null);
-            this.PlayerProgression = playerProgression;
-            this.HistoryProgression = historyProgression;
-                      
+            this.MGSettings = settings;
+
             BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
             //BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer());
 
-            var dbName = SettingsSim.Instance.Config.Mongodb.DBName;
+            var dbName = this.MGSettings.DBName;
 
             {
-                var client = new MongoClient(SettingsSim.Instance.Config.Mongodb.DriverSettings);
+                var client = new MongoClient(this.MGSettings.DriverSettings);
 
                 this.ClientSession = client.StartSession();
                 this.Client = this.ClientSession.Client;
@@ -158,28 +156,28 @@ namespace PlayerCommon
             Logger.Instance.Dump(this.Client.Settings, comments: "MongoDB Client Settings:");
 
             this.CurrentPlayersCollection = new DBCollection<Player>(dbName,
-                                                                        SettingsSim.Instance.Config.Mongodb.CurrentPlayersCollection,
+                                                                        this.MGSettings.CurrentPlayersCollection,
                                                                         this.Database);
             this.PlayersHistoryCollection = new DBCollection<PlayerHistory>(dbName,
-                                                                            SettingsSim.Instance.Config.Mongodb.PlayersHistoryCollection,
+                                                                            this.MGSettings.PlayersHistoryCollection,
                                                                             this.Database);
             this.PlayersTransHistoryCollection = new DBCollection<PlayersTransHistory>(dbName,
-                                                                                        SettingsSim.Instance.Config.Mongodb.PlayersTransHistoryCollection,
+                                                                                        this.MGSettings.PlayersTransHistoryCollection,
                                                                                         this.Database);
             this.UsedEmailCntCollection = new DBCollection<UsedEmailCnt>(dbName,
-                                                                            SettingsSim.Instance.Config.Mongodb.UsedEmailCntCollection,
+                                                                            this.MGSettings.UsedEmailCntCollection,
                                                                             this.Database);
             this.GlobalIncrementCollection = new DBCollection<GlobalIncrement>(dbName,
-                                                                                SettingsSim.Instance.Config.Mongodb.GlobalIncrementCollection,
+                                                                                this.MGSettings.GlobalIncrementCollection,
                                                                                 this.Database);
             this.InterventionCollection = new DBCollection<Intervention>(dbName,
-                                                                            SettingsSim.Instance.Config.Mongodb.InterventionCollection,
+                                                                            this.MGSettings.InterventionCollection,
                                                                             this.Database);
             this.LiverWagerCollection = new DBCollection<LiveWager>(dbName,
-                                                                    SettingsSim.Instance.Config.Mongodb.LiveWagerCollection,
+                                                                    this.MGSettings.LiveWagerCollection,
                                                                     this.Database);
             this.InterventionThresholdsCollection = new DBCollection<InterventionThresholds>(dbName,
-                                                                                            SettingsSim.Instance.Config.Mongodb.InterventionThresholdsCollection,
+                                                                                            this.MGSettings.InterventionThresholdsCollection,
                                                                                             this.Database);
 
             Logger.Instance.InfoFormat("\tCollections:");
@@ -224,8 +222,7 @@ namespace PlayerCommon
         }
 
         public Progression ConsoleProgression { get; }
-        public ConsoleDisplay PlayerProgression { get; }
-        public ConsoleDisplay HistoryProgression { get; }
+        public MongoDBSettings MGSettings { get; }
 
         public IMongoClient Client { get; }
         public IMongoDatabase Database { get; }
@@ -244,41 +241,6 @@ namespace PlayerCommon
         public readonly DBCollection<Intervention> InterventionCollection;
         public readonly DBCollection<LiveWager> LiverWagerCollection;
         public readonly DBCollection<InterventionThresholds> InterventionThresholdsCollection;
-
-        public void Truncate()
-        {
-
-            static void Truncate<T>(DBCollection<T> collectionTruncate)
-            {
-                if(!collectionTruncate.IsEmpty)
-                {
-                    collectionTruncate.Collection.DeleteMany(collectionTruncate.FilterEmpty);       
-                }
-            }
-
-            Logger.Instance.Info("DBConnection.TruncateCollections Start");
-
-            using var consoleTrunc = new Progression(this.ConsoleProgression, "Truncating...");
-
-            try
-            {
-                Truncate(CurrentPlayersCollection);
-                Truncate(PlayersHistoryCollection);
-                Truncate(PlayersTransHistoryCollection);
-                Truncate(UsedEmailCntCollection);
-                Truncate(GlobalIncrementCollection);
-                Truncate(InterventionCollection);
-                Truncate(LiverWagerCollection);
-                Truncate(InterventionThresholdsCollection);
-            }
-            catch (Exception ex) 
-            {
-                Logger.Instance.Error(ex);                
-                throw;
-            }
-
-            Logger.Instance.Info("DBConnection.TruncateCollections End");
-        }
         
         #region Disposable
         public bool Disposed { get; private set; }

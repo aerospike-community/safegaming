@@ -13,6 +13,45 @@ namespace PlayerCommon
 {
     partial class DBConnection : IDBConnectionSim
     {
+
+        public ConsoleDisplay PlayerProgression { get; set; }
+        public ConsoleDisplay HistoryProgression { get; set; }
+
+        public void Truncate()
+        {
+
+            static void Truncate<T>(DBCollection<T> collectionTruncate)
+            {
+                if (!collectionTruncate.IsEmpty)
+                {
+                    collectionTruncate.Collection.DeleteMany(collectionTruncate.FilterEmpty);
+                }
+            }
+
+            Logger.Instance.Info("DBConnection.TruncateCollections Start");
+
+            using var consoleTrunc = new Progression(this.ConsoleProgression, "Truncating...");
+
+            try
+            {
+                Truncate(CurrentPlayersCollection);
+                Truncate(PlayersHistoryCollection);
+                Truncate(PlayersTransHistoryCollection);
+                Truncate(UsedEmailCntCollection);
+                Truncate(GlobalIncrementCollection);
+                Truncate(InterventionCollection);
+                Truncate(LiverWagerCollection);
+                Truncate(InterventionThresholdsCollection);
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.Error(ex);
+                throw;
+            }
+
+            Logger.Instance.Info("DBConnection.TruncateCollections End");
+        }
+
         public async Task UpdateCurrentPlayers(Player player,
                                                 bool updateHistory,
                                                 CancellationToken cancellationToken)

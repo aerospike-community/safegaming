@@ -19,7 +19,7 @@ namespace PlayerCommon
     {
         public static Action InitializationAction = () => { };
         public static Action PreConsoleDisplayAction = delegate { };
-        public static Func<ConsoleDisplay, ConsoleDisplay, ConsoleDisplay, IDBConnectionSim> CreateDBConnection = null;
+        public static Func<ConsoleDisplay, SettingsSim, IDBConnectionSim> CreateDBConnection = null;
         public static Action PostConsoleDisplayAction = delegate { };
 
         static readonly string[] Games = new string[] { "Slots", "Roulette", "Roulette", "Slots", "Slots", "Roulette", "Roulette", "Slots", };
@@ -198,10 +198,14 @@ namespace PlayerCommon
             var logFilePath = Logger.GetSetEnvVarLoggerFile();
 
             using IDBConnectionSim dbConnection = SettingsSim.Instance.Config.UpdateDB
-                                                    ? CreateDBConnection?.Invoke(ConsolePuttingDB,
-                                                                                    ConsolePuttingPlayer,
-                                                                                    ConsolePuttingHistory)
+                                                    ? CreateDBConnection?.Invoke(ConsolePuttingDB, SettingsSim.Instance)
                                                     : null;
+            if (dbConnection is not null)
+            {
+                dbConnection.PlayerProgression = ConsolePuttingPlayer;
+                dbConnection.HistoryProgression = ConsolePuttingHistory;
+            }
+
             State[] stateDB;
 
             {

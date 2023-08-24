@@ -11,9 +11,7 @@ namespace PlayerCommon
     {
         
         Progression ConsoleProgression { get; }
-        ConsoleDisplay PlayerProgression { get; }
-        ConsoleDisplay HistoryProgression { get; }
-
+        
         bool UsedEmailCntEnabled { get; }
         bool IncrementGlobalEnabled { get; }
         bool LiverWagerEnabled { get; }

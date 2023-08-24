@@ -25,10 +25,8 @@ namespace PlayerCommon
                                                     SettingsSim.Instance.WarnMaxMSLatencyDBExceeded);
             };
 
-            CreateDBConnection = (displayProgression, playerProgression, historyProgression) =>
-                                    new DBConnection(displayProgression: ConsolePuttingDB,
-                                                        playerProgression: ConsolePuttingPlayer,
-                                                        historyProgression: ConsolePuttingHistory);
+            CreateDBConnection = (displayProgression, settingsSim) =>
+                                    new DBConnection(displayProgression, settingsSim.Config.Mongodb);
         }
     }
 }

@@ -19,10 +19,10 @@ namespace PlayerCommon
             this.WritePolicy = new Aerospike.Client.WritePolicy()
             {
                 sendKey = true,
-                socketTimeout = this.OperationalTimeout,
-                totalTimeout = this.OperationalTimeout * 3,
-                compress = SettingsSim.Instance.Config.Aerospike.EnableDriverCompression,
-                maxRetries = SettingsSim.Instance.Config.Aerospike.maxRetries
+                socketTimeout = this.ASSettings.DBOperationTimeout,
+                totalTimeout = this.ASSettings.totalTimeout * 3,
+                compress = this.ASSettings.EnableDriverCompression,
+                maxRetries = this.ASSettings.maxRetries
             };
 
             Logger.Instance.Dump(WritePolicy, Logger.DumpType.Info, "\tWrite Policy", 2);
@@ -40,6 +40,46 @@ namespace PlayerCommon
             Logger.Instance.Dump(ListPolicy, Logger.DumpType.Info, "\tRead Policy", 2);
         }
         #endregion
+
+        public ConsoleDisplay PlayerProgression { get; set; }
+        public ConsoleDisplay HistoryProgression { get; set; }
+
+        public void Truncate()
+        {
+
+            Logger.Instance.Info("DBConnection.Truncate Start");
+
+            using var consoleTrunc = new Progression(this.ConsoleProgression, "Truncating...");
+
+            void Truncate(NamespaceSetName namespaceSetName)
+            {
+                if (!namespaceSetName.IsEmpty())
+                {
+                    try
+                    {
+                        this.Connection.Truncate(null,
+                                                    namespaceSetName.Namespace,
+                                                    namespaceSetName.SetName,
+                                                    DateTime.Now);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Instance.Error($"DBConnection.Truncate {namespaceSetName}",
+                                                ex);
+                    }
+                }
+            }
+
+            Truncate(this.PlayersTransHistorySet);
+            Truncate(this.PlayersHistorySet);
+            Truncate(this.CurrentPlayersSet);
+            Truncate(this.UsedEmailCntSet);
+            Truncate(this.GlobalIncrementSet);
+            Truncate(this.InterventionSet);
+            Truncate(this.LiverWagerSet);
+
+            Logger.Instance.Info("DBConnection.Truncate End");
+        }
 
         public async Task UpdateCurrentPlayers(Player player,
                                                 bool updateHistory,

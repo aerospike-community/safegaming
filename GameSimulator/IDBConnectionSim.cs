@@ -47,6 +47,9 @@ namespace PlayerCommon
                                                         CancellationToken token,
                                                         bool forceRefresh = false);
 
+        ConsoleDisplay PlayerProgression { get; set; }
+        ConsoleDisplay HistoryProgression { get; set; }
+
     }
     
 }

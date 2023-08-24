@@ -34,15 +34,9 @@ namespace PlayerCommon
                                                     SettingsSim.Instance.WarnMaxMSLatencyDBExceeded);
             };
 
-            CreateDBConnection = (displayProgression, playerProgression, historyProgression) =>
-                                    new DBConnection(SettingsSim.Instance.Config.Aerospike.DBHost,
-                                                        SettingsSim.Instance.Config.Aerospike.DBPort,
-                                                        SettingsSim.Instance.Config.Aerospike.ConnectionTimeout,
-                                                        SettingsSim.Instance.Config.Aerospike.DBOperationTimeout,
-                                                        SettingsSim.Instance.Config.Aerospike.DBUseExternalIPAddresses,
-                                                        displayProgression: displayProgression,
-                                                        playerProgression: playerProgression,
-                                                        historyProgression: historyProgression);
+            CreateDBConnection = (displayProgression, settingsSim) =>
+                                    new DBConnection(settingsSim.Config.Aerospike,
+                                                        displayProgression);
         }
     }
 }

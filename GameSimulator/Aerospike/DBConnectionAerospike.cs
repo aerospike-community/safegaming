@@ -226,35 +226,14 @@ namespace PlayerCommon
             ClientDriverClass = typeof(Aerospike.Client.AsyncClient);
             ClientDriverName = "Aerospike Driver";
         }
-       
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="seedNode"></param>
-        /// <param name="port"></param>
-        /// <param name="connectionTiimeout"></param>
-        /// <param name="operationalTimeout"></param>
-        /// <param name="useExternalIp"></param>        
-        /// <param name="displayProgression"></param>
-        /// <param name="playerProgression"></param>
-        /// <param name="historyProgression"></param>
-        /// <param name="autoConnect"></param>
-        public DBConnection([NotNull] string seedNode,
-                            int port,
-                            int connectionTiimeout,
-                            int operationalTimeout,
-                            bool useExternalIp,
-                            ConsoleDisplay displayProgression = null,
-                            ConsoleDisplay playerProgression = null,
-                            ConsoleDisplay historyProgression = null,
-                            bool autoConnect = true)
+               
+        public DBConnection(AerospikeSettings settings,
+                                ConsoleDisplay displayProgression,
+                                bool autoConnect = true)
         {
-            this.ConnectionTiimeout = connectionTiimeout;
-            this.OperationalTimeout = operationalTimeout;
-            this.Seednode = seedNode;
-            this.Port = port;
-            this.UseExternalIP = useExternalIp;
-
+            this.ASSettings = settings;
+            this.ConsoleProgression = new Progression(displayProgression, "Aerospike Connection", null);
+            
             this.CurrentPlayersSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.CurrentPlayersSetName);
             this.PlayersHistorySet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.PlayersHistorySetName);
             this.PlayersTransHistorySet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.PlayersTransHistorySetName);
@@ -263,14 +242,13 @@ namespace PlayerCommon
             this.LiverWagerSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.LiveWagerSetName);
             this.InterventionSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.InterventionSetName);
             this.InterventionThresholdsSet = new NamespaceSetName(SettingsSim.Instance.Config.Aerospike.InterventionThresholdsSetName);
-
-            this.ConsoleProgression = new Progression(displayProgression, "Aerospike Connection", null);
-            this.PlayerProgression = playerProgression;
-            this.HistoryProgression = historyProgression;
-            
+ 
             Logger.Instance.InfoFormat("DBConnection:");
-            Logger.Instance.InfoFormat("\tSeed Node: {0}\tPort: {1} Use Alter Address: {2}", Seednode, Port, UseExternalIP);
-            Logger.Instance.InfoFormat("\tConnection Timeout: {0}", ConnectionTiimeout);
+            Logger.Instance.InfoFormat("\tSeed Node: {0}\tPort: {1} Use Alter Address: {2}",
+                                            this.ASSettings.DBHost, 
+                                            this.ASSettings.DBPort,
+                                            this.ASSettings.DBUseExternalIPAddresses);
+            Logger.Instance.InfoFormat("\tConnection Timeout: {0}", this.ASSettings.ConnectionTimeout);
             
             Logger.Instance.InfoFormat("\tSets:");
             if(this.CurrentPlayersSet.IsEmpty())
@@ -309,13 +287,8 @@ namespace PlayerCommon
             if (autoConnect)
                 this.Connect();
         }
-
-        public string Seednode { get; }
-        public int Port { get; }
-        public int ConnectionTiimeout { get; }
-        public int OperationalTimeout { get; }
-        public bool UseExternalIP { get; }
-
+       
+        public AerospikeSettings ASSettings { get; }
         public readonly NamespaceSetName CurrentPlayersSet;
         public readonly NamespaceSetName PlayersHistorySet;
         public readonly NamespaceSetName PlayersTransHistorySet;
@@ -331,9 +304,7 @@ namespace PlayerCommon
         public readonly NamespaceSetName InterventionThresholdsSet;
 
         public Progression ConsoleProgression { get; }
-        public ConsoleDisplay PlayerProgression { get; }
-        public ConsoleDisplay HistoryProgression { get; }
-
+        
         public AsyncClient Connection { get; private set; }
 
         public void Connect()
@@ -361,16 +332,16 @@ namespace PlayerCommon
             if (SettingsSim.Instance.Config.Aerospike.connPoolsPerNode > 0)
                 policy.connPoolsPerNode = SettingsSim.Instance.Config.Aerospike.connPoolsPerNode;
 
-            policy.timeout = this.ConnectionTiimeout;
-            policy.loginTimeout = this.ConnectionTiimeout;
-            policy.useServicesAlternate = this.UseExternalIP;
+            policy.timeout = this.ASSettings.ConnectionTimeout;
+            policy.loginTimeout = this.ASSettings.ConnectionTimeout;
+            policy.useServicesAlternate = this.ASSettings.DBUseExternalIPAddresses;
             policy.maxErrorRate = SettingsSim.Instance.Config.Aerospike.maxErrorRate;
             policy.errorRateWindow = SettingsSim.Instance.Config.Aerospike.errorRateWindow;
             policy.tendInterval = SettingsSim.Instance.Config.Aerospike.tendInterval;
 
             Logger.Instance.Dump(policy, Logger.DumpType.Info, "\tConnection Policy", 2);            
 
-            this.Connection = new AsyncClient(policy, this.Seednode, this.Port);
+            this.Connection = new AsyncClient(policy, this.ASSettings.DBHost, this.ASSettings.DBPort);
             
             this.CreateWritePolicy();
             this.CreateReadPolicies();
@@ -384,43 +355,6 @@ namespace PlayerCommon
         public WritePolicy WritePolicy { get; private set; }
         public Policy ReadPolicy { get; private set; }
         public ListPolicy ListPolicy { get; private set; }
-
-        public void Truncate()
-        {
-
-            Logger.Instance.Info("DBConnection.Truncate Start");
-
-            using var consoleTrunc = new Progression(this.ConsoleProgression, "Truncating...");
-
-            void Truncate(NamespaceSetName namespaceSetName)
-            {
-                if (!namespaceSetName.IsEmpty())
-                {
-                    try
-                    {
-                        this.Connection.Truncate(null,
-                                                    namespaceSetName.Namespace,
-                                                    namespaceSetName.SetName,
-                                                    DateTime.Now);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Instance.Error($"DBConnection.Truncate {namespaceSetName}",
-                                                ex);
-                    }
-                }
-            }
-
-            Truncate(this.PlayersTransHistorySet);
-            Truncate(this.PlayersHistorySet);            
-            Truncate(this.CurrentPlayersSet);
-            Truncate(this.UsedEmailCntSet);
-            Truncate(this.GlobalIncrementSet);
-            Truncate(this.InterventionSet);
-            Truncate(this.LiverWagerSet);
-            
-            Logger.Instance.Info("DBConnection.Truncate End");
-        }
 
         #region Disposable
         public bool Disposed { get; private set; }

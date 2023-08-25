@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using GameDashBoard;
 
 namespace PlayerCommon
 {
@@ -29,6 +28,6 @@ namespace PlayerCommon
                             int maxTransactions,
                             CancellationToken cancellationToken);
 
-        Task CreateIndexes(CancellationToken cancellationToken);
+        void CreateIndexes(CancellationToken cancellationToken);
     }
 }

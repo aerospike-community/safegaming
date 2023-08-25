@@ -5,12 +5,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
 using Common.Patterns.Tasks;
-using Common.File;
 using System.Threading;
-using System.Data;
 using System.Diagnostics;
-using System.IO;
-using System.Collections.Concurrent;
 using GameDashBoard;
 
 namespace PlayerCommon
@@ -196,7 +192,7 @@ namespace PlayerCommon
             
             if (dbConnection != null && SettingsGDB.Instance.Config.CreateIdxs)
             {
-                //dbConnection.CreateIndexes(cancellationTokenSource.Token).Wait(cancellationTokenSource.Token);
+                dbConnection.CreateIndexes(cancellationTokenSource.Token);
             }
 
             #endregion

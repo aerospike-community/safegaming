@@ -31,6 +31,7 @@ namespace PlayerCommon
         public int errorRateWindow = 1;
         public int tendInterval = 1000;
         public bool DBUseExternalIPAddresses = false;
+        public int RecordsPerSecond = 0;
 
         public string CurrentPlayersSetName = "test.CurrentPlayers";
         public string PlayersHistorySetName = "test.PlayersHistory";

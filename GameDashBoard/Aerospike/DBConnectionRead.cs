@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Mail;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Aerospike.Client;
 using Common;
 using GameDashBoard;
-using HdrHistogram;
 
 namespace PlayerCommon
 {
@@ -68,9 +64,48 @@ namespace PlayerCommon
         }
         #endregion
 
-        public Task CreateIndexes(CancellationToken cancellationToken)
+        public void CreateIndexes(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            Logger.Instance.Info("DBConnection.CreateIndexes Start");
+
+            using var consoleTrunc = new Progression(this.ConsoleProgression, "Truncating...");
+
+            void CreateIdx(NamespaceSetName namespaceSetName)
+            {
+                if (!namespaceSetName.IsEmpty())
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    string binName;
+
+                    if (namespaceSetName.SetName == "Intervention")
+                        binName = "interv_unixts";
+                    else if (namespaceSetName.SetName == "LiveWager")
+                        binName = "txn_unixts";                    
+                    else
+                        binName = "process_unixts";
+
+                    try
+                    {
+                        this.Connection.CreateIndex(this.WritePolicy,
+                                                        namespaceSetName.Namespace,
+                                                        namespaceSetName.SetName,
+                                                        $"{namespaceSetName.SetName}_unix_timestamp",
+                                                        binName,
+                                                        IndexType.NUMERIC).Wait();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Instance.Error($"DBConnection.Truncate {namespaceSetName}",
+                                                ex);
+                    }
+                }
+            }
+
+            CreateIdx(this.GlobalIncrementSet);
+            CreateIdx(this.InterventionSet);
+            CreateIdx(this.LiverWagerSet);
+
+            Logger.Instance.Info("DBConnection.CreateIndexes End");
         }
 
         private int DisplayRecords(RecordSet recordSet, 
@@ -158,19 +193,30 @@ namespace PlayerCommon
 
             int playerCnt = 0;
             int playerTrigger = maxTransactions - (maxTransactions * (SettingsGDB.Instance.Config.PlayerFetchPct / 100));
-           
-            var query = new QueryPolicy(this.QueryPolicy)
-            { 
-                filterExp = Exp.Build(Exp.GE(Exp.IntBin("process_unixts"), Exp.Val(tranDT.ToUnixTimeSeconds())))
-            };
+            QueryPolicy query;
 
             var stmt = new Statement()
             {
                 Namespace = this.GlobalIncrementSet.Namespace,
-                SetName = this.GlobalIncrementSet.SetName,                
+                SetName = this.GlobalIncrementSet.SetName,
+                RecordsPerSecond = this.ASSettings.RecordsPerSecond
             };
 
-            if(SettingsGDB.Instance.Config.PageSize > 0)
+            if(SettingsGDB.Instance.Config.UseIdxs)
+            {
+                stmt.SetIndexName($"{this.GlobalIncrementSet.SetName}_unix_timestamp");
+                stmt.SetFilter(Filter.Range("process_unixts", tranDT.ToUnixTimeSeconds(), long.MaxValue));
+                query = this.QueryPolicy;
+            }
+            else
+            {
+                query = new QueryPolicy(this.QueryPolicy)
+                {
+                    filterExp = Exp.Build(Exp.GE(Exp.IntBin("process_unixts"), Exp.Val(tranDT.ToUnixTimeSeconds())))
+                };
+            }
+
+            if (SettingsGDB.Instance.Config.PageSize > 0)
                 stmt.MaxRecords = SettingsGDB.Instance.Config.PageSize;
 
             PartitionFilter filter = PartitionFilter.All();
@@ -278,17 +324,28 @@ namespace PlayerCommon
 
             int playerCnt = 0;
             int playerTrigger = maxTransactions - (maxTransactions * (SettingsGDB.Instance.Config.PlayerFetchPct / 100));
-
-            var query = new QueryPolicy(this.QueryPolicy)
-            {
-                filterExp = Exp.Build(Exp.GE(Exp.IntBin("process_unixts"), Exp.Val(tranDT.ToUnixTimeSeconds())))
-            };
+            QueryPolicy query;
 
             var stmt = new Statement()
             {
                 Namespace = this.InterventionSet.Namespace,
                 SetName = this.InterventionSet.SetName,
+                RecordsPerSecond = this.ASSettings.RecordsPerSecond
             };
+
+            if (SettingsGDB.Instance.Config.UseIdxs)
+            {
+                stmt.SetIndexName($"{this.InterventionSet.SetName}_unix_timestamp");
+                stmt.SetFilter(Filter.Range("interv_unixts", tranDT.ToUnixTimeSeconds(), long.MaxValue));
+                query = this.QueryPolicy;
+            }
+            else
+            {
+                query = new QueryPolicy(this.QueryPolicy)
+                {
+                    filterExp = Exp.Build(Exp.GE(Exp.IntBin("interv_unixts"), Exp.Val(tranDT.ToUnixTimeSeconds())))
+                };
+            }
 
             if (SettingsGDB.Instance.Config.PageSize > 0)
                 stmt.MaxRecords = SettingsGDB.Instance.Config.PageSize;
@@ -398,17 +455,28 @@ namespace PlayerCommon
 
             int playerCnt = 0;
             int playerTrigger = maxTransactions - (maxTransactions * (SettingsGDB.Instance.Config.PlayerFetchPct / 100));
-
-            var query = new QueryPolicy(this.QueryPolicy)
-            {
-                filterExp = Exp.Build(Exp.GE(Exp.IntBin("txn_unixts"), Exp.Val(tranDT.ToUnixTimeSeconds())))
-            };
+            QueryPolicy query;
 
             var stmt = new Statement()
             {
                 Namespace = this.LiverWagerSet.Namespace,
                 SetName = this.LiverWagerSet.SetName,
+                RecordsPerSecond = this.ASSettings.RecordsPerSecond
             };
+
+            if (SettingsGDB.Instance.Config.UseIdxs)
+            {
+                stmt.SetIndexName($"{this.LiverWagerSet.SetName}_unix_timestamp");
+                stmt.SetFilter(Filter.Range("txn_unixts", tranDT.ToUnixTimeSeconds(), long.MaxValue));
+                query = this.QueryPolicy;
+            }
+            else
+            {
+                query = new QueryPolicy(this.QueryPolicy)
+                {
+                    filterExp = Exp.Build(Exp.GE(Exp.IntBin("txn_unixts"), Exp.Val(tranDT.ToUnixTimeSeconds())))
+                };
+            }
 
             if (SettingsGDB.Instance.Config.PageSize > 0)
                 stmt.MaxRecords = SettingsGDB.Instance.Config.PageSize;

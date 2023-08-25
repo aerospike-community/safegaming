@@ -16,14 +16,14 @@ namespace GameDashBoard
         {
             AppSettings = appSettings;
 
-            this._cmdLineParser.Arguments.Add(new ValueArgument<int>('d', "NumberOfDashboardSessions")
+            this._cmdLineParser.Arguments.Add(new ValueArgument<int>('u', "NumberOfDashboardSessions")
             {
                 Optional = true, //Required                
                 DefaultValue = appSettings.Config.NumberOfDashboardSessions,
                 Description = "The number of Dashboards per Session"
             });
 
-            this._cmdLineParser.Arguments.Add(new ValueArgument<int>('r', "SessionRefreshRateSecs")
+            this._cmdLineParser.Arguments.Add(new ValueArgument<int>('f', "SessionRefreshRateSecs")
             {
                 Optional = true, //Required                
                 DefaultValue = appSettings.Config.SessionRefreshRateSecs,
@@ -58,6 +58,13 @@ namespace GameDashBoard
                 Optional = true, //Required                
                 Description = "Sleep between Transactions in MS"
             });
+
+            this._cmdLineParser.Arguments.Add(new SwitchArgument('r', "RealTime", false)
+            {
+                Optional = true, //Required                
+                Description = "Enables Real Time Dates/Times"
+            });
+
             //ContinuousSessions
             this._cmdLineParser.Arguments.Add(new SwitchArgument('c', "Continuous", false)
             {
@@ -94,6 +101,9 @@ namespace GameDashBoard
                         break;
                     case "Sleep":
                         this.AppSettings.Config.SleepBetweenTransMS = ((ValueArgument<int>)item).Value;
+                        break;
+                    case "RealTime":
+                        this.AppSettings.Config.EnableRealtime = true;
                         break;
                     case "Continuous":
                         this.AppSettings.Config.ContinuousSessions = true;

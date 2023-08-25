@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Aerospike.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,9 @@ namespace PlayerCommon
         public int totalTimeout;
         public int asyncMaxCommands = 500; //less than CompletionPortThreads
         public bool EnableDriverCompression = false;
+        public int QueueRecordSize = 5000;
+        public int MaxConcurrentNodes = 0;
+        public Replica Replica = Replica.SEQUENCE;
 
         public int asyncBufferSize = 1048576; //1MB
         public int connPoolsPerNode = 2;

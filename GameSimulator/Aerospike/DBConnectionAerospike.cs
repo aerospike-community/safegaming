@@ -356,6 +356,7 @@ namespace PlayerCommon
             this.CreateWritePolicy();
             this.CreateReadPolicies();
             this.CreateListPolicies();
+            this.CreateQueryPolicies();
 
             Logger.Instance.Info("DBConnection.Connect End");
             Logger.Instance.InfoFormat("\tNodes: {0}", string.Join(", ", Connection.Nodes.Select(n => n.NodeAddress.Address)));
@@ -365,6 +366,7 @@ namespace PlayerCommon
         public WritePolicy WritePolicy { get; private set; }
         public Policy ReadPolicy { get; private set; }
         public ListPolicy ListPolicy { get; private set; }
+        public QueryPolicy QueryPolicy { get; private set; }
 
         #region Disposable
         public bool Disposed { get; private set; }

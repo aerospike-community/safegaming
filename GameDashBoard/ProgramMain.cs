@@ -62,9 +62,10 @@ namespace PlayerCommon
 
             ConsoleDisplay.Console.WriteLine("MaxDegreeOfParallelism: Generation {0}",
                         Settings.Instance.MaxDegreeOfParallelism);
-            ConsoleDisplay.Console.WriteLine("Generating Sessions: {0} Rate: {1}",
+            ConsoleDisplay.Console.WriteLine("Generating Sessions: {0} Rate: {1} Start: {2}",
                         SettingsGDB.Instance.Config.NumberOfDashboardSessions,
-                        SettingsGDB.Instance.Config.SessionRefreshRateSecs);
+                        SettingsGDB.Instance.Config.SessionRefreshRateSecs,
+                        SettingsGDB.Instance.Config.StartDate);
 
             PreConsoleDisplayAction?.Invoke();
 
@@ -122,6 +123,22 @@ namespace PlayerCommon
                     System.Console.ForegroundColor = consoleColor1;
                 }
             }
+            if (SettingsGDB.Instance.Config.EnableRealtime)
+            {
+                Logger.Instance.WarnFormat("Real Time Session Enabled");
+
+                var consoleColor1 = System.Console.ForegroundColor;
+                try
+                {
+                    System.Console.ForegroundColor = ConsoleColor.Red;
+
+                    ConsoleDisplay.Console.WriteLine("Warning: Real Time Session Enabled");
+                }
+                finally
+                {
+                    System.Console.ForegroundColor = consoleColor1;
+                }
+            }
 
             if (SyncMode)
             {
@@ -148,7 +165,7 @@ namespace PlayerCommon
             //ConsoleGetWager = new ConsoleDisplay("Reading Wager Completed: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsoleLiveWager = new ConsoleDisplay("Live Eager Completed: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsoleIntervention = new ConsoleDisplay("Intervention Completed: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
-            ConsoleGlobalIncrement = new ConsoleDisplay("Global Increment Completed: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
+            ConsoleGlobalIncrement = new ConsoleDisplay("Global Increment Completed: {completed} Working: {working} Task: {tag} {task} ", reserveLines: 1, takeStartBlock: false);
             ConsoleSleep = new ConsoleDisplay("Sleep: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsoleFileWriting = new ConsoleDisplay("Writing File: {completed} Working: {working} Task: {tag} {task}", reserveLines: 1, takeStartBlock: false);
             ConsoleWarnings = new ConsoleDisplay("Warnings: {working} Last: {tag}", reserveLines: 1, takeStartBlock: false);
@@ -179,7 +196,7 @@ namespace PlayerCommon
             
             if (dbConnection != null && SettingsGDB.Instance.Config.CreateIdxs)
             {
-                dbConnection.CreateIndexes(cancellationTokenSource.Token).Wait(cancellationTokenSource.Token);
+                //dbConnection.CreateIndexes(cancellationTokenSource.Token).Wait(cancellationTokenSource.Token);
             }
 
             #endregion
@@ -188,16 +205,9 @@ namespace PlayerCommon
 
             if (SyncMode)
                 maxDegreeOfParallelism = 1;
-            else if(Settings.Instance.MaxDegreeOfParallelism > 0
-                        && SettingsGDB.Instance.Config.NumberOfDashboardSessions > Settings.Instance.MaxDegreeOfParallelism)
-            {
+            else 
                 maxDegreeOfParallelism = SettingsGDB.Instance.MaxDegreeOfParallelism;
-            }
-            else
-            {
-                maxDegreeOfParallelism = SettingsGDB.Instance.Config.NumberOfDashboardSessions;
-            }
-
+                       
             var parallelOptions = new ParallelOptions()
             {
                 CancellationToken = cancellationTokenSource.Token,
@@ -222,104 +232,101 @@ namespace PlayerCommon
             int actualProcessedTrans = 0;
             int nbrSessions = 0;
 
-            Parallel.For(0, SettingsGDB.Instance.Config.NumberOfDashboardSessions,
+            Parallel.For(1, SettingsGDB.Instance.Config.NumberOfDashboardSessions,
                             parallelOptions,
-                            (idx, state) =>
+                            (sessionId, state) =>
                 {
                     var cancellationToken = cancellationTokenSource.Token;
 
                     if (Logger.Instance.IsDebugEnabled)
-                        Logger.Instance.DebugFormat("Main Session {0}", idx);
+                        Logger.Instance.DebugFormat("Main Session {0}", sessionId);
 
-                    ConsoleSession.Increment($"Session {idx}");
+                    ConsoleSession.Increment($"Session {sessionId}");
+                    var random = new Random(Guid.NewGuid().GetHashCode());
 
                     int transactions = int.MaxValue;
-
-                    if (!SettingsGDB.Instance.Config.ContinuousSessions)
-                    {
-                        var random = new Random(Guid.NewGuid().GetHashCode());
-                        transactions = random.Next(SettingsGDB.Instance.Config.MinNbrTransPerSession,
-                                                    SettingsGDB.Instance.Config.MaxNbrTransPerSession);
-                    }
-
+                    
                     var startDateTime = SettingsGDB.Instance.Config.StartDate
                                             .Round(DateTimeHelpers.RoundToType.Second);
 
                     Logger.Instance.DebugFormat("Start Session {0} Transactions {1} StartDate {2}",
-                                                idx,
+                                                sessionId,
                                                 transactions,
                                                 startDateTime);
 
-                    int totalTrans = 0;
                     long refreshMS = SettingsGDB.Instance.Config.SessionRefreshRateSecs * 1000L;
-                    var sleepBetweenTrans = SettingsGDB.Instance.Config.SleepBetweenTransMS > 0;
                     var stopWatch = new Stopwatch();
+                    Task<int>[] tasks = new Task<int>[3];
 
-                    for (int tranIdx = 1;  tranIdx <= transactions; tranIdx++)
+                    if (!SettingsGDB.Instance.Config.ContinuousSessions)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+                        transactions = random.Next(SettingsGDB.Instance.Config.MinNbrTransPerSession,
+                                                    SettingsGDB.Instance.Config.MaxNbrTransPerSession);
+                    }
+                    
+                    tasks[0] = Task.Factory.StartNew<int>(()
+                                              => dbConnection.GetGlobalIncrement(startDateTime,
+                                                                                    sessionId,
+                                                                                    transactions,
+                                                                                    cancellationToken),
+                                                        cancellationToken,
+                                                        TaskCreationOptions.DenyChildAttach,
+                                                        TaskScheduler.Current);
+                    if(SyncMode)
+                        tasks[0].Wait();
 
-                        Logger.Instance.DebugFormat("Running Start Session {0} Transactions {1} EndDate {2}",
-                                                    idx,
-                                                    tranIdx,
-                                                    startDateTime);
-
-                        var tasks = new Task[5];
-                        stopWatch.Restart();
-
-                        tasks[0] = dbConnection.GetLiveWager(startDateTime, cancellationToken);
-                        if (sleepBetweenTrans)
-                        {
-                            ConsoleSleep.Increment("LiveWager");
-                            Thread.Sleep(SettingsGDB.Instance.Config.SleepBetweenTransMS);
-                            tasks[0].Wait(cancellationToken);
-                            ConsoleSleep.Decrement("LiveWager");
-                        }
-                        tasks[1] = dbConnection.GetIntervention(startDateTime, cancellationToken);
-                        if (sleepBetweenTrans)
-                        {
-                            ConsoleSleep.Increment("Intervention");
-                            Thread.Sleep(SettingsGDB.Instance.Config.SleepBetweenTransMS);
-                            tasks[1].Wait(cancellationToken);
-                            ConsoleSleep.Decrement("Intervention");
-                        }
-                        tasks[2] = dbConnection.GetGlobalIncrement(startDateTime, cancellationToken);
-                        if (sleepBetweenTrans)
-                        {
-                            ConsoleSleep.Increment("Global Increment");
-                            Thread.Sleep(SettingsGDB.Instance.Config.SleepBetweenTransMS);
-                            tasks[2].Wait(cancellationToken);
-                            ConsoleSleep.Decrement("Global Increment");
-                        }
-                        totalTrans = tranIdx;
-
-                        ConsoleSleep.Increment($"Session {idx}");
-                        Task.WaitAll(tasks, cancellationToken);
-
-                        var elapsedTime = stopWatch.ElapsedMilliseconds;
-                        var sleepTime = refreshMS - elapsedTime;
-
-                        Logger.Instance.DebugFormat("Running End Session {0} Transactions {1} EndDate {2} Elapsed Time {3}",
-                                                    idx,
-                                                    tranIdx,
-                                                    startDateTime,
-                                                    elapsedTime);
-                        
-                        if(sleepTime > 0)
-                            Thread.Sleep((int) sleepTime);
-                        ConsoleSleep.Decrement($"Session {idx}");
-                        startDateTime.AddMilliseconds(refreshMS);
-                        actualProcessedTrans++;
+                    if (!SettingsGDB.Instance.Config.ContinuousSessions)
+                    {
+                        transactions = random.Next(SettingsGDB.Instance.Config.MinNbrTransPerSession,
+                                                    SettingsGDB.Instance.Config.MaxNbrTransPerSession);
                     }
 
-                    Logger.Instance.DebugFormat("End Session {0} Transactions {1} EndDate {2}",
-                                                    idx,
+                    tasks[1] = Task.Factory.StartNew<int>(() 
+                                                => dbConnection.GetLiveWager(startDateTime,
+                                                                                sessionId,
+                                                                                transactions,
+                                                                                cancellationToken),
+                                                    cancellationToken,
+                                                    TaskCreationOptions.DenyChildAttach,
+                                                    TaskScheduler.Current);
+
+                    if (SyncMode)
+                        tasks[1].Wait();
+
+                    if (!SettingsGDB.Instance.Config.ContinuousSessions)
+                    {
+                        transactions = random.Next(SettingsGDB.Instance.Config.MinNbrTransPerSession,
+                                                    SettingsGDB.Instance.Config.MaxNbrTransPerSession);
+                    }
+
+                    tasks[2] = Task.Factory.StartNew<int>(()
+                                                => dbConnection.GetIntervention(startDateTime,
+                                                                                sessionId,
+                                                                                transactions,
+                                                                                cancellationToken),
+                                                    cancellationToken,
+                                                    TaskCreationOptions.DenyChildAttach,
+                                                    TaskScheduler.Current);
+
+                    if (SyncMode)
+                        tasks[3].Wait();
+
+                    Logger.Instance.DebugFormat("Waiting for All Transactions Session {0}",
+                                                    sessionId);
+
+                    Task.WhenAll(tasks);
+
+                    var totalTrans = tasks.Sum(t => t.Result);                    
+
+                    Interlocked.Add(ref actualProcessedTrans, totalTrans);
+                    ConsoleSession.Decrement($"Session {sessionId}");
+
+                    nbrSessions++;
+
+                    Logger.Instance.DebugFormat("End Session {0} Transactions {1} StartDate {2}",
+                                                    sessionId,
                                                     totalTrans,
                                                     startDateTime);
-
-                    Interlocked.Increment(ref actualProcessedTrans);
-                    ConsoleSession.Decrement($"Session {idx}");
-                    nbrSessions++;
                 });
 
             startProcessingTime.Stop();

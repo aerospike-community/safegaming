@@ -21,7 +21,7 @@ namespace PlayerCommon
         private static readonly string CommandLineArgsString = null;
         private static bool DebugMode = false;
 
-        private static bool SyncMode = false;
+        public static bool SyncMode = false;
 
         /// <summary>
         /// 

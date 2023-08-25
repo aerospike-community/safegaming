@@ -141,10 +141,57 @@ namespace PlayerCommon
 
             if (propertyType == typeof(DateTimeOffset))
             {
+                if (configValue.ToLower() == "now")
+                    return DateTimeOffset.Now;
+
                 return DateTimeOffset.Parse(configValue);
             }
             else if (propertyType == typeof(TimeSpan))
             {
+                if(char.IsLetter(configValue.Last()))
+                {
+                    try
+                    {
+                        var letterPos = configValue.IndexOf(c => char.IsLetter(c));
+                        var uom = configValue[letterPos..];
+                        var num = configValue[..letterPos];
+                        switch (uom)
+                        {
+                            case "tick":
+                            case "ticks":
+                            case "t":
+                                return TimeSpan.FromTicks(long.Parse(num));
+                            case "us":
+                            case "usec":
+                            case "usecs":
+                                return TimeSpan.FromMicroseconds(double.Parse(num));
+                            case "ns":
+                            case "nsec":
+                            case "nsecs":
+                                return TimeSpan.FromMicroseconds(double.Parse(num) / 100d);
+                            case "ms":
+                            case "msec":
+                            case "msecs":
+                                return TimeSpan.FromMilliseconds(double.Parse(num));
+                            case "m":
+                            case "mins":
+                            case "min":
+                                return TimeSpan.FromMinutes(double.Parse(num));
+                            case "h":
+                            case "hrs":
+                            case "hr":
+                                return TimeSpan.FromHours(double.Parse(num));
+                            case "d":
+                            case "day":
+                            case "days":
+                                return TimeSpan.FromDays(double.Parse(num));
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        throw new Exception($"Value \"{configValue}\" is not a valid TimeSpan with UOM", ex);
+                    }
+                }
                 return TimeSpan.Parse(configValue);
             }
             else if (propertyType.IsEnum)
@@ -166,6 +213,8 @@ namespace PlayerCommon
                 else if (propertyType == typeof(bool))
                     return Convert.ToBoolean(configValue);
                 else if (propertyType == typeof(DateTime))
+                    if (configValue.ToLower() == "now")
+                        return DateTime.Now;
                     return Convert.ToDateTime(configValue);
 
                 return Convert.ChangeType(configValue, propertyType);

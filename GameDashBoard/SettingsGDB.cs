@@ -14,6 +14,7 @@ namespace GameDashBoard
 
         public List<string> OnlyPlayerIds;
         public List<string> OnlyStateCounties;
+        public int PlayerFetchPct = 10;
         public int NumberOfDashboardSessions;
         public int SessionRefreshRateSecs;
         public int MaxNbrTransPerSession;
@@ -23,6 +24,7 @@ namespace GameDashBoard
 
         public DateTimeOffset StartDate = DateTimeOffset.Now;
         public bool ContinuousSessions;
+        public bool EnableRealtime;
     }
 
     public partial class SettingsGDB : PlayerCommon.Settings

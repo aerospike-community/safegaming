@@ -213,9 +213,11 @@ namespace PlayerCommon
                 else if (propertyType == typeof(bool))
                     return Convert.ToBoolean(configValue);
                 else if (propertyType == typeof(DateTime))
+                {
                     if (configValue.ToLower() == "now")
                         return DateTime.Now;
                     return Convert.ToDateTime(configValue);
+                }
 
                 return Convert.ChangeType(configValue, propertyType);
             }

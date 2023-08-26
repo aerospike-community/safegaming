@@ -87,7 +87,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" Version="2.20.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.21.0" />
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
     <PackageReference Include="Common.Console" Version="5.31.10" />
     <PackageReference Include="Common.Functions" Version="5.31.10" />

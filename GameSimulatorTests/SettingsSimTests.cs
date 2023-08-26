@@ -44,9 +44,10 @@ namespace GameSimulator.Tests
                             Assert.AreEqual("instanceTestSettings", propName);
                             Assert.IsNull(prop);
 
-                            var newInstance = new TestSettingsCls();
-
-                            newInstance.invoke2 = "Invoke2";
+                            var newInstance = new TestSettingsCls()
+                            {
+                                invoke2 = "Invoke2"
+                            };                            
 
                             return (newInstance, InvokePathActions.Update);                            
                         });
@@ -75,9 +76,10 @@ namespace GameSimulator.Tests
                                 Assert.IsNotNull(propParent);
                                 Assert.IsInstanceOfType(propParent, typeof(TestSettingsCls1));
 
-                                var newInstance = new TestSettingsCls();
-
-                                newInstance.invoke3 = "Invoke3";
+                                var newInstance = new TestSettingsCls()
+                                {
+                                    invoke3 = "Invoke3"
+                                };
 
                                 return (newInstance, InvokePathActions.ContinueAndUseValue);
                             }

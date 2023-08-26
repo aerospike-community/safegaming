@@ -22,16 +22,38 @@ namespace PlayerCommon
                 socketTimeout = this.ASSettings.DBOperationTimeout,
                 totalTimeout = this.ASSettings.totalTimeout * 3,
                 compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries
+                maxRetries = this.ASSettings.maxRetries                
             };
 
             Logger.Instance.Dump(WritePolicy, Logger.DumpType.Info, "\tWrite Policy", 2);
         }
         void CreateReadPolicies()
         {
-            this.ReadPolicy = new Policy(this.Connection.readPolicyDefault);
+            this.ReadPolicy = new Policy()
+            {
+                sendKey = true,
+                socketTimeout = this.ASSettings.DBOperationTimeout,
+                totalTimeout = this.ASSettings.totalTimeout * 3,
+                compress = this.ASSettings.EnableDriverCompression,
+                maxRetries = this.ASSettings.maxRetries                
+            };
 
             Logger.Instance.Dump(ReadPolicy, Logger.DumpType.Info, "\tRead Policy", 2);
+        }
+
+        void CreateQueryPolicies()
+        {
+            this.QueryPolicy = new QueryPolicy()
+            {
+                sendKey = true,
+                socketTimeout = this.ASSettings.DBOperationTimeout,
+                totalTimeout = this.ASSettings.totalTimeout * 3,
+                compress = this.ASSettings.EnableDriverCompression,
+                maxRetries = this.ASSettings.maxRetries,
+                recordQueueSize = this.ASSettings.QueueRecordSize,
+                maxConcurrentNodes = this.ASSettings.MaxConcurrentNodes,
+                replica = this.ASSettings.Replica                
+            };
         }
 
         void CreateListPolicies()

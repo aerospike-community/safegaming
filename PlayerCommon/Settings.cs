@@ -357,7 +357,8 @@ namespace PlayerCommon
                     break;
             }
 
-            var instanceProps = TypeHelpers.GetPropertyFields(propType);
+            var instanceProps = TypeHelpers.GetPropertyFields(propType)
+                                    .Where(p => p.IsPublicWrite);
             var newInstance = property is null ? (T)Activator.CreateInstance(propType) : property;
             
             void SetValue(PropertyFieldInfo propertyFieldInfo, ECM.IConfigurationSection childSection, object instance)

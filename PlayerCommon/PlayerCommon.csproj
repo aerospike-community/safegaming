@@ -19,7 +19,7 @@
   <ItemGroup>
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
     <PackageReference Include="Common.Console" Version="5.31.10" />
-    <PackageReference Include="Common.Functions" Version="5.31.10" />
+    <PackageReference Include="Common.Functions" Version="5.31.11" />
     <PackageReference Include="Common.Logger" Version="5.31.15" />
     <PackageReference Include="Common.Path" Version="5.31.5" />
     <PackageReference Include="HdrHistogram" Version="2.5.2" />

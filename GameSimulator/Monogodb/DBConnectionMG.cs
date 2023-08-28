@@ -132,12 +132,20 @@ namespace PlayerCommon
         public DBConnection(ConsoleDisplay displayProgression,
                                 MongoDBSettings settings)
         {
+            
             this.ConsoleProgression = new Progression(displayProgression, "MongoDB Connection", null);
             this.MGSettings = settings;
 
-            BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
-            //BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer());
-
+            try
+            {
+                BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
+                //BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer());
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.Error("Exception during RegisterSerializer. It will be ignored.", ex);
+            }
+            
             var dbName = this.MGSettings.DBName;
 
             {
@@ -243,13 +251,15 @@ namespace PlayerCommon
         public readonly DBCollection<PlayersTransHistory> PlayersTransHistoryCollection;
         public readonly DBCollection<UsedEmailCnt> UsedEmailCntCollection;
         public readonly DBCollection<InterventionThresholds> InterventionThresholdsCollection;
+        public bool UsedEmailCntEnabled { get => !this.UsedEmailCntCollection.IsEmpty; }
+#else
+        public bool UsedEmailCntEnabled { get => false; }
 #endif
 
         public readonly DBCollection<GlobalIncrement> GlobalIncrementCollection;
         public readonly DBCollection<Intervention> InterventionCollection;
         public readonly DBCollection<LiveWager> LiverWagerCollection;
-
-        public bool UsedEmailCntEnabled { get => !this.UsedEmailCntCollection.IsEmpty; }
+        
         public bool IncrementGlobalEnabled { get => !GlobalIncrementCollection.IsEmpty; }
         public bool LiverWagerEnabled { get => !LiverWagerCollection.IsEmpty; }
         public bool InterventionEnabled { get => !InterventionCollection.IsEmpty; }

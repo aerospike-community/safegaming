@@ -12,6 +12,7 @@ using PlayerCommonDummy;
 
 namespace PlayerCommon
 {
+    [BsonIgnoreExtraElements]
     public partial struct GlobalIncrement
     {
         [BsonConstructor]
@@ -49,7 +50,7 @@ namespace PlayerCommon
         [JsonPropertyName("process_time")]
         [BsonElement("process_time")]
         public DateTimeOffset IntervalTimeStamp { get; }
-
+        
         [JsonPropertyName("process_unixts")]
         [BsonElement("process_unixts")]
         public long IntervalUnixSecs{ get => this.IntervalTimeStamp.ToUnixTimeSeconds(); }
@@ -82,7 +83,7 @@ namespace PlayerCommon
         [BsonElement("trn_count")]
         public long Transactions { get; set; }
 
-        [BsonElement]
+        [BsonElement]        
         public long IntervalUsed { get; }
                 
     }

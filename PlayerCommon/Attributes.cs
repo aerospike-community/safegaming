@@ -28,5 +28,18 @@ namespace PlayerCommonDummy
 
         public string Name { get; }
     }
+
+    public class BsonIgnoreExtraElements : Attribute
+    {
+        public BsonIgnoreExtraElements() 
+            : this(true)
+        { }
+        public BsonIgnoreExtraElements(bool ignoreExtraElements)
+        {
+            this.IgnoreExtraElements = ignoreExtraElements;
+        }
+
+        public bool IgnoreExtraElements { get; }
+    }
 #pragma warning restore CA1018 // Mark attributes with AttributeUsageAttribute
 }

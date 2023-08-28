@@ -660,6 +660,7 @@ namespace PlayerCommon
                                                 .SetOnInsert(t => t.State, glbIncr.State)
                                                 .SetOnInsert(t => t.County, glbIncr.County)
                                                 .SetOnInsert(t => t.CountyCode, glbIncr.CountyCode)
+                                                .SetOnInsert(t => t.IntervalUsed, glbIncr.IntervalUsed)
                                                 .Set(t => t.IntervalTimeStamp, glbIncr.IntervalTimeStamp)
                                                 .Set(t => t.IntervalUnixSecs, glbIncr.IntervalUnixSecs)
                                                 .Inc(t => t.GGR, glbIncr.GGR)

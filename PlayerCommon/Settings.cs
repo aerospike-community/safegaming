@@ -6,6 +6,7 @@ using System.Text.Json;
 using ECM = Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Collections;
+using Microsoft.Extensions.Configuration.Json;
 
 namespace PlayerCommon
 {
@@ -33,7 +34,16 @@ namespace PlayerCommon
             }
             this.AppJsonFile = appJsonFile;
 
-            var configBuilderFile = ECM.JsonConfigurationExtensions.AddJsonFile(ConfigurationBuilder, appJsonFile);
+            var configBuilderFile = ECM.JsonConfigurationExtensions.AddJsonFile(ConfigurationBuilder, appJsonFile, false);
+
+            if(appJsonFile != "appsettings.json")
+            {
+                ConfigurationBuilder
+                    .Sources.OfType<JsonConfigurationSource>()
+                    .First(x => x.Path == "appsettings.json")
+                    .Optional = true;
+            }
+
             this.ConfigurationBuilderFile = configBuilderFile.Build();
 
             GetSetting(this.ConfigurationBuilderFile, ref IgnoreFaults, nameof(IgnoreFaults));            

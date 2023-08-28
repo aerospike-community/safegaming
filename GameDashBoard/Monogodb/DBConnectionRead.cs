@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Aerospike.Client;
+using MongoDB.Driver;
 using Common;
 using GameDashBoard;
 
@@ -13,101 +13,48 @@ namespace PlayerCommon
 {
     partial class DBConnection : IDBConnectionGDB
     {
-        #region Policies
-        void CreateWritePolicy()
-        {
-            this.WritePolicy = new Aerospike.Client.WritePolicy()
-            {
-                sendKey = true,
-                socketTimeout = this.ASSettings.DBOperationTimeout,
-                totalTimeout = this.ASSettings.totalTimeout * 3,
-                compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries
-            };
-
-            Logger.Instance.Dump(WritePolicy, Logger.DumpType.Info, "\tWrite Policy", 2);
-        }
-        void CreateReadPolicies()
-        {
-            this.ReadPolicy = new Policy(this.Connection.readPolicyDefault)
-            {
-                socketTimeout = this.ASSettings.DBOperationTimeout,
-                totalTimeout = this.ASSettings.totalTimeout * 3,
-                compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries,
-                replica = this.ASSettings.Replica
-            };
-
-            Logger.Instance.Dump(ReadPolicy, Logger.DumpType.Info, "\tRead Policy", 2);
-        }
-
-        void CreateQueryPolicies()
-        {
-            this.QueryPolicy = new QueryPolicy()
-            {
-                socketTimeout = this.ASSettings.DBOperationTimeout,
-                totalTimeout = this.ASSettings.totalTimeout * 3,
-                compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries,
-                recordQueueSize = this.ASSettings.QueueRecordSize,
-                maxConcurrentNodes = this.ASSettings.MaxConcurrentNodes,
-                replica = this.ASSettings.Replica
-            };
-
-            Logger.Instance.Dump(QueryPolicy, Logger.DumpType.Info, "\tQuery Policy", 2);
-        }
-
-        void CreateListPolicies()
-        {
-            this.ListPolicy = new ListPolicy(ListOrder.UNORDERED, ListWriteFlags.DEFAULT);
-            Logger.Instance.Dump(ListPolicy, Logger.DumpType.Info, "\tList Policy", 2);
-        }
-        #endregion
-
+        
         public void CreateIndexes(CancellationToken cancellationToken)
         {
             Logger.Instance.Info("DBConnection.CreateIndexes Start");
 
             using var consoleTrunc = new Progression(this.ConsoleProgression, "Create SIdxs...");
 
-            void CreateIdx(NamespaceSetName namespaceSetName)
+            async Task CreateIdx<T>(DBCollection<T> collection, IndexKeysDefinition<T> indexDef)               
             {
-                if (!namespaceSetName.IsEmpty())
+                if (!collection.IsEmpty)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    string binName;
-
-                    if (namespaceSetName.SetName == "Intervention")
-                        binName = "interv_unixts";
-                    else if (namespaceSetName.SetName == "LiveWager")
-                        binName = "txn_unixts";                    
-                    else
-                        binName = "process_unixts";
-
+                   
                     try
                     {
-                        this.Connection.CreateIndex(this.WritePolicy,
-                                                        namespaceSetName.Namespace,
-                                                        namespaceSetName.SetName,
-                                                        $"{namespaceSetName.SetName}_unix_timestamp",
-                                                        binName,
-                                                        IndexType.NUMERIC).Wait();
+                        await collection
+                                .Collection
+                                .Indexes
+                                .CreateOneAsync(new CreateIndexModel<T>(indexDef),
+                                                    cancellationToken: cancellationToken);
                     }
                     catch (Exception ex)
                     {
-                        Logger.Instance.Error($"DBConnection.CreateIndexes {namespaceSetName}",
+                        Logger.Instance.Error($"DBConnection.CreateIndexes {collection.CollectionName}",
                                                 ex);
                     }
                 }
             }
 
-            CreateIdx(this.GlobalIncrementSet);
-            CreateIdx(this.InterventionSet);
-            CreateIdx(this.LiverWagerSet);
+            Task[] tasks = new Task[3];
+
+            tasks[0] =  CreateIdx(this.GlobalIncrementCollection,
+                                    Builders<GlobalIncrement>.IndexKeys.Ascending(c => c.IntervalUnixSecs));
+            tasks[1] = CreateIdx(this.InterventionCollection,
+                                    Builders<Intervention>.IndexKeys.Ascending(c => c.InterventionTimeStampUnixSecs));
+            tasks[2] = CreateIdx(this.LiverWagerCollection,
+                                   Builders<LiveWager>.IndexKeys.Ascending(c => c.txn_unixts));
 
             Logger.Instance.Info("DBConnection.CreateIndexes End");
         }
 
+        /*
         private int DisplayRecords(RecordSet recordSet, 
                                     ConsoleDisplay console,
                                     int sessionIdx,
@@ -175,13 +122,13 @@ namespace PlayerCommon
 
             return nbrRecs;
         }
-
+        */
         public int GetGlobalIncrement(DateTimeOffset tranDT,
                                         int sessionIdx,
                                         int maxTransactions, 
                                         CancellationToken cancellationToken)
         {
-            if(GlobalIncrementSet.IsEmpty()) return 0;
+            if(GlobalIncrementCollection.IsEmpty) return 0;
 
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.GetGlobalIncrement Run Start Session {0} Date: {1} MaxTrans: {2}",
@@ -193,6 +140,14 @@ namespace PlayerCommon
 
             int playerCnt = 0;
             int playerTrigger = maxTransactions - (maxTransactions * (SettingsGDB.Instance.Config.PlayerFetchPct / 100));
+            List<Task> displayTaks = new();
+            int idx = 0;
+
+            //var x = this.GlobalIncrementCollection.Collection.Find(null);
+
+
+
+            /*
             QueryPolicy query;
 
             var stmt = new Statement()
@@ -221,8 +176,8 @@ namespace PlayerCommon
 
             PartitionFilter filter = PartitionFilter.All();
             PartitionStatus[] cursors = filter.Partitions;
-            List<Task> displayTaks = new();
-            int idx = 0;
+            
+            
 
             RecordSet recordSet;
             bool hasRecs;
@@ -291,8 +246,8 @@ namespace PlayerCommon
                     Program.ConsoleSleep.Increment($"Session {idx}");
                 }
             }
-
-            if(Logger.Instance.IsDebugEnabled)
+            */
+            if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.GetGlobalIncrement Run Display Wait Session {0} Count {1}",
                                                 sessionIdx, idx);
 
@@ -312,7 +267,7 @@ namespace PlayerCommon
                                         int maxTransactions,
                                         CancellationToken cancellationToken)
         {
-            if (InterventionSet.IsEmpty()) return 0;
+            if (InterventionCollection.IsEmpty) return 0;
 
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.GetIntervention Run Start Session {0} Date: {1} MaxTrans: {2}",
@@ -324,6 +279,10 @@ namespace PlayerCommon
 
             int playerCnt = 0;
             int playerTrigger = maxTransactions - (maxTransactions * (SettingsGDB.Instance.Config.PlayerFetchPct / 100));
+            List<Task> displayTaks = new();
+            int idx = 0;
+
+            /*
             QueryPolicy query;
 
             var stmt = new Statement()
@@ -352,9 +311,7 @@ namespace PlayerCommon
 
             PartitionFilter filter = PartitionFilter.All();
             PartitionStatus[] cursors = filter.Partitions;
-            List<Task> displayTaks = new();
-            int idx = 0;
-
+            
             RecordSet recordSet;
             bool hasRecs;
             var stopWatch = new Stopwatch();
@@ -422,7 +379,7 @@ namespace PlayerCommon
                     Program.ConsoleSleep.Increment($"Session {idx}");
                 }
             }
-
+            */
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.GetIntervention Run Display Wait Session {0} Count {1}",
                                                 sessionIdx, idx);
@@ -443,7 +400,7 @@ namespace PlayerCommon
                                     int maxTransactions,
                                     CancellationToken cancellationToken)
         {
-            if(LiverWagerSet.IsEmpty()) return 0;
+            if(LiverWagerCollection.IsEmpty) return 0;
 
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.GetLiveWager Run Start Session {0} Date: {1} MaxTrans: {2}",
@@ -455,6 +412,10 @@ namespace PlayerCommon
 
             int playerCnt = 0;
             int playerTrigger = maxTransactions - (maxTransactions * (SettingsGDB.Instance.Config.PlayerFetchPct / 100));
+            List<Task> displayTaks = new();
+            int idx = 0;
+
+            /*
             QueryPolicy query;
 
             var stmt = new Statement()
@@ -483,9 +444,7 @@ namespace PlayerCommon
 
             PartitionFilter filter = PartitionFilter.All();
             PartitionStatus[] cursors = filter.Partitions;
-            List<Task> displayTaks = new();
-            int idx = 0;
-
+            
             RecordSet recordSet;
             bool hasRecs;
             var stopWatch = new Stopwatch();
@@ -551,7 +510,7 @@ namespace PlayerCommon
                     Program.ConsoleSleep.Increment($"Session {idx}");
                 }
             }
-
+            */
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.GetLiveWager Run Display Wait Session {0} Count {1}",
                                                 sessionIdx, idx);
@@ -578,6 +537,7 @@ namespace PlayerCommon
 
             Program.ConsoleGetPlayer.Increment($"Session {sessionIdx} Player {playerId}");
 
+            /*
             var stopWatch =  Stopwatch.StartNew();
 
             var record = await this.Connection.Get(this.ReadPolicy,
@@ -620,7 +580,7 @@ namespace PlayerCommon
                             cancellationToken,
                             TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously,
                             TaskScheduler.Default);
-
+            */
             Program.ConsoleGetPlayer.Decrement($"Session {sessionIdx} Player {playerId}");
 
             if (Logger.Instance.IsDebugEnabled)

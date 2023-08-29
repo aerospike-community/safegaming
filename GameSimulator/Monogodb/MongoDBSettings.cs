@@ -80,15 +80,20 @@ namespace PlayerCommon
             public ReadConcern readConcern { get; set; }
         }
 
-
-        public CollectionOpts CurrentPlayersCollection = new CollectionOpts("CurrentPlayers");
-        public CollectionOpts PlayersHistoryCollection = new CollectionOpts("PlayersHistory");
-        public CollectionOpts PlayersTransHistoryCollection = new CollectionOpts("PlayersTransHistory");
+        public CollectionOpts CurrentPlayersCollection = new("CurrentPlayers");
+        public CollectionOpts PlayersHistoryCollection = new("PlayersHistory");
+        public CollectionOpts PlayersTransHistoryCollection = new("PlayersTransHistory");
         public CollectionOpts UsedEmailCntCollection = null; //"UsedEmailCnt";
-        public CollectionOpts GlobalIncrementCollection = new CollectionOpts("GlobalIncrement");
-        public CollectionOpts InterventionCollection = new CollectionOpts("Intervention");
-        public CollectionOpts LiveWagerCollection = new CollectionOpts("LiveWager");
-        public CollectionOpts InterventionThresholdsCollection = new CollectionOpts("InterventionThresholds");
+        public CollectionOpts GlobalIncrementCollection = new("GlobalIncrement");
+        public CollectionOpts InterventionCollection = new("Intervention");
+        public CollectionOpts LiveWagerCollection = new("LiveWager");
+        public CollectionOpts InterventionThresholdsCollection = new("InterventionThresholds");
+
+        public IEnumerable<CollectionOpts> GetAllCollections()
+            => new List<CollectionOpts>()
+            { CurrentPlayersCollection, PlayersHistoryCollection, PlayersTransHistoryCollection,
+                UsedEmailCntCollection, GlobalIncrementCollection, InterventionCollection,
+                LiveWagerCollection, InterventionThresholdsCollection};
     }
 
 }

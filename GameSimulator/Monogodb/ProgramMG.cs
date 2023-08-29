@@ -23,6 +23,25 @@ namespace PlayerCommon
                                                     SettingsSim.Instance.Config.Mongodb.DriverSettings?.ConnectTimeout,
                                                     SettingsSim.Instance.Config.Mongodb.DriverSettings?.SocketTimeout,
                                                     SettingsSim.Instance.WarnMaxMSLatencyDBExceeded);
+
+                var consoleColor1 = System.Console.ForegroundColor;
+                try
+                {
+                    foreach (var collection in SettingsSim.Instance.Config.Mongodb.GetAllCollections())
+                    {
+                        if(collection is not null
+                            && collection.Drop)
+                        {
+                            System.Console.ForegroundColor = ConsoleColor.Red;
+                            ConsoleDisplay.Console.WriteLine($"Warning: Dropping/Creating Collection {collection.Name}");
+                        }
+                    }
+                }
+                finally
+                {
+                    System.Console.ForegroundColor = consoleColor1;
+                }
+                
             };
 
             CreateDBConnection = (displayProgression, settingsSim) =>

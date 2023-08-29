@@ -75,7 +75,8 @@ namespace GameSimulator
 
             PlayerCommon.Settings.GetSetting(this.ConfigurationBuilderFile,
                                                 ref this.Config,
-                                                "GameSimulator");
+                                                "GameSimulator",
+                                                this);
 
             PlayerCommon.Settings.RemoveNotFoundSettingClassProps(RemoveFromNotFoundSettings);
         }

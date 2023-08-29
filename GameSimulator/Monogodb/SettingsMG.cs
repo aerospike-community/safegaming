@@ -26,7 +26,7 @@ namespace GameSimulator
         public bool? fsync;
         public string WValue;
 
-        public WriteConcern CreateWriteConcern()
+        public WriteConcern CreateWriteConcern(WriteConcern defaultValues)
         {
             if (!string.IsNullOrEmpty(this.UseConst))
             {
@@ -38,10 +38,10 @@ namespace GameSimulator
 
             bool updated = false;
 
-            Optional<TimeSpan?> wTimeout = default;
-            Optional<bool?> journal = default;
-            Optional<bool?> fsync = default;
-            Optional<WValue> wValue = default;
+            Optional<TimeSpan?> wTimeout = defaultValues is null ? default : defaultValues.WTimeout;
+            Optional<bool?> journal = defaultValues is null ? default : defaultValues.Journal;
+            Optional<bool?> fsync = defaultValues is null ? default : defaultValues.FSync;
+            Optional<WValue> wValue = defaultValues is null ? default : defaultValues.W;
 
             if (this.timeout.HasValue)
             {
@@ -71,10 +71,15 @@ namespace GameSimulator
                 updated = true;
             }
 
-            return updated ? new WriteConcern(wValue, wTimeout, journal, fsync) : null;
+            if (updated)
+                return new WriteConcern(wValue, wTimeout, journal, fsync);
+
+            if (defaultValues is null)
+                return null;
+
+            return defaultValues;
         }
     }
-
 
     partial class SettingsSim
     {
@@ -82,17 +87,18 @@ namespace GameSimulator
         {
             RemoveFromNotFoundSettings.Add("Aerospike:");
 
-            PlayerCommon.Settings.AddFuncPathAction("GameSimulator:Mongodb:DriverSettings:WriteConcern",
-                (IConfiguration config, string propName, Type propType, object propValue, object propInstance)
+            PlayerCommon.Settings.AddFuncPathAction(typeof(WriteConcern),
+                (IConfiguration config, string path, string propName, Type propType, object propValue, object propParent)
                     =>
                 {
                     if (config.GetChildren().Any())
                     {
                         MGWriteConcern mgWriteConcern = null;
 
-                        PlayerCommon.Settings.GetSetting(config, ref mgWriteConcern, propName);
+                        PlayerCommon.Settings.GetSetting(config, ref mgWriteConcern, propName, propParent);
 
-                        var writeConcern = mgWriteConcern.CreateWriteConcern();
+                        var writeConcern = mgWriteConcern.CreateWriteConcern(Settings.GetPathSaveObj("GameSimulator:Mongodb:DriverSettings:WriteConcern") as WriteConcern
+                                                                                ?? propValue as WriteConcern);
                         return (writeConcern,
                                     writeConcern is null
                                         ? InvokePathActions.Ignore
@@ -102,8 +108,8 @@ namespace GameSimulator
                         return (null, InvokePathActions.Ignore);
 
                 });
-            PlayerCommon.Settings.AddFuncPathAction("GameSimulator:Mongodb:DriverSettings:ReadConcern",
-                (IConfiguration config, string propName, Type propType, object propValue, object propInstance)
+            PlayerCommon.Settings.AddFuncPathAction(typeof(ReadConcern),
+                (IConfiguration config, string path, string propName, Type propType, object propValue, object propParent)
                     =>
                 {
                     if (config.GetChildren().Any())
@@ -122,6 +128,8 @@ namespace GameSimulator
                     
                     return (null, InvokePathActions.Ignore);
                 });
+            PlayerCommon.Settings.AddPathSaveObj("GameSimulator:Mongodb:DriverSettings:WriteConcern");
+
         }
     }
 }

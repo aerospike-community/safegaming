@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static GameSimulator.Tests.SettingsSimTests.TestSettings;
 
 namespace GameSimulator.Tests
 {
@@ -18,7 +19,7 @@ namespace GameSimulator.Tests
             {
                 if(testFuncInvoke == 1)
                     PlayerCommon.Settings.AddFuncPathAction("TestSettings:testSettingsCls:instanceTestSettings",
-                        (config, propName, propType, prop, propParent) =>
+                        (config, path, propName, propType, prop, propParent) =>
                         {
                             Assert.IsNotNull(config);
                             Assert.IsNotNull(propName);
@@ -33,7 +34,7 @@ namespace GameSimulator.Tests
                         });
                 else if (testFuncInvoke == 2)
                     PlayerCommon.Settings.AddFuncPathAction("TestSettings:testSettingsCls:instanceTestSettings",
-                        (config, propName, propType, prop, propParent) =>
+                        (config, path, propName, propType, prop, propParent) =>
                         {
                             Assert.IsNotNull(config);
                             Assert.IsNotNull(propName);
@@ -53,7 +54,7 @@ namespace GameSimulator.Tests
                         });
                 else if (testFuncInvoke == 3)
                     PlayerCommon.Settings.AddFuncPathAction("TestSettings:testSettingsCls:instanceTestSettings",
-                        (config, propName, propType, prop, propParent) =>
+                        (config, path, propName, propType, prop, propParent) =>
                         {
                             Assert.IsNotNull(config);
                             Assert.IsNotNull(propName);
@@ -89,7 +90,8 @@ namespace GameSimulator.Tests
 
                 PlayerCommon.Settings.GetSetting(this.ConfigurationBuilderFile,
                                                     ref this.instanceTestSettings,
-                                                    "TestSettings");
+                                                    "TestSettings",
+                                                    this);
             }
 
             public class TestSettingsCls1
@@ -228,6 +230,26 @@ namespace GameSimulator.Tests
             Assert.IsNull(testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.listInts);
             Assert.IsNull(testAppSetting2Invoke2.instanceTestSettings.testSettingsCls.instanceTestSettings.stringList);
 
+            PlayerCommon.Settings.AddFuncPathAction("TestSettings:testSettingsCls:instanceTestSettings:doubleFld",
+                                    (config, path, propName, propType, propValue, parent) =>
+                                    {
+                                        Assert.AreEqual(0, config.GetChildren().Count());
+                                        Assert.IsInstanceOfType(propValue, typeof(string));
+                                        Assert.AreEqual(typeof(double), propType);
+                                        Assert.IsInstanceOfType(parent, typeof(TestSettingsCls));
+                                        Assert.AreEqual("101.234", propValue);
+                                        return (123.123d, PlayerCommon.Settings.InvokePathActions.Update);
+                                    });
+            PlayerCommon.Settings.AddFuncPathAction(typeof(decimal),
+                                    (config, path, propName, propType, propValue, parent) =>
+                                    {
+                                        Assert.AreEqual(0, config.GetChildren().Count());
+                                        Assert.IsInstanceOfType(propValue, typeof(string));
+                                        Assert.AreEqual(typeof(decimal), propType);
+                                        Assert.IsNotNull(path);
+                                        return (null, PlayerCommon.Settings.InvokePathActions.Continue);
+                                    });
+            PlayerCommon.Settings.AddPathSaveObj("TestSettings:testSettingsCls:instanceTestSettings");
 
             var testAppSetting2Invoke3 = new TestSettings("appSettings2.json", 3);
 
@@ -241,12 +263,15 @@ namespace GameSimulator.Tests
             Assert.AreEqual("lmnop", testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.stringFld);
             Assert.AreEqual(3, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.intFld);
             Assert.AreEqual(890.123m, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.decimalFld);
-            Assert.AreEqual(101.234d, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.doubleFld);
+            Assert.AreEqual(123.123d, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.doubleFld);
             Assert.AreEqual(89012, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.longFld);
             CollectionAssert.AreEquivalent(new List<int>() { 9, 0, 1, 0 }, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.listInts);
             CollectionAssert.AreEquivalent(new List<string>() { "g", "h", "i" }, testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings.stringList);
 
+            var cachedObj = PlayerCommon.Settings.GetPathSaveObj("TestSettings:testSettingsCls:instanceTestSettings");
 
+            Assert.IsNotNull(cachedObj);
+            Assert.ReferenceEquals(testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings, cachedObj);
 
         }
     }

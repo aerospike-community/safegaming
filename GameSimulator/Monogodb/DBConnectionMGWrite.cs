@@ -10,6 +10,7 @@ using Common;
 using GameSimulator;
 using MongoDB.Bson;
 using System.Collections;
+using MongoDB.Bson.Serialization;
 
 namespace PlayerCommon
 {
@@ -61,14 +62,16 @@ namespace PlayerCommon
             }
 
             void CreateShard<T>(DBCollection<T> collectionShard)
-            {                
+            {
                 using var consoleShard = new Progression(this.ConsoleProgression, $"Creating Shard {collectionShard.CollectionName}...");
 
                 Logger.Instance.Info($"DBConnection.TruncateCollections Creating Shard on {collectionShard.CollectionName}");
 
                 var adminDb = this.Client.GetDatabase("admin");
-                var commandDict = new Dictionary<string, object>();
-                commandDict.Add("shardCollection", $"{collectionShard.DBName}.{collectionShard.CollectionName}");
+                var commandDict = new Dictionary<string, object>()
+                {
+                    { "shardCollection", $"{collectionShard.DBName}.{collectionShard.CollectionName}" }
+                };
                 var shardType = collectionShard.Options.Shard.Type == MongoDBSettings.ShardOpts.Types.Range
                                     ? "1"
                                     : collectionShard.Options.Shard.Type
@@ -76,12 +79,15 @@ namespace PlayerCommon
 
                 commandDict.Add("key", new Dictionary<string, object>() { { "_id", shardType } });
                 commandDict.Add("unique", collectionShard.Options.Shard.unique);
-                if(!string.IsNullOrEmpty(collectionShard.Options.Shard.Options))
+                
+                var bsonDocument = new BsonDocument(commandDict);
+
+                if (!string.IsNullOrEmpty(collectionShard.Options.Shard.Options))
                 {
-                    commandDict.Add("options", collectionShard.Options.Shard.Options);
+                    var optionsDoc = BsonSerializer.Deserialize<BsonDocument>(collectionShard.Options.Shard.Options);
+                    bsonDocument.Merge(optionsDoc);
                 }
 
-                var bsonDocument = new BsonDocument(commandDict);
                 var commandDoc = new BsonDocumentCommand<BsonDocument>(bsonDocument);
                 var response = adminDb.RunCommand(commandDoc);
 
@@ -100,7 +106,8 @@ namespace PlayerCommon
                 if (!collection.Exists || collection.Options.Drop)
                 {
                     CreateCollection(collection);
-                    CreateShard(collection);
+                    if(collection.Options.Shard.Create)
+                        CreateShard(collection);
                 }
             }
 

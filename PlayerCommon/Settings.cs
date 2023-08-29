@@ -115,6 +115,7 @@ namespace PlayerCommon
             TimeEvents = !(string.IsNullOrEmpty(TimingJsonFile) && string.IsNullOrEmpty(TimingCSVFile));
         }
 
+        #region Config Setting Parsing Options
         const string ConfigNullValue = "!<null>!";
         static string CheckSpecialValue(string strValue)
         {
@@ -526,6 +527,13 @@ namespace PlayerCommon
         private static readonly List<string> updatedProps = new();
         public static IEnumerable<string> UpdatedProps { get =>  updatedProps; }
 
+        public static bool UpdatedPropExists(string path)
+                            => UpdatedProps.Any(p => p == path
+                                                        || (path[0] == '*'
+                                                                && p.Remove('*').EndsWith(path[1..]))
+                                                        || (path.Last() == '*'
+                                                                && p.Remove('*').EndsWith(path[..^1])));
+
         /// <summary>
         /// A list of <see cref="KeyValuePair"/> where
         /// Key -- is the complete setting/config path (e.g., root:level1:level2) or wild card value at the start or end of the path like *:level2 or root:*.
@@ -709,7 +717,9 @@ namespace PlayerCommon
 
             return (value, actions);
         }
+        #endregion
 
+        #region Config Properties
         public string AppJsonFile { get; }
 
         public int MaxDegreeOfParallelism = -1;
@@ -735,5 +745,6 @@ namespace PlayerCommon
         public string TimeZoneFormatWoZone = "yyyy-MM-ddTHH:mm:ss.ffff";
 
         public string DBConnectionString;
+        #endregion
     }
 }

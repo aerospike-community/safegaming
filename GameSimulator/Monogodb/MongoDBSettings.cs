@@ -56,12 +56,14 @@ namespace PlayerCommon
                 this.Shard = new ShardOpts();
             }
 
-            public CollectionOpts(string name)
+            public CollectionOpts(string name, string configSectionName)
                 : this()
             {
                 this.Name = name;
+                this.ConfigSectionName = configSectionName;
             }
 
+            public string ConfigSectionName { get; }
             private string name;
             public string Name
             {
@@ -80,14 +82,14 @@ namespace PlayerCommon
             public ReadConcern readConcern { get; set; }
         }
 
-        public CollectionOpts CurrentPlayersCollection = new("CurrentPlayers");
-        public CollectionOpts PlayersHistoryCollection = new("PlayersHistory");
-        public CollectionOpts PlayersTransHistoryCollection = new("PlayersTransHistory");
+        public CollectionOpts CurrentPlayersCollection = new("CurrentPlayers", nameof(CurrentPlayersCollection));
+        public CollectionOpts PlayersHistoryCollection = new("PlayersHistory", nameof(PlayersHistoryCollection));
+        public CollectionOpts PlayersTransHistoryCollection = new("PlayersTransHistory", nameof(PlayersTransHistoryCollection));
         public CollectionOpts UsedEmailCntCollection = null; //"UsedEmailCnt";
-        public CollectionOpts GlobalIncrementCollection = new("GlobalIncrement");
-        public CollectionOpts InterventionCollection = new("Intervention");
-        public CollectionOpts LiveWagerCollection = new("LiveWager");
-        public CollectionOpts InterventionThresholdsCollection = new("InterventionThresholds");
+        public CollectionOpts GlobalIncrementCollection = new("GlobalIncrement", nameof(GlobalIncrementCollection));
+        public CollectionOpts InterventionCollection = new("Intervention", nameof(InterventionCollection));
+        public CollectionOpts LiveWagerCollection = new("LiveWager", nameof(LiveWagerCollection));
+        public CollectionOpts InterventionThresholdsCollection = new("InterventionThresholds", nameof(InterventionThresholdsCollection));
 
         public IEnumerable<CollectionOpts> GetAllCollections()
             => new List<CollectionOpts>()

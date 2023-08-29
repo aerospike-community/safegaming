@@ -72,13 +72,14 @@ namespace PlayerCommon
             return Logger.GetSetEnvVarLoggerFile();
         }
 
-        public static void InitialazationArguments(string[] args, ConsoleArguments consoleArgs)
+        public static void InitialazationArguments(string[] args, ConsoleArguments consoleArgs, string logFile)
         {
             try
             {
                 if (!consoleArgs.ParseSetArguments(args))
                 {
-                    return;
+                    Terminate(null, null, "Command Line Arguments");
+                    Environment.Exit(-1);
                 }
 
                 if (consoleArgs.Sync)

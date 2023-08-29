@@ -30,6 +30,10 @@
     "PG TimingJson": {
       "commandName": "Project",
       "commandLineArgs": "--TimingJsonFile ./Timings.json"
+    },
+    "GameSimulator help": {
+      "commandName": "Project",
+      "commandLineArgs": "-?"
     }
   }
 }

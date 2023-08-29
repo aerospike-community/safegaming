@@ -5,6 +5,7 @@ using System.Text;
 using Common;
 using CommandLineParser.Arguments;
 using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel;
 
 namespace PlayerCommon
 {
@@ -136,9 +137,8 @@ namespace PlayerCommon
 
         protected List<Argument> RemainingArgs { get; } = new List<Argument>();
 
-        public virtual bool ParseSetArguments(string[] args, bool throwIfNotMpaaed = true)
+        protected bool CheckArgsAndHelp(ref string[] args)
         {
-           
             if (args.Any(i => i.Any(c => c == '"')))
             {
                 var argList = new List<string>();
@@ -174,11 +174,22 @@ namespace PlayerCommon
                 args = argList.ToArray();
             }
 
+            bool ok = true;
+
             if (args.Any(a => a == "-?" || a == "--ShowDefaults" || a == "--Help" || a == "--help"))
             {
                 this.ShowDefaults();
-                return false;
+                ok = false;
             }
+
+            return ok;
+        }
+
+        public virtual bool ParseSetArguments(string[] args, bool throwIfNotMpaaed = true)
+        {
+
+            if (!CheckArgsAndHelp(ref args))
+                return false;
 
             this._cmdLineParser.ParseCommandLine(args);
         

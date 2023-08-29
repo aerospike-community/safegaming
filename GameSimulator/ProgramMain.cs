@@ -31,7 +31,7 @@ namespace PlayerCommon
 
             var settings = CreateAppSettingsInstance(null);
             var logFile = InitialazationLogs(args);
-            InitialazationArguments(args, new ConsoleArgumentsSim(SettingsSim.Instance));
+            InitialazationArguments(args, new ConsoleArgumentsSim(SettingsSim.Instance), logFile);
             InitialazationConfig();
             InitialazationEventPref();
 

@@ -26,6 +26,10 @@
     "Debug": {
       "commandName": "Project",
       "commandLineArgs": "--Debug"
+    },
+    "GameSimulator Help": {
+      "commandName": "Project",
+      "commandLineArgs": "-?"
     }
   }
 }

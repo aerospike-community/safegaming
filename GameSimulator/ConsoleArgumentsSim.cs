@@ -67,8 +67,11 @@ namespace GameSimulator
        
         public override bool ParseSetArguments(string[] args, bool throwIfNotMpaaed = true)
         {
+            if (!CheckArgsAndHelp(ref args))
+                return false;
 
-            base.ParseSetArguments(args, false);
+            if (!base.ParseSetArguments(args, false))
+                return false;
 
             foreach (var item in this.RemainingArgs)
             {

@@ -10,6 +10,7 @@ using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
+using static Common.ConsoleWriterAsyc;
 
 #if WRITEDB
 using GameSimulator;
@@ -28,23 +29,36 @@ namespace PlayerCommon
         public readonly struct DBCollection<T>
         {
             public DBCollection(string dbName,
-                                    string collectionName,
+                                    MongoDBSettings.CollectionOpts opts,
                                     IMongoDatabase database)
             {
-                dbName = dbName?.Trim();
-                collectionName = collectionName?.Trim();
-
-                if (string.IsNullOrEmpty(collectionName) || string.IsNullOrEmpty(dbName))
+                Options = opts;
+                
+                if (string.IsNullOrEmpty(opts?.Name) || string.IsNullOrEmpty(dbName))
                 {
                     this.IsEmpty = true;
                     return;
                 }
 
-                this.DBName = dbName;
-                this.CollectionName = collectionName;
+                this.DBName = dbName.Trim();
+                this.CollectionName = opts.Name;
 
                 this.Collection = database.GetCollection<T>(CollectionName);
                 this.FilterEmpty = Builders<T>.Filter.Empty;
+
+                try
+                {
+                    var collections = database
+                                        .ListCollectionsAsync(new ListCollectionsOptions
+                                        { Filter = new BsonDocument("name", this.CollectionName) }).Result;
+                    //check for existence
+                    this.Exists = collections.Any();
+                }
+                catch (Exception ex)
+                {
+                    this.Exists = true;
+                    Logger.Instance.Warn($"Exception occurred determining if Collection {this.CollectionName} Exists. Assuming it does...", ex);
+                }
             }
 
             public readonly Type Type = typeof(T);
@@ -54,6 +68,7 @@ namespace PlayerCommon
             public readonly FilterDefinitionBuilder<T> BuildersFilter => Builders<T>.Filter;
             public readonly UpdateDefinitionBuilder<T> BuildersUpdate => Builders<T>.Update;
             public readonly FilterDefinition<T> FilterEmpty = null;
+            public readonly MongoDBSettings.CollectionOpts Options;
 
             public override string ToString()
             {
@@ -61,66 +76,8 @@ namespace PlayerCommon
             }
 
             public readonly bool IsEmpty = false;
-        }
 
-        public class DateTimeOffsetSerializer : SerializerBase<DateTimeOffset>
-        {
-            public static readonly DateTimeOffsetSerializer Instance = new();
-
-            private static class Fields
-            {
-                public const string DateTime = "DateTime";
-                public const string LocalDateTime = "LocalDateTime";
-                public const string Ticks = "Ticks";
-                public const string Offset = "Offset";
-            }
-
-            public override void Serialize(
-                BsonSerializationContext context,
-                BsonSerializationArgs args,
-                DateTimeOffset value)
-            {
-                context.Writer.WriteStartDocument();
-
-                context.Writer.WriteName(Fields.DateTime);
-                context.Writer.WriteDateTime(
-                    BsonUtils.ToMillisecondsSinceEpoch(value.UtcDateTime));
-
-                context.Writer.WriteName(Fields.LocalDateTime);
-                context.Writer.WriteDateTime(
-                    BsonUtils.ToMillisecondsSinceEpoch(value.UtcDateTime.Add(value.Offset)));
-
-                context.Writer.WriteName(Fields.Offset);
-                context.Writer.WriteInt32(value.Offset.Hours * 60 + value.Offset.Minutes);
-
-                context.Writer.WriteName(Fields.Ticks);
-                context.Writer.WriteInt64(value.Ticks);
-
-                context.Writer.WriteEndDocument();
-            }
-
-            public override DateTimeOffset Deserialize(
-                BsonDeserializationContext context,
-                BsonDeserializationArgs args)
-            {
-                context.Reader.ReadStartDocument();
-
-                context.Reader.ReadName();
-                context.Reader.SkipValue();
-
-                context.Reader.ReadName();
-                context.Reader.SkipValue();
-
-                context.Reader.ReadName();
-                var offset = context.Reader.ReadInt32();
-
-                context.Reader.ReadName();
-                var ticks = context.Reader.ReadInt64();
-
-                context.Reader.ReadEndDocument();
-
-                return new DateTimeOffset(ticks, TimeSpan.FromMinutes(offset));
-            }
+            internal readonly bool Exists;
         }
 
         static DBConnection()

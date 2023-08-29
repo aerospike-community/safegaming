@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using MongoDB.Driver;
 using Common;
 using GameSimulator;
+using MongoDB.Bson;
+using System.Collections;
 
 namespace PlayerCommon
 {
@@ -20,28 +22,109 @@ namespace PlayerCommon
         public void Truncate()
         {
 
-            static void Truncate<T>(DBCollection<T> collectionTruncate)
+            void Truncate<T>(DBCollection<T> collectionTruncate)
             {
-                if (!collectionTruncate.IsEmpty)
+                if (collectionTruncate.Exists)
                 {
+                    using var consoleTrunc = new Progression(this.ConsoleProgression, $"Truncating {collectionTruncate.CollectionName}...");
+
+                    Logger.Instance.Info($"DBConnection.TruncateCollections Truncating {collectionTruncate.CollectionName}");
                     collectionTruncate.Collection.DeleteMany(collectionTruncate.FilterEmpty);
+                    Logger.Instance.Info($"DBConnection.TruncateCollections Truncated {collectionTruncate.CollectionName}");
+
+                }
+            }
+
+            void Drop<T>(DBCollection<T> collectionDrop)
+            {
+                if (collectionDrop.Exists)
+                {
+                    var cName = collectionDrop.CollectionName;
+
+                    using var consoleDropping = new Progression(this.ConsoleProgression, $"Dropping {cName}...");
+                    
+                    Logger.Instance.Warn($"DBConnection.TruncateCollections Dropping {cName}");
+                    this.Database.DropCollection(cName);
+                    Logger.Instance.Warn($"DBConnection.TruncateCollections Dropped {cName}");
+                }
+            }
+
+            void CreateCollection<T>(DBCollection<T> collectionCreate)
+            {
+                var cName = collectionCreate.CollectionName;
+
+                using var consoleCreate = new Progression(this.ConsoleProgression, $"Creating {cName}...");
+
+                Logger.Instance.Info($"DBConnection.TruncateCollections Creating {cName}");
+                this.Database.CreateCollection(cName, collectionCreate.Options.createCollectionOptions);
+                Logger.Instance.Info($"DBConnection.TruncateCollections Created {cName}");                
+            }
+
+            void CreateShard<T>(DBCollection<T> collectionShard)
+            {                
+                using var consoleShard = new Progression(this.ConsoleProgression, $"Creating Shard {collectionShard.CollectionName}...");
+
+                Logger.Instance.Info($"DBConnection.TruncateCollections Creating Shard on {collectionShard.CollectionName}");
+
+                var adminDb = this.Client.GetDatabase("admin");
+                var commandDict = new Dictionary<string, object>();
+                commandDict.Add("shardCollection", $"{collectionShard.DBName}.{collectionShard.CollectionName}");
+                var shardType = collectionShard.Options.Shard.Type == MongoDBSettings.ShardOpts.Types.Range
+                                    ? "1"
+                                    : collectionShard.Options.Shard.Type
+                                        .ToString().ToLower();
+
+                commandDict.Add("key", new Dictionary<string, object>() { { "_id", shardType } });
+                commandDict.Add("unique", collectionShard.Options.Shard.unique);
+                if(!string.IsNullOrEmpty(collectionShard.Options.Shard.Options))
+                {
+                    commandDict.Add("options", collectionShard.Options.Shard.Options);
+                }
+
+                var bsonDocument = new BsonDocument(commandDict);
+                var commandDoc = new BsonDocumentCommand<BsonDocument>(bsonDocument);
+                var response = adminDb.RunCommand(commandDoc);
+
+                Logger.Instance.Info($"DBConnection.TruncateCollections Created Shard on {collectionShard.CollectionName}");
+            }
+
+            void PerformActions<T>(DBCollection<T> collection)
+            {
+                if (collection.IsEmpty) return;
+
+                if (collection.Options.Drop)
+                    Drop(collection);
+                else
+                    Truncate(collection);
+
+                if (!collection.Exists || collection.Options.Drop)
+                {
+                    CreateCollection(collection);
+                    CreateShard(collection);
                 }
             }
 
             Logger.Instance.Info("DBConnection.TruncateCollections Start");
 
-            using var consoleTrunc = new Progression(this.ConsoleProgression, "Truncating...");
+            using var consoleTrunc = new Progression(this.ConsoleProgression, "Performing Actions...");
 
             try
-            {
-                Truncate(CurrentPlayersCollection);
-                Truncate(PlayersHistoryCollection);
-                Truncate(PlayersTransHistoryCollection);
-                Truncate(UsedEmailCntCollection);
-                Truncate(GlobalIncrementCollection);
-                Truncate(InterventionCollection);
-                Truncate(LiverWagerCollection);
-                Truncate(InterventionThresholdsCollection);
+            {                
+                    PerformActions(CurrentPlayersCollection);
+               
+                    PerformActions(PlayersHistoryCollection);
+               
+                    PerformActions(PlayersTransHistoryCollection);
+                
+                    PerformActions(UsedEmailCntCollection);
+                
+                    PerformActions(GlobalIncrementCollection);
+                
+                    PerformActions(InterventionCollection);
+                
+                    PerformActions(LiverWagerCollection);
+                
+                    PerformActions(InterventionThresholdsCollection);                
             }
             catch (Exception ex)
             {

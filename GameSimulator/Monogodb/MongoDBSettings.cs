@@ -51,8 +51,6 @@ namespace PlayerCommon
             {
                 this.createCollectionOptions = new CreateCollectionOptions();
                 this.findOptions = new FindOptions();
-                this.writeConcern = new WriteConcern();
-                this.readConcern = new ReadConcern();
                 this.Shard = new ShardOpts();
             }
 
@@ -77,9 +75,7 @@ namespace PlayerCommon
             public string ShardType { get; set; }
 
             public CreateCollectionOptions createCollectionOptions { get; set; }
-            public FindOptions findOptions { get; set; }
-            public WriteConcern writeConcern { get; set; }
-            public ReadConcern readConcern { get; set; }
+            public FindOptions findOptions { get; set; }            
         }
 
         public CollectionOpts CurrentPlayersCollection = new("CurrentPlayers", nameof(CurrentPlayersCollection));

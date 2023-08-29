@@ -25,7 +25,7 @@ namespace PlayerCommon
 
             void Truncate<T>(DBCollection<T> collectionTruncate)
             {
-                if (collectionTruncate.Exists)
+                if (collectionTruncate.AlreadyExists)
                 {
                     using var consoleTrunc = new Progression(this.ConsoleProgression, $"Truncating {collectionTruncate.CollectionName}...");
 
@@ -38,7 +38,7 @@ namespace PlayerCommon
 
             void Drop<T>(DBCollection<T> collectionDrop)
             {
-                if (collectionDrop.Exists)
+                if (collectionDrop.AlreadyExists)
                 {
                     var cName = collectionDrop.CollectionName;
 
@@ -103,7 +103,7 @@ namespace PlayerCommon
                 else
                     Truncate(collection);
 
-                if (!collection.Exists || collection.Options.Drop)
+                if (!collection.AlreadyExists || collection.Options.Drop)
                 {
                     CreateCollection(collection);
                     if(collection.Options.Shard.Create)
@@ -155,7 +155,7 @@ namespace PlayerCommon
             this.PlayerProgression.Increment("Player", $"Transforming/Putting Players {player.UserName}...");
 
             if (!this.CurrentPlayersCollection.IsEmpty)
-            {
+            {               
                 var stopWatch = Stopwatch.StartNew();
 
                 await CurrentPlayersCollection.Collection
@@ -657,6 +657,8 @@ namespace PlayerCommon
             return;
         }
 
+        static readonly FindOneAndUpdateOptions<UsedEmailCnt, UsedEmailCnt> EMailFndUpdateOpts = new(){ IsUpsert = true, ReturnDocument = ReturnDocument.After };
+    
         public async Task<string> DeterineEmail(string firstName, string lastName, string domain, CancellationToken token)
         {
             var email = $"{firstName}.{lastName}@{domain}";
@@ -677,8 +679,7 @@ namespace PlayerCommon
                                                                     .BuildersUpdate
                                                                     .SetOnInsert(t => t.EMail, email)
                                                                     .Inc(t => t.Count, 1),
-                                                                new FindOneAndUpdateOptions<UsedEmailCnt, UsedEmailCnt>()
-                                                                { IsUpsert = true, ReturnDocument = ReturnDocument.After },
+                                                                options: EMailFndUpdateOpts,
                                                                 cancellationToken: token)
                                     .ContinueWith(task =>
                                     {
@@ -723,13 +724,14 @@ namespace PlayerCommon
                 email = $"{firstName}.{lastName}{count}@{domain}";
 
             if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.DeterineEmail End Exists {0}", email);
+                Logger.Instance.DebugFormat("DBConnection.DeterineEmail End AlreadyExists {0}", email);
 
             emailProg.Decrement();
 
             return email;
         }
 
+        static readonly UpdateOptions GlobalUpdateOpts = new() { IsUpsert = true };
         public async Task IncrementGlobalSet(GlobalIncrement glbIncr,
                                                 CancellationToken token)
         {
@@ -756,8 +758,7 @@ namespace PlayerCommon
                                                 .Inc(t => t.GGR, glbIncr.GGR)
                                                 .Inc(t => t.Interventions, glbIncr.Interventions)
                                                 .Inc(t => t.Transactions, glbIncr.Transactions),
-                                            new UpdateOptions()
-                                            { IsUpsert = true },
+                                            options: GlobalUpdateOpts,
                                             cancellationToken: token)
                 .ContinueWith(task =>
                 {
@@ -798,7 +799,7 @@ namespace PlayerCommon
                     TaskScheduler.Default);
 
             if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.IncrementGlobalSet End Exists {0}", glbIncr.Key);
+                Logger.Instance.DebugFormat("DBConnection.IncrementGlobalSet End AlreadyExists {0}", glbIncr.Key);
         }
 
         public async Task UpdateIntervention(Intervention intervention,

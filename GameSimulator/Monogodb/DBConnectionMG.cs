@@ -45,34 +45,21 @@ namespace PlayerCommon
 
                 this.Collection = database.GetCollection<T>(CollectionName);
                 this.FilterEmpty = Builders<T>.Filter.Empty;
-
-                if(Settings.UpdatedPropExists($"GameSimulator:Mongodb:{Options.ConfigSectionName}:writeConcern:*"))
-                    this.WriteConcern = opts.writeConcern;
-                else
-                    this.WriteConcern = SettingsSim.Instance.Config.Mongodb.DriverSettings.WriteConcern;
-
-                if (Settings.UpdatedPropExists($"GameSimulator:Mongodb:{Options.ConfigSectionName}:readConcern:*"))
-                    this.ReadConcern = opts.readConcern;
-                else
-                    this.ReadConcern = SettingsSim.Instance.Config.Mongodb.DriverSettings.ReadConcern;
-
-                if (Settings.UpdatedPropExists($"GameSimulator:Mongodb:{Options.ConfigSectionName}:findOptions:*"))
-                    this.FindOptions = opts.findOptions;
-                else
-                    this.FindOptions = null;
-
+                
+                this.FindOptions = opts.findOptions;
+                
                 try
                 {
                     var collections = database
                                         .ListCollectionsAsync(new ListCollectionsOptions
                                         { Filter = new BsonDocument("name", this.CollectionName) }).Result;
                     //check for existence
-                    this.Exists = collections.Any();
+                    this.AlreadyExists = collections.Any();
                 }
                 catch (Exception ex)
                 {
-                    this.Exists = true;
-                    Logger.Instance.Warn($"Exception occurred determining if Collection {this.CollectionName} Exists. Assuming it does...", ex);
+                    this.AlreadyExists = true;
+                    Logger.Instance.Warn($"Exception occurred determining if Collection {this.CollectionName} AlreadyExists. Assuming it does...", ex);
                 }
             }
 
@@ -84,8 +71,6 @@ namespace PlayerCommon
             public readonly UpdateDefinitionBuilder<T> BuildersUpdate => Builders<T>.Update;
             public readonly FilterDefinition<T> FilterEmpty = null;
             public readonly MongoDBSettings.CollectionOpts Options;
-            public readonly WriteConcern WriteConcern;
-            public readonly ReadConcern ReadConcern;
             public readonly FindOptions FindOptions;
 
             public override string ToString()
@@ -95,7 +80,10 @@ namespace PlayerCommon
 
             public readonly bool IsEmpty = false;
 
-            internal readonly bool Exists;
+            /// <summary>
+            /// Returns true if the collection exists only at the time of the connection to the DB
+            /// </summary>
+            internal readonly bool AlreadyExists;
         }
 
         static DBConnection()

@@ -273,6 +273,197 @@ namespace GameSimulator.Tests
             Assert.IsNotNull(cachedObj);
             Assert.ReferenceEquals(testAppSetting2Invoke3.instanceTestSettings.testSettingsCls.instanceTestSettings, cachedObj);
 
+            var vType = typeof(string);
+            object vTest = "abcdefg";
+            var value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);
+
+            vTest = null;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, (string) vTest);
+
+            Assert.IsNull(value);
+
+            vTest = "<ignore>";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsNull(value);
+
+            vTest = "#Ignore this";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsNull(value);
+
+            vTest = string.Empty;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsNull(value);
+
+            vTest = "<empty>";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(string.Empty, value);
+
+            vTest = "<default>";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(PlayerCommon.Settings.ConfigNullValue, value);
+
+            vTest = "<null>";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(PlayerCommon.Settings.ConfigNullValue, value);
+
+            vTest = "<NULL>";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(PlayerCommon.Settings.ConfigNullValue, value);
+
+            vType = typeof(int);
+            vTest = 123;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);
+
+            vType = typeof(long);
+            vTest = 123L;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);
+
+            vType = typeof(decimal);
+            vTest = 123.23m;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);
+
+            vType = typeof(double);
+            vTest = 123.34d;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);
+
+            vType = typeof(long);
+            vTest = 123L;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);
+
+            vType = typeof(Int16);
+            vTest = (Int16) 123;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);
+
+            vType = typeof(bool);
+            vTest = true;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);
+
+            vType = typeof(DateTime);
+            vTest = DateTime.Now;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest.ToString(), value.ToString());
+
+            vTest = "Now";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+
+            vType = typeof(DateTimeOffset);
+            vTest = DateTimeOffset.Now;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest.ToString(), value.ToString());
+
+            vTest = "now";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+
+            vType = typeof(bool);
+            vTest = true;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);
+
+            vType = typeof(DateTimeKind);
+            vTest = DateTimeKind.Utc;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(vTest, value);            
+
+            vType = typeof(TimeSpan);
+            vTest = 5000;
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual((double) (int)vTest, ((TimeSpan) value).TotalMilliseconds);
+
+            vTest = "now";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            
+            vTest = "5 secs";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(5d, ((TimeSpan)value).TotalSeconds);
+
+            vTest = "5secs";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(5d, ((TimeSpan)value).TotalSeconds);
+
+            vTest = "5 days";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(5d, ((TimeSpan)value).TotalDays);
+
+            vTest = "5 hours";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(5d, ((TimeSpan)value).TotalHours);
+
+            vTest = "5 ms";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(5d, ((TimeSpan)value).TotalMilliseconds);
+
+            vTest = "1000 ns";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(1000d, ((TimeSpan)value).TotalNanoseconds);
+
+            vTest = "5 ticks";
+            value = PlayerCommon.Settings.SettingConvertValue(vType, vTest.ToString());
+
+            Assert.IsInstanceOfType(value, vType);
+            Assert.AreEqual(5L, ((TimeSpan)value).Ticks);
         }
     }
 }

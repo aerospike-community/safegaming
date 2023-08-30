@@ -116,7 +116,7 @@ namespace PlayerCommon
         }
 
         #region Config Setting Parsing Options
-        const string ConfigNullValue = "!<null>!";
+        public const string ConfigNullValue = "!<null>!";
         static string CheckSpecialValue(string strValue)
         {
             if (string.IsNullOrEmpty(strValue)
@@ -144,10 +144,14 @@ namespace PlayerCommon
                 if (checkedValue is null) return null;
                 if (checkedValue == ConfigNullValue)
                     return ConfigNullValue;
+
+                configValue = checkedValue;
             }
 
             if (propertyType == typeof(string))
                 return configValue;
+
+            configValue = configValue.Trim();
 
             if (propertyType == typeof(DateTimeOffset))
             {
@@ -158,13 +162,16 @@ namespace PlayerCommon
             }
             else if (propertyType == typeof(TimeSpan))
             {
+                if (configValue.ToLower() == "now")
+                    return DateTime.Now.TimeOfDay;
+
                 if(char.IsLetter(configValue.Last()))
                 {
                     try
                     {
                         var letterPos = configValue.IndexOf(c => char.IsLetter(c));
-                        var uom = configValue[letterPos..];
-                        var num = configValue[..letterPos];
+                        var uom = configValue[letterPos..].Trim().ToLower();
+                        var num = configValue[..letterPos].Trim();
                         switch (uom)
                         {
                             case "tick":
@@ -174,33 +181,56 @@ namespace PlayerCommon
                             case "us":
                             case "usec":
                             case "usecs":
+                            case "microseconds":
+                            case "microsecond":
                                 return TimeSpan.FromMicroseconds(double.Parse(num));
                             case "ns":
                             case "nsec":
                             case "nsecs":
-                                return TimeSpan.FromMicroseconds(double.Parse(num) / 100d);
+                            case "nano":
+                            case "nanosecond":
+                            case "nanoseconds":
+                                return TimeSpan.FromMicroseconds(double.Parse(num) * 0.001d);
                             case "ms":
                             case "msec":
                             case "msecs":
+                            case "milliseconds":
+                            case "millisecond":
                                 return TimeSpan.FromMilliseconds(double.Parse(num));
+                            case "s":
+                            case "sec":
+                            case "secs":
+                            case "seconds":
+                            case "second":
+                                return TimeSpan.FromSeconds(double.Parse(num));
                             case "m":
                             case "mins":
                             case "min":
+                            case "minute":
+                            case "minutes":
                                 return TimeSpan.FromMinutes(double.Parse(num));
                             case "h":
                             case "hrs":
                             case "hr":
+                            case "hours":
+                            case "hour":
                                 return TimeSpan.FromHours(double.Parse(num));
                             case "d":
                             case "day":
                             case "days":
                                 return TimeSpan.FromDays(double.Parse(num));
+                            default:
+                                throw new ArgumentException($"Undefined unit of time \"{uom}\"");
                         }
                     }
                     catch(Exception ex)
                     {
                         throw new Exception($"Value \"{configValue}\" is not a valid TimeSpan with UOM", ex);
                     }
+                }
+                else if(configValue.All(c => char.IsNumber(c)))
+                {
+                    return TimeSpan.FromMilliseconds(double.Parse(configValue));
                 }
                 return TimeSpan.Parse(configValue);
             }

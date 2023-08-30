@@ -42,7 +42,8 @@ namespace GameDashBoard
 
             PlayerCommon.Settings.GetSetting(this.ConfigurationBuilderFile,
                                                 ref this.Config,
-                                                "GameDashBoard");
+                                                "GameDashBoard",
+                                                this);
             PlayerCommon.Settings.RemoveNotFoundSettingClassProps(RemoveFromNotFoundSettings);
         }
 

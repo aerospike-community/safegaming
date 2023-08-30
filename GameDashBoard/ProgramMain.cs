@@ -24,7 +24,7 @@ namespace PlayerCommon
 
             var settings = CreateAppSettingsInstance(null);
             var logFile = InitialazationLogs(args);
-            InitialazationArguments(args, new ConsoleArgumentsGDB(SettingsGDB.Instance));
+            InitialazationArguments(args, new ConsoleArgumentsGDB(SettingsGDB.Instance), logFile);
             InitialazationConfig();
             InitialazationEventPref();
 

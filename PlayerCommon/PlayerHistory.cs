@@ -24,7 +24,7 @@ namespace PlayerCommon
             County = county;
         }
 
-		[BsonIgnore]        
+        [BsonElement]
         public string Tag { get; } = "PlayerHistory";
 
         [BsonId]

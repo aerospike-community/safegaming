@@ -22,6 +22,7 @@ namespace PlayerCommon
         VeryHigh = 1
     }
 
+    [BsonIgnoreExtraElements]
     public sealed partial class Player
     {
 
@@ -124,7 +125,7 @@ namespace PlayerCommon
 		[BsonIgnore]
         internal int BingeTransCnt { get; }
 
-		[BsonIgnore]
+        [BsonElement]
         public string Tag { get; } = "Player";
 
 		[BsonId]

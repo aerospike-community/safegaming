@@ -75,7 +75,12 @@ namespace PlayerCommon
             public string ShardType { get; set; }
 
             public CreateCollectionOptions createCollectionOptions { get; set; }
-            public FindOptions findOptions { get; set; }            
+            public FindOptions findOptions { get; set; }
+
+            public override string ToString()
+            {
+                return $"{this.ConfigSectionName} ({this.Name})";
+            }
         }
 
         public CollectionOpts CurrentPlayersCollection = new("CurrentPlayers", nameof(CurrentPlayersCollection));

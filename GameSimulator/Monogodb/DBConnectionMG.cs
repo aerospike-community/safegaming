@@ -46,9 +46,11 @@ namespace PlayerCommon
                 this.Collection = database.GetCollection<T>(CollectionName);
                 this.FilterEmpty = Builders<T>.Filter.Empty;
 
+#if READDB
                 var batchSize = opts.findOptions.BatchSize;
                 if (!batchSize.HasValue && GameDashBoard.SettingsGDB.Instance.Config.PageSize > 0)
                     batchSize = GameDashBoard.SettingsGDB.Instance.Config.PageSize;
+#endif
 
                 this.FindOptions = new FindOptions<T>()
                 {

@@ -59,7 +59,7 @@ namespace PlayerCommon
 
         async Task<int> FetchRecords<T>(DBCollection<T> collection,
                                         ConsoleDisplay console,
-                                        Func<T, long> field,
+                                        Expression<Func<T, long>> field,
                                         Func<T, string> keyValue,
                                         Func<T, int?> playerIdValue,
                                         FindOptions<T> findOptions,
@@ -72,19 +72,19 @@ namespace PlayerCommon
                                         int currentPlayerCnt = 0,
                                         int currentTrans = 0,
                                         int nbrRecs = 0,
-                                        ExpressionFieldDefinition<T, long> fieldDef = null)
+                                        Func<T, long> getFieldValue = null)
         {
-            static Expression<Func<D, long>> GetExpression<D>(Func<D, long> f)
-                => x => f(x);
-
+            
             if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.FetchRecords Run Start Session {0} Count: {3} PlayerCnt: {1} Trans: {2}",
+                Logger.Instance.DebugFormat("DBConnection.FetchRecords Run Start Session {0} {1} Count: {4} PlayerCnt: {2} Trans: {3}",
                                                 sessionIdx,
+                                                collection.CollectionName,
                                                 currentPlayerCnt,
                                                 currentTrans,
                                                 nbrRecs);
 
-            fieldDef ??= new ExpressionFieldDefinition<T, long>(GetExpression<T>(field));
+            getFieldValue ??= field.Compile();
+            var fieldDef = new ExpressionFieldDefinition<T, long>(field);
 
             long unixtime = startTimeUnixSecs;
             var filter = collection.BuildersFilter.Gte(fieldDef, unixtime);
@@ -106,13 +106,15 @@ namespace PlayerCommon
                         stopWatch.Restart();
 
                     using (var cursor = await collection.Collection
-                                                    .FindAsync(filter, findOptions))
+                                                    .FindAsync(filter,
+                                                                findOptions,
+                                                                cancellationToken: cancellationToken))
                     {
                         try
                         {
                             await cursor.ForEachAsync<T>(async document =>
                             {
-                                unixtime = field(document);
+                                unixtime = getFieldValue.Invoke(document);
 
                                 if(currentTrans == 0)
                                 {
@@ -144,7 +146,14 @@ namespace PlayerCommon
                                     Thread.Sleep(SettingsGDB.Instance.Config.SleepBetweenTransMS);
                                     Program.ConsoleSleep.Decrement($"Session {sessionIdx}");
                                 }
+                                else if(!SettingsGDB.Instance.Config.EnableRealtime)
+                                {
+                                    Program.ConsoleSleep.Increment($"Session {sessionIdx}");
+                                    Thread.Sleep(SettingsGDB.Instance.Config.SessionRefreshRateSecs * 1000);
+                                    Program.ConsoleSleep.Decrement($"Session {sessionIdx}");
+                                }
 
+                                cancellationToken.ThrowIfCancellationRequested();
                             },
                             cancellationToken: cancellationToken);
                         }
@@ -187,7 +196,7 @@ namespace PlayerCommon
                                                     currentPlayerCnt,
                                                     currentTrans,
                                                     nbrRecs,
-                                                    fieldDef);
+                                                    getFieldValue);
                 }
             }
             catch (Exception ex)
@@ -199,8 +208,9 @@ namespace PlayerCommon
             console.TaskEnd($"Session {sessionIdx}");
 
             if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.FetchRecords Run End Session {0} Count: {3} PlayerCnt: {1} Trans: {2}",
+                Logger.Instance.DebugFormat("DBConnection.FetchRecords Run End Session {0} {1} Count: {4} PlayerCnt: {2} Trans: {3}",
                                                 sessionIdx,
+                                                collection.CollectionName,
                                                 currentPlayerCnt,
                                                 currentTrans,
                                                 nbrRecs);

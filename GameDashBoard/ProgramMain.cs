@@ -220,15 +220,11 @@ namespace PlayerCommon
             var startProcessingTime = Stopwatch.StartNew();
             Logger.Instance.InfoFormat("Main Starting Sessions {0}",
                                             SettingsGDB.Instance.Config.NumberOfDashboardSessions);
-
-            var idxs = new int[SettingsGDB.Instance.Config.NumberOfDashboardSessions];
-             
-            for(int i = 0; i < idxs.Length; i++) idxs[i] = i;
             
             int actualProcessedTrans = 0;
             int nbrSessions = 0;
 
-            Parallel.For(1, SettingsGDB.Instance.Config.NumberOfDashboardSessions,
+            Parallel.For(0, SettingsGDB.Instance.Config.NumberOfDashboardSessions,
                             parallelOptions,
                             (sessionId, state) =>
                 {

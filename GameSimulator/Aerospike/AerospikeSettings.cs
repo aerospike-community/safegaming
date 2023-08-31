@@ -9,8 +9,8 @@ namespace PlayerCommon
 {
     public class AerospikeSettings
     {
-        public readonly string DBHost = "localhost";
-        public readonly int DBPort = 3000;
+        public string DBHost = "localhost";
+        public int DBPort = 3000;
 
         public int ConnectionTimeout = 5000;
         public int DBOperationTimeout = 5000;

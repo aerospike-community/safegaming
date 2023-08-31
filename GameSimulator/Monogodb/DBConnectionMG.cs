@@ -45,9 +45,24 @@ namespace PlayerCommon
 
                 this.Collection = database.GetCollection<T>(CollectionName);
                 this.FilterEmpty = Builders<T>.Filter.Empty;
-                
-                this.FindOptions = opts.findOptions;
-                
+
+                var batchSize = opts.findOptions.BatchSize;
+                if (!batchSize.HasValue && GameDashBoard.SettingsGDB.Instance.Config.PageSize > 0)
+                    batchSize = GameDashBoard.SettingsGDB.Instance.Config.PageSize;
+
+                this.FindOptions = new FindOptions<T>()
+                {
+                    AllowDiskUse = opts.findOptions.AllowDiskUse,
+                    AllowPartialResults = opts.findOptions.AllowPartialResults,
+                    BatchSize = opts.findOptions.BatchSize,
+                    CursorType = opts.findOptions.CursorType,
+                    MaxAwaitTime = opts.findOptions.MaxAwaitTime,
+                    MaxTime = opts.findOptions.MaxTime,
+                    NoCursorTimeout = opts.findOptions.NoCursorTimeout,
+                    ShowRecordId = opts.findOptions.ShowRecordId,
+                    Hint = opts.findOptions.Hint
+                };
+                  
                 try
                 {
                     var collections = database
@@ -71,7 +86,7 @@ namespace PlayerCommon
             public readonly UpdateDefinitionBuilder<T> BuildersUpdate => Builders<T>.Update;
             public readonly FilterDefinition<T> FilterEmpty = null;
             public readonly MongoDBSettings.CollectionOpts Options;
-            public readonly FindOptions FindOptions;
+            public readonly FindOptions<T> FindOptions;
 
             public override string ToString()
             {

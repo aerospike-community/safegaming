@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using MongoDB.Driver;
 using Common;
 using GameDashBoard;
+using Common.Diagnostic;
+using System.Linq.Expressions;
+using HdrHistogram;
 
 namespace PlayerCommon
 {
@@ -52,77 +55,159 @@ namespace PlayerCommon
                                    Builders<LiveWager>.IndexKeys.Ascending(c => c.txn_unixts));
 
             Logger.Instance.Info("DBConnection.CreateIndexes End");
-        }
+        }               
 
-        /*
-        private int DisplayRecords(RecordSet recordSet, 
-                                    ConsoleDisplay console,
-                                    int sessionIdx,
-                                    string playerIdBin,
-                                    ref int currentPlayerCnt,
-                                    int playerThrehold,
-                                    CancellationToken token)
+        async Task<int> FetchRecords<T>(DBCollection<T> collection,
+                                        ConsoleDisplay console,
+                                        Func<T, long> field,
+                                        Func<T, string> keyValue,
+                                        Func<T, int?> playerIdValue,
+                                        FindOptions<T> findOptions,
+                                        long startTimeUnixSecs,
+                                        int sessionIdx,
+                                        int maxTransactions,
+                                        int playerThrehold,
+                                        bool useSIdx,
+                                        CancellationToken cancellationToken,
+                                        int currentPlayerCnt = 0,
+                                        int currentTrans = 0,
+                                        int nbrRecs = 0,
+                                        ExpressionFieldDefinition<T, long> fieldDef = null)
         {
+            static Expression<Func<D, long>> GetExpression<D>(Func<D, long> f)
+                => x => f(x);
+
             if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.DisplayRecords Run Start Session {0}",
-                                                sessionIdx);
+                Logger.Instance.DebugFormat("DBConnection.FetchRecords Run Start Session {0} Count: {3} PlayerCnt: {1} Trans: {2}",
+                                                sessionIdx,
+                                                currentPlayerCnt,
+                                                currentTrans,
+                                                nbrRecs);
 
-            int nbrRecs = 0;
-            var tasks = new List<Task>();
+            fieldDef ??= new ExpressionFieldDefinition<T, long>(GetExpression<T>(field));
 
+            long unixtime = startTimeUnixSecs;
+            var filter = collection.BuildersFilter.Gte(fieldDef, unixtime);
+
+            bool exceptionReTry = false;
+            var stopWatch = new Stopwatch();
+                        
             try
             {
-                do
+                for (;
+                    !exceptionReTry
+                        && (currentTrans < maxTransactions
+                                || SettingsGDB.Instance.Config.ContinuousSessions);
+                    currentTrans++)
                 {
-                    token.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                    var key = recordSet.Key;
-                    var record = recordSet.Record;
+                    if(currentTrans == 0)
+                        stopWatch.Restart();
 
-                    console.Increment($"Session {sessionIdx}", $"Key {key.userKey.Object}");
-
-                    nbrRecs++;
-
-                    if (!string.IsNullOrEmpty(playerIdBin)
-                            && record.bins.ContainsKey(playerIdBin)
-                            && currentPlayerCnt++ >= playerThrehold)
+                    using (var cursor = await collection.Collection
+                                                    .FindAsync(filter, findOptions))
                     {
-                        var playerId = record.GetInt(playerIdBin);
-                        currentPlayerCnt = 0;
-                        tasks.Add(Task.Run(() => this.GetPlayer(playerId, sessionIdx, token),
-                                    token));
+                        try
+                        {
+                            await cursor.ForEachAsync<T>(async document =>
+                            {
+                                unixtime = field(document);
+
+                                if(currentTrans == 0)
+                                {
+                                    stopWatch.StopRecord(FindTag,
+                                                            SystemTag,
+                                                            collection.CollectionName,
+                                                            nameof(FetchRecords),
+                                                            sessionIdx);
+                                }
+
+                                nbrRecs++;
+
+                                console.Increment($"Session {sessionIdx}", $"Key {keyValue(document)}");
+
+                                if (currentPlayerCnt++ >= playerThrehold)
+                                {
+                                    currentPlayerCnt = 0;
+
+                                    var playerId = playerIdValue(document);
+                                    if (playerId.HasValue)
+                                    {
+                                        await this.GetPlayer(playerId.Value, sessionIdx, cancellationToken);
+                                    }
+                                }
+
+                                if (SettingsGDB.Instance.Config.SleepBetweenTransMS > 0)
+                                {
+                                    Program.ConsoleSleep.Increment($"Session {sessionIdx}");
+                                    Thread.Sleep(SettingsGDB.Instance.Config.SleepBetweenTransMS);
+                                    Program.ConsoleSleep.Decrement($"Session {sessionIdx}");
+                                }
+
+                            },
+                            cancellationToken: cancellationToken);
+                        }
+                        catch (MongoCommandException ex)
+                        {
+                            if (ex.Code == 136 && ex.CodeName == "CappedPositionLost")
+                            {
+                                if (Logger.Instance.IsDebugEnabled)
+                                    Logger.Instance.InfoFormat("DBConnection.FetchRecords Exception (ReTry) Session {0} Exception: {1} Code: {2} CodeName: {4} Message: {3}",
+                                                                    sessionIdx,
+                                                                    ex.GetType().Name,
+                                                                    ex.Code,
+                                                                    ex.Message,
+                                                                    ex.CodeName);
+                                exceptionReTry = true;
+                                break;
+                            }
+                            else
+                                throw;
+                        }
                     }
 
-                    if (SettingsGDB.Instance.Config.SleepBetweenTransMS > 0)
-                    {
-                        Program.ConsoleSleep.Increment($"Session {sessionIdx}");
-                        Thread.Sleep(SettingsGDB.Instance.Config.SleepBetweenTransMS);
-                        Program.ConsoleSleep.Decrement($"Session {sessionIdx}");
-                    }
+                    collection.BuildersFilter.Gt(fieldDef, unixtime);
                 }
-                while (recordSet.Next());
+
+                if (exceptionReTry)
+                {
+                    nbrRecs += await FetchRecords(collection,
+                                                    console,
+                                                    field,
+                                                    keyValue,
+                                                    playerIdValue,
+                                                    findOptions,
+                                                    startTimeUnixSecs,
+                                                    sessionIdx,
+                                                    maxTransactions,
+                                                    playerThrehold,
+                                                    useSIdx,
+                                                    cancellationToken,
+                                                    currentPlayerCnt,
+                                                    currentTrans,
+                                                    nbrRecs,
+                                                    fieldDef);
+                }
             }
-            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                Program.CanceledFaultProcessing($"DBConnection.DisplayRecords session {sessionIdx}", ex, Settings.Instance.IgnoreFaults);
+                Program.CanceledFaultProcessing($"DBConnection.FetchRecords session {sessionIdx} Count: {nbrRecs} PlayerCnt: {currentPlayerCnt} Trans: {currentTrans}",
+                                                    ex, Settings.Instance.IgnoreFaults);
             }
-
-            if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.DisplayRecords Run Waiting for Players Session {0} Count: {1}",
-                                                sessionIdx, nbrRecs);
-
-            Task.WaitAll(tasks.ToArray(), token);
 
             console.TaskEnd($"Session {sessionIdx}");
 
             if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.DisplayRecords Run End Session {0} Count: {1}",
-                                                sessionIdx, nbrRecs);
+                Logger.Instance.DebugFormat("DBConnection.FetchRecords Run End Session {0} Count: {3} PlayerCnt: {1} Trans: {2}",
+                                                sessionIdx,
+                                                currentPlayerCnt,
+                                                currentTrans,
+                                                nbrRecs);
 
             return nbrRecs;
         }
-        */
+
         public int GetGlobalIncrement(DateTimeOffset tranDT,
                                         int sessionIdx,
                                         int maxTransactions, 
@@ -138,121 +223,26 @@ namespace PlayerCommon
 
             Program.ConsoleGlobalIncrement.Increment($"Session {sessionIdx}");
 
-            int playerCnt = 0;
             int playerTrigger = maxTransactions - (maxTransactions * (SettingsGDB.Instance.Config.PlayerFetchPct / 100));
-            List<Task> displayTaks = new();
-            int idx = 0;
-
-            //var x = this.GlobalIncrementCollection.Collection.Find(null);
-
-
-
-            /*
-            QueryPolicy query;
-
-            var stmt = new Statement()
-            {
-                Namespace = this.GlobalIncrementSet.Namespace,
-                SetName = this.GlobalIncrementSet.SetName,
-                RecordsPerSecond = this.ASSettings.RecordsPerSecond
-            };
-
-            if(SettingsGDB.Instance.Config.UseIdxs)
-            {
-                stmt.SetIndexName($"{this.GlobalIncrementSet.SetName}_unix_timestamp");
-                stmt.SetFilter(Filter.Range("process_unixts", tranDT.ToUnixTimeSeconds(), long.MaxValue));
-                query = this.QueryPolicy;
-            }
-            else
-            {
-                query = new QueryPolicy(this.QueryPolicy)
-                {
-                    filterExp = Exp.Build(Exp.GE(Exp.IntBin("process_unixts"), Exp.Val(tranDT.ToUnixTimeSeconds())))
-                };
-            }
-
-            if (SettingsGDB.Instance.Config.PageSize > 0)
-                stmt.MaxRecords = SettingsGDB.Instance.Config.PageSize;
-
-            PartitionFilter filter = PartitionFilter.All();
-            PartitionStatus[] cursors = filter.Partitions;
+            var idx = Task.Run(() =>
+                              FetchRecords(this.GlobalIncrementCollection,
+                                            Program.ConsoleGlobalIncrement,
+                                            d => d.IntervalUnixSecs,
+                                            d => d.Key,
+                                            d => null,
+                                            this.GlobalIncrementCollection.FindOptions,
+                                            tranDT.ToUnixTimeSeconds(),
+                                            sessionIdx,
+                                            maxTransactions,
+                                            playerTrigger,
+                                            SettingsGDB.Instance.Config.UseIdxs,
+                                            cancellationToken),
+                                cancellationToken).Result;
             
-            
-
-            RecordSet recordSet;
-            bool hasRecs;
-            var stopWatch = new Stopwatch();
-            
-            for (idx = 0;
-                    idx < maxTransactions || SettingsGDB.Instance.Config.ContinuousSessions;
-                    idx++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    stopWatch.Restart();
-
-                    recordSet = this.Connection.QueryPartitions(query, stmt, filter);
-                    cursors = filter.Partitions;
-                    hasRecs = recordSet.Next();
-
-                    stopWatch.StopRecord(GetTag,
-                                            SystemTag,
-                                            this.GlobalIncrementSet.SetName,
-                                            nameof(GetGlobalIncrement),
-                                            sessionIdx);
-                }
-                catch (OperationCanceledException) { throw; }
-                catch (Exception ex)
-                {
-                    Program.CanceledFaultProcessing($"DBConnection.GetLiveWager Get session {sessionIdx}", ex, Settings.Instance.IgnoreFaults);
-                    if (Settings.Instance.IgnoreFaults)
-                    {
-                        continue;
-                    }
-
-                    throw;
-                }
-
-                if (hasRecs)
-                {
-                    DisplayRecords(recordSet,
-                                    Program.ConsoleGlobalIncrement,
-                                    sessionIdx,
-                                    null,
-                                    ref playerCnt,
-                                    playerTrigger,
-                                    cancellationToken);
-                    
-                }
-                else
-                {
-                    if (Logger.Instance.IsDebugEnabled)
-                        Logger.Instance.DebugFormat("DBConnection.GetGlobalIncrement Run No Records Query Session {0}",
-                                                        sessionIdx);
-                }
-
-                if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                    Logger.Instance.WarnFormat("DBConnection.GetGlobalIncrement Run Exceeded Latency Threshold for Query Session {1}. Latency: {0}",
-                                                stopWatch.ElapsedMilliseconds,
-                                                sessionIdx);
-
-                if (!SettingsGDB.Instance.Config.EnableRealtime
-                        && SettingsGDB.Instance.Config.SessionRefreshRateSecs > 0)
-                {
-                    Program.ConsoleSleep.Increment($"Session {idx}");
-                    Thread.Sleep(SettingsGDB.Instance.Config.SessionRefreshRateSecs);
-                    Program.ConsoleSleep.Increment($"Session {idx}");
-                }
-            }
-            */
             if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.GetGlobalIncrement Run Display Wait Session {0} Count {1}",
+                Logger.Instance.DebugFormat("DBConnection.GetGlobalIncrement Run Display Wait Session {0} Tasks {1}",
                                                 sessionIdx, idx);
-
-            Task.WaitAll(displayTaks.ToArray(), cancellationToken);
-
+            
             Program.ConsoleGlobalIncrement.Decrement($"Session {sessionIdx}");
 
             if (Logger.Instance.IsDebugEnabled)
@@ -277,115 +267,26 @@ namespace PlayerCommon
 
             Program.ConsoleIntervention.Increment($"Session {sessionIdx}");
 
-            int playerCnt = 0;
             int playerTrigger = maxTransactions - (maxTransactions * (SettingsGDB.Instance.Config.PlayerFetchPct / 100));
-            List<Task> displayTaks = new();
-            int idx = 0;
+            var idx = Task.Run(() =>
+                              FetchRecords(this.InterventionCollection,
+                                            Program.ConsoleIntervention,
+                                            d => d.InterventionTimeStampUnixSecs,
+                                            d => d.PrimaryKey.ToString(),
+                                            d => d.PlayerId,
+                                            this.InterventionCollection.FindOptions,
+                                            tranDT.ToUnixTimeSeconds(),
+                                            sessionIdx,
+                                            maxTransactions,
+                                            playerTrigger,
+                                            SettingsGDB.Instance.Config.UseIdxs,
+                                            cancellationToken),
+                                cancellationToken).Result;
 
-            /*
-            QueryPolicy query;
-
-            var stmt = new Statement()
-            {
-                Namespace = this.InterventionSet.Namespace,
-                SetName = this.InterventionSet.SetName,
-                RecordsPerSecond = this.ASSettings.RecordsPerSecond
-            };
-
-            if (SettingsGDB.Instance.Config.UseIdxs)
-            {
-                stmt.SetIndexName($"{this.InterventionSet.SetName}_unix_timestamp");
-                stmt.SetFilter(Filter.Range("interv_unixts", tranDT.ToUnixTimeSeconds(), long.MaxValue));
-                query = this.QueryPolicy;
-            }
-            else
-            {
-                query = new QueryPolicy(this.QueryPolicy)
-                {
-                    filterExp = Exp.Build(Exp.GE(Exp.IntBin("interv_unixts"), Exp.Val(tranDT.ToUnixTimeSeconds())))
-                };
-            }
-
-            if (SettingsGDB.Instance.Config.PageSize > 0)
-                stmt.MaxRecords = SettingsGDB.Instance.Config.PageSize;
-
-            PartitionFilter filter = PartitionFilter.All();
-            PartitionStatus[] cursors = filter.Partitions;
-            
-            RecordSet recordSet;
-            bool hasRecs;
-            var stopWatch = new Stopwatch();
-
-            for (idx = 0;
-                    idx < maxTransactions || SettingsGDB.Instance.Config.ContinuousSessions;
-                    idx++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    stopWatch.Restart();
-
-                    recordSet = this.Connection.QueryPartitions(query, stmt, filter);
-                    cursors = filter.Partitions;
-                    hasRecs = recordSet.Next();
-
-                    stopWatch.StopRecord(GetTag,
-                                            SystemTag,
-                                            this.InterventionSet.SetName,
-                                            nameof(GetIntervention),
-                                            sessionIdx);
-                }
-                catch (OperationCanceledException) { throw; }
-                catch (Exception ex)
-                {
-                    Program.CanceledFaultProcessing($"DBConnection.GetIntervention Get session {sessionIdx}", ex, Settings.Instance.IgnoreFaults);
-                    if (Settings.Instance.IgnoreFaults)
-                    {
-                        continue;
-                    }
-
-                    throw;
-                }
-
-                if (hasRecs)
-                {
-                    DisplayRecords(recordSet,
-                                    Program.ConsoleIntervention,
-                                    sessionIdx,
-                                    "PlayerId",
-                                    ref playerCnt,
-                                    playerTrigger,
-                                    cancellationToken);
-
-                }
-                else
-                {
-                    if (Logger.Instance.IsDebugEnabled)
-                        Logger.Instance.DebugFormat("DBConnection.GetIntervention Run No Records Query Session {0}",
-                                                        sessionIdx);
-                }
-
-                if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                    Logger.Instance.WarnFormat("DBConnection.GetIntervention Run Exceeded Latency Threshold for Query Session {1}. Latency: {0}",
-                                                stopWatch.ElapsedMilliseconds,
-                                                sessionIdx);
-
-                if (!SettingsGDB.Instance.Config.EnableRealtime
-                        && SettingsGDB.Instance.Config.SessionRefreshRateSecs > 0)
-                {
-                    Program.ConsoleSleep.Increment($"Session {idx}");
-                    Thread.Sleep(SettingsGDB.Instance.Config.SessionRefreshRateSecs);
-                    Program.ConsoleSleep.Increment($"Session {idx}");
-                }
-            }
-            */
             if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.GetIntervention Run Display Wait Session {0} Count {1}",
+                Logger.Instance.DebugFormat("DBConnection.GetIntervention Run Display Wait Session {0} Tasks {1}",
                                                 sessionIdx, idx);
-
-            Task.WaitAll(displayTaks.ToArray(), cancellationToken);
-
+            
             Program.ConsoleIntervention.Decrement($"Session {sessionIdx}");
 
             if (Logger.Instance.IsDebugEnabled)
@@ -410,113 +311,26 @@ namespace PlayerCommon
             
             Program.ConsoleLiveWager.Increment($"Session {sessionIdx}");
 
-            int playerCnt = 0;
             int playerTrigger = maxTransactions - (maxTransactions * (SettingsGDB.Instance.Config.PlayerFetchPct / 100));
-            List<Task> displayTaks = new();
-            int idx = 0;
+            var idx = Task.Run(() =>
+                              FetchRecords(this.LiverWagerCollection,
+                                            Program.ConsoleLiveWager,
+                                            d => d.txn_unixts,
+                                            d => d.Id.ToString(),
+                                            d => d.PlayerId,
+                                            this.LiverWagerCollection.FindOptions,
+                                            tranDT.ToUnixTimeSeconds(),
+                                            sessionIdx,
+                                            maxTransactions,
+                                            playerTrigger,
+                                            SettingsGDB.Instance.Config.UseIdxs,
+                                            cancellationToken),
+                                cancellationToken).Result;
 
-            /*
-            QueryPolicy query;
-
-            var stmt = new Statement()
-            {
-                Namespace = this.LiverWagerSet.Namespace,
-                SetName = this.LiverWagerSet.SetName,
-                RecordsPerSecond = this.ASSettings.RecordsPerSecond
-            };
-
-            if (SettingsGDB.Instance.Config.UseIdxs)
-            {
-                stmt.SetIndexName($"{this.LiverWagerSet.SetName}_unix_timestamp");
-                stmt.SetFilter(Filter.Range("txn_unixts", tranDT.ToUnixTimeSeconds(), long.MaxValue));
-                query = this.QueryPolicy;
-            }
-            else
-            {
-                query = new QueryPolicy(this.QueryPolicy)
-                {
-                    filterExp = Exp.Build(Exp.GE(Exp.IntBin("txn_unixts"), Exp.Val(tranDT.ToUnixTimeSeconds())))
-                };
-            }
-
-            if (SettingsGDB.Instance.Config.PageSize > 0)
-                stmt.MaxRecords = SettingsGDB.Instance.Config.PageSize;
-
-            PartitionFilter filter = PartitionFilter.All();
-            PartitionStatus[] cursors = filter.Partitions;
-            
-            RecordSet recordSet;
-            bool hasRecs;
-            var stopWatch = new Stopwatch();
-
-            for (idx = 0;
-                    idx < maxTransactions || SettingsGDB.Instance.Config.ContinuousSessions;
-                    idx++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    stopWatch.Restart();
-
-                    recordSet = this.Connection.QueryPartitions(query, stmt, filter);
-                    cursors = filter.Partitions;
-                    hasRecs = recordSet.Next();
-                    stopWatch.StopRecord(GetTag,
-                                            SystemTag,
-                                            this.LiverWagerSet.SetName,
-                                            nameof(GetLiveWager),
-                                            sessionIdx);
-                }
-                catch (OperationCanceledException) { throw; }
-                catch (Exception ex) 
-                {                    
-                    Program.CanceledFaultProcessing($"DBConnection.GetLiveWager Get session {sessionIdx}", ex, Settings.Instance.IgnoreFaults);
-                    if (Settings.Instance.IgnoreFaults)
-                    {
-                        continue;
-                    }
-
-                    throw;
-                }
-
-                if (hasRecs)
-                {
-                    DisplayRecords(recordSet,
-                                    Program.ConsoleLiveWager,
-                                    sessionIdx,
-                                    "PlayerId",
-                                    ref playerCnt,
-                                    playerTrigger,
-                                    cancellationToken);                    
-                }
-                else
-                {
-                    if (Logger.Instance.IsDebugEnabled)
-                        Logger.Instance.DebugFormat("DBConnection.GetLiveWager Run No Records Query Session {0}",
-                                                        sessionIdx);
-                }
-
-                if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                    Logger.Instance.WarnFormat("DBConnection.GetLiveWager Run Exceeded Latency Threshold for Query Session {1}. Latency: {0}",
-                                                stopWatch.ElapsedMilliseconds,
-                                                sessionIdx);
-
-                if (!SettingsGDB.Instance.Config.EnableRealtime
-                        && SettingsGDB.Instance.Config.SessionRefreshRateSecs > 0)
-                {
-                    Program.ConsoleSleep.Increment($"Session {idx}");
-                    Thread.Sleep(SettingsGDB.Instance.Config.SessionRefreshRateSecs);
-                    Program.ConsoleSleep.Increment($"Session {idx}");
-                }
-            }
-            */
             if (Logger.Instance.IsDebugEnabled)
-                Logger.Instance.DebugFormat("DBConnection.GetLiveWager Run Display Wait Session {0} Count {1}",
+                Logger.Instance.DebugFormat("DBConnection.GetLiveWager Run Display Wait Session {0} Tasks {1}",
                                                 sessionIdx, idx);
-
-            Task.WaitAll(displayTaks.ToArray(), cancellationToken);
-
+            
             Program.ConsoleLiveWager.Decrement($"Session {sessionIdx}");
 
             if (Logger.Instance.IsDebugEnabled)
@@ -536,51 +350,49 @@ namespace PlayerCommon
             cancellationToken.ThrowIfCancellationRequested();
 
             Program.ConsoleGetPlayer.Increment($"Session {sessionIdx} Player {playerId}");
+            var stopWatch = Stopwatch.StartNew();
+            var findFilter = this.CurrentPlayersCollection.BuildersFilter
+                                    .Eq(t => t.PlayerId, playerId);
 
-            /*
-            var stopWatch =  Stopwatch.StartNew();
+            var player = await this.CurrentPlayersCollection.Collection
+                                                .FindAsync(findFilter, 
+                                                            cancellationToken: cancellationToken)                                                          
+                                .ContinueWith(task =>
+                                 {                                 
+                                     stopWatch.StopRecord(FindTag,
+                                                             SystemTag,
+                                                             this.CurrentPlayersCollection.CollectionName,
+                                                             nameof(GetPlayer),
+                                                             playerId);
 
-            var record = await this.Connection.Get(this.ReadPolicy,
-                                                    cancellationToken,
-                                                    new Key(this.CurrentPlayersSet.Namespace,
-                                                                this.CurrentPlayersSet.SetName,
-                                                                Value.Get(playerId)))
-                            .ContinueWith(task =>
-                             {                                 
-                                 stopWatch.StopRecord(GetTag,
-                                                         SystemTag,
-                                                         this.CurrentPlayersSet.SetName,
-                                                         nameof(GetPlayer),
-                                                         playerId);
-
-                                 if (Logger.Instance.IsDebugEnabled)
-                                 {
-                                     Logger.Instance.DebugFormat("DBConnection.GetPlayer Run End {0} Elapsed Time (ms): {1}",
-                                                                 playerId,
-                                                                 stopWatch.ElapsedMilliseconds);
-                                 }
-
-                                 if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                                     Logger.Instance.WarnFormat("DBConnection.GetPlayer Run Exceeded Latency Threshold for {1}. Latency: {0}",
-                                                                 stopWatch.ElapsedMilliseconds,
-                                                                 playerId);
-
-                                 if (task.IsFaulted || task.IsCanceled)
-                                 {
-                                     Program.CanceledFaultProcessing($"DBConnection.GetPlayer Get {playerId}", task.Exception, Settings.Instance.IgnoreFaults);
-                                     if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
+                                     if (Logger.Instance.IsDebugEnabled)
                                      {
-                                         task.Exception?.Handle(e => true);
-                                         return null;
+                                         Logger.Instance.DebugFormat("DBConnection.GetPlayer Run End {0} Elapsed Time (ms): {1}",
+                                                                     playerId,
+                                                                     stopWatch.ElapsedMilliseconds);
                                      }
-                                 }
 
-                                 return task.Result;
-                             },
-                            cancellationToken,
-                            TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously,
-                            TaskScheduler.Default);
-            */
+                                     if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
+                                         Logger.Instance.WarnFormat("DBConnection.GetPlayer Run Exceeded Latency Threshold for {1}. Latency: {0}",
+                                                                     stopWatch.ElapsedMilliseconds,
+                                                                     playerId);
+
+                                     if (task.IsFaulted || task.IsCanceled)
+                                     {
+                                         Program.CanceledFaultProcessing($"DBConnection.GetPlayer Get {playerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                         if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
+                                         {
+                                             task.Exception?.Handle(e => true);
+                                             return null;
+                                         }
+                                     }
+
+                                     return task.Result;
+                                 },
+                                cancellationToken,
+                                TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously,
+                                TaskScheduler.Default);
+            
             Program.ConsoleGetPlayer.Decrement($"Session {sessionIdx} Player {playerId}");
 
             if (Logger.Instance.IsDebugEnabled)

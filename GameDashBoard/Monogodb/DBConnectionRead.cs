@@ -82,7 +82,7 @@ namespace PlayerCommon
                                                 currentPlayerCnt,
                                                 currentTrans,
                                                 nbrRecs);
-
+            
             getFieldValue ??= field.Compile();
             var fieldDef = new ExpressionFieldDefinition<T, long>(field);
 
@@ -102,7 +102,9 @@ namespace PlayerCommon
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if(currentTrans == 0)
+                    console.Increment($"Session {sessionIdx}", $"Time {unixtime}");
+
+                    if (currentTrans == 0)
                         stopWatch.Restart();
 
                     using (var cursor = await collection.Collection
@@ -153,6 +155,8 @@ namespace PlayerCommon
                                     Program.ConsoleSleep.Decrement($"Session {sessionIdx}");
                                 }
 
+                                console.Decrement($"Session {sessionIdx}");
+
                                 cancellationToken.ThrowIfCancellationRequested();
                             },
                             cancellationToken: cancellationToken);
@@ -176,7 +180,9 @@ namespace PlayerCommon
                         }
                     }
 
-                    collection.BuildersFilter.Gt(fieldDef, unixtime);
+                    console.Decrement($"Session {sessionIdx}");
+
+                    collection.BuildersFilter.Gt(fieldDef, unixtime);                    
                 }
 
                 if (exceptionReTry)
@@ -204,9 +210,7 @@ namespace PlayerCommon
                 Program.CanceledFaultProcessing($"DBConnection.FetchRecords session {sessionIdx} Count: {nbrRecs} PlayerCnt: {currentPlayerCnt} Trans: {currentTrans}",
                                                     ex, Settings.Instance.IgnoreFaults);
             }
-
-            console.TaskEnd($"Session {sessionIdx}");
-
+            
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.FetchRecords Run End Session {0} {1} Count: {4} PlayerCnt: {2} Trans: {3}",
                                                 sessionIdx,

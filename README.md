@@ -14,7 +14,7 @@ It consists of a true document model that represents multiple facets (documents/
     -   Geographics  
         Based on where gaming is allowed, Census data, and algorithms.
     -   Financial data including:
-        -   Income   
+        -   Income  
             Determined by geographic location, media income, population, etc. based on US Census data.
         -   Account balances
         -   History
@@ -39,7 +39,7 @@ It consists of a true document model that represents multiple facets (documents/
 
 There are eleven different documents in the model. Below is an overview of the model:
 
-![A screenshot of a computer screen Description automatically generated](media/5c4e425c50675980b9fb35b788e7e38a.png)
+![Document Model ERD](./SafeGamingDocModel.jpg)
 
 Note: This document will not go into detail about each document, nor processing logic.
 
@@ -119,8 +119,8 @@ The appsettings.json file follows the standard syntax of JSON. Below are the beh
             *"MaxPlayerSessionRestTriggerMins": 240* – 240 minutes (unit of time in the name)  
             *"PlayTimeIntervalMinSecs": 6* – 6 seconds (unit of time in the name)  
             *"ConnectTimeout": “5 minutes”* – 5 minutes  
-            *"ConnectTimeout": 5* – 5 **milliseconds** (since no unit of time   
-             provides, defaults to milliseconds)
+            *"ConnectTimeout": 5* – 5 **milliseconds** (since no unit of time  
+            provides, defaults to milliseconds)
 
 -   A null value of a JSON property indicates that the value should be ignored. The associated property’s default value in the application is used. Example:  
     *“ConnectTimeout”: null* -- use the default value in the application (property is ignored).

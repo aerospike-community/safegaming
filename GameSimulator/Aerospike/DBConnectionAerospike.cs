@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Common;
@@ -219,13 +218,7 @@ namespace PlayerCommon
             }
 
         }
-        
-        static DBConnection()
-        {
-            ClientDriverClass = typeof(Aerospike.Client.AsyncClient);
-            ClientDriverName = "Aerospike Driver";
-        }
-               
+                    
         public DBConnection(AerospikeSettings settings,
                                 ConsoleDisplay displayProgression,
                                 bool autoConnect = true)
@@ -249,8 +242,8 @@ namespace PlayerCommon
             Logger.Instance.InfoFormat("\tSeed Node: {0}\tPort: {1} Use Alter Address: {2}",
                                             this.ASSettings.DBHost, 
                                             this.ASSettings.DBPort,
-                                            this.ASSettings.DBUseExternalIPAddresses);
-            Logger.Instance.InfoFormat("\tConnection Timeout: {0}", this.ASSettings.ConnectionTimeout);
+                                            this.ASSettings.ClientPolicy.useServicesAlternate);
+            Logger.Instance.InfoFormat("\tConnection Timeout: {0}", this.ASSettings.ClientPolicy.loginTimeout);
             
             Logger.Instance.InfoFormat("\tSets:");
             if(this.CurrentPlayersSet.IsEmpty())
@@ -314,55 +307,7 @@ namespace PlayerCommon
         public bool InterventionEnabled { get => !InterventionSet.IsEmpty(); }
         
         public Progression ConsoleProgression { get; }
-        
-        public AsyncClient Connection { get; private set; }
-
-        public void Connect()
-        {
-            using var progression = new Progression(this.ConsoleProgression, "Connection");
-
-            Logger.Instance.Info("DBConnection.Connect Start");
-
-            
-            var policy = new AsyncClientPolicy();
-
-            if(this.ASSettings.MaxSocketIdle >= 0)
-                policy.maxSocketIdle = this.ASSettings.MaxSocketIdle;
-            if (this.ASSettings.MaxConnectionPerNode > 0)
-                policy.asyncMaxConnsPerNode = this.ASSettings.MaxConnectionPerNode;
-            if (this.ASSettings.MinConnectionPerNode >= 0)
-                policy.asyncMinConnsPerNode = this.ASSettings.MinConnectionPerNode;
-            if (Settings.Instance.CompletionPortThreads > 0)
-            {               
-                policy.asyncMaxCommands = Settings.Instance.CompletionPortThreads;
-                policy.asyncMaxCommandAction = MaxCommandAction.DELAY;
-            }
-            if(this.ASSettings.asyncBufferSize > 0)
-                policy.asyncBufferSize = this.ASSettings.asyncBufferSize;
-            if (this.ASSettings.connPoolsPerNode > 0)
-                policy.connPoolsPerNode = this.ASSettings.connPoolsPerNode;
-
-            policy.timeout = this.ASSettings.ConnectionTimeout;
-            policy.loginTimeout = this.ASSettings.ConnectionTimeout;
-            policy.useServicesAlternate = this.ASSettings.DBUseExternalIPAddresses;
-            policy.maxErrorRate = this.ASSettings.maxErrorRate;
-            policy.errorRateWindow = this.ASSettings.errorRateWindow;
-            policy.tendInterval = this.ASSettings.tendInterval;
-
-            Logger.Instance.Dump(policy, Logger.DumpType.Info, "\tConnection Policy", 2);            
-
-            this.Connection = new AsyncClient(policy, this.ASSettings.DBHost, this.ASSettings.DBPort);
-            
-            this.CreateWritePolicy();
-            this.CreateReadPolicies();
-            this.CreateListPolicies();
-            this.CreateQueryPolicies();
-
-            Logger.Instance.Info("DBConnection.Connect End");
-            Logger.Instance.InfoFormat("\tNodes: {0}", string.Join(", ", Connection.Nodes.Select(n => n.NodeAddress.Address)));
-            Logger.Instance.InfoFormat("\tInvalid Nodes: {0}", Connection.GetClusterStats().invalidNodeCount);
-        }
-        
+                
         public WritePolicy WritePolicy { get; private set; }
         public Policy ReadPolicy { get; private set; }
         public ListPolicy ListPolicy { get; private set; }

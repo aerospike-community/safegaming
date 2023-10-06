@@ -14,48 +14,7 @@ namespace PlayerCommon
     partial class DBConnection : IDBConnectionSim
     {
         #region Policies
-        void CreateWritePolicy()
-        {
-            this.WritePolicy = new Aerospike.Client.WritePolicy()
-            {
-                sendKey = true,
-                socketTimeout = this.ASSettings.DBOperationTimeout,
-                totalTimeout = this.ASSettings.totalTimeout * 3,
-                compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries                
-            };
-
-            Logger.Instance.Dump(WritePolicy, Logger.DumpType.Info, "\tWrite Policy", 2);
-        }
-        void CreateReadPolicies()
-        {
-            this.ReadPolicy = new Policy()
-            {
-                sendKey = true,
-                socketTimeout = this.ASSettings.DBOperationTimeout,
-                totalTimeout = this.ASSettings.totalTimeout * 3,
-                compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries                
-            };
-
-            Logger.Instance.Dump(ReadPolicy, Logger.DumpType.Info, "\tRead Policy", 2);
-        }
-
-        void CreateQueryPolicies()
-        {
-            this.QueryPolicy = new QueryPolicy()
-            {
-                sendKey = true,
-                socketTimeout = this.ASSettings.DBOperationTimeout,
-                totalTimeout = this.ASSettings.totalTimeout * 3,
-                compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries,
-                recordQueueSize = this.ASSettings.QueueRecordSize,
-                maxConcurrentNodes = this.ASSettings.MaxConcurrentNodes,
-                replica = this.ASSettings.Replica                
-            };
-        }
-
+                
         void CreateListPolicies()
         {
             this.ListPolicy = new ListPolicy(ListOrder.UNORDERED, ListWriteFlags.DEFAULT);
@@ -65,44 +24,7 @@ namespace PlayerCommon
 
         public ConsoleDisplay PlayerProgression { get; set; }
         public ConsoleDisplay HistoryProgression { get; set; }
-
-        public void Truncate()
-        {
-
-            Logger.Instance.Info("DBConnection.Truncate Start");
-
-            using var consoleTrunc = new Progression(this.ConsoleProgression, "Truncating...");
-
-            void Truncate(NamespaceSetName namespaceSetName)
-            {
-                if (!namespaceSetName.IsEmpty())
-                {
-                    try
-                    {
-                        this.Connection.Truncate(null,
-                                                    namespaceSetName.Namespace,
-                                                    namespaceSetName.SetName,
-                                                    DateTime.Now);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Instance.Error($"DBConnection.Truncate {namespaceSetName}",
-                                                ex);
-                    }
-                }
-            }
-
-            Truncate(this.PlayersTransHistorySet);
-            Truncate(this.PlayersHistorySet);
-            Truncate(this.CurrentPlayersSet);
-            Truncate(this.UsedEmailCntSet);
-            Truncate(this.GlobalIncrementSet);
-            Truncate(this.InterventionSet);
-            Truncate(this.LiverWagerSet);
-
-            Logger.Instance.Info("DBConnection.Truncate End");
-        }
-
+        
         public async Task UpdateCurrentPlayers(Player player,
                                                 bool updateHistory,
                                                 CancellationToken cancellationToken)
@@ -165,7 +87,7 @@ namespace PlayerCommon
                        
                         if (task.IsFaulted || task.IsCanceled)
                         {
-                            Program.CanceledFaultProcessing($"DBConnection.UpdateCurrentPlayers Put {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                            Program.CanceledFaultProcessing($"DBConnection.UpdateCurrentPlayers Put {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                             if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                             {
                                 task.Exception?.Handle(e => true);
@@ -259,7 +181,7 @@ namespace PlayerCommon
                         
                         if (task.IsFaulted || task.IsCanceled)
                         {
-                            Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer Put {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                            Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer Put {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                             if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                             {
                                 task.Exception?.Handle(e => true);
@@ -312,7 +234,7 @@ namespace PlayerCommon
                                             
                                             if (task.IsFaulted || task.IsCanceled)
                                             {
-                                                Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer List {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                                Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer List {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                                 if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                                 {
                                                     task.Exception?.Handle(e => true);
@@ -363,7 +285,7 @@ namespace PlayerCommon
 
                                 if (task.IsFaulted || task.IsCanceled)
                                 {
-                                    Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer Remove List {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                    Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer Remove List {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                     if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                     {
                                         task.Exception?.Handle(e => true);
@@ -598,8 +520,8 @@ namespace PlayerCommon
                                             forPlayerId,
                                             history.Count());
                 Logger.Instance.DebugFormat("\tUsed Threads: {0} Completion Ports: {1}",
-                                                Connection.GetClusterStats().threadsInUse,
-                                                Connection.GetClusterStats().completionPortsInUse);
+                                                this.ClusterStats().threadsInUse,
+                                                this.ClusterStats().completionPortsInUse);
             }
 
             Guid currentPlayerId = Guid.Empty;
@@ -666,7 +588,7 @@ namespace PlayerCommon
                             
                             if (task.IsFaulted || task.IsCanceled)
                             {
-                                Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) Put {transId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) Put {transId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                 if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                 {
                                     task.Exception?.Handle(e => true);
@@ -745,7 +667,7 @@ namespace PlayerCommon
 
                             if (task.IsFaulted || task.IsCanceled)
                             {
-                                Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) Put {forPlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) Put {forPlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                 if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                 {
                                     task.Exception?.Handle(e => true);
@@ -771,8 +693,8 @@ namespace PlayerCommon
             {
                 Logger.Instance.Info("DBConnection.UpdateHistory(Trans) End");
                 Logger.Instance.DebugFormat("\tUsed Threads: {0} Completion Ports: {1}",
-                                                       Connection.GetClusterStats().threadsInUse,
-                                                       Connection.GetClusterStats().completionPortsInUse);
+                                                       this.ClusterStats().threadsInUse,
+                                                       this.ClusterStats().completionPortsInUse);
             }
 
             this.HistoryProgression.Decrement("HistoryTrans");
@@ -826,7 +748,7 @@ namespace PlayerCommon
 
                                     if (task.IsFaulted || task.IsCanceled)
                                     {
-                                        Program.CanceledFaultProcessing($"DBConnection.DeterineEmail Operation {email}", task.Exception, Settings.Instance.IgnoreFaults);
+                                        Program.CanceledFaultProcessing($"DBConnection.DeterineEmail Operation {email}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                         if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                         {
                                             task.Exception?.Handle(e => true);
@@ -917,7 +839,7 @@ namespace PlayerCommon
 
                     if (task.IsFaulted || task.IsCanceled)
                     {
-                        Program.CanceledFaultProcessing($"DBConnection.IncrementGlobalSet Operation {glbIncr.Key}", task.Exception, Settings.Instance.IgnoreFaults);
+                        Program.CanceledFaultProcessing($"DBConnection.IncrementGlobalSet Operation {glbIncr.Key}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                         if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                         {
                             task.Exception?.Handle(e => true);
@@ -997,7 +919,7 @@ namespace PlayerCommon
 
                         if (task.IsFaulted || task.IsCanceled)
                         {
-                            Program.CanceledFaultProcessing($"DBConnection.UpdateIntervention Put {intervention.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                            Program.CanceledFaultProcessing($"DBConnection.UpdateIntervention Put {intervention.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                             if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                             {
                                 task.Exception?.Handle(e => true);
@@ -1085,7 +1007,7 @@ namespace PlayerCommon
 
                         if (task.IsFaulted || task.IsCanceled)
                         {
-                            Program.CanceledFaultProcessing($"DBConnection.UpdateLiveWager Put {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                            Program.CanceledFaultProcessing($"DBConnection.UpdateLiveWager Put {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                             if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                             {
                                 task.Exception?.Handle(e => true);
@@ -1154,7 +1076,7 @@ namespace PlayerCommon
 
                                     if (task.IsFaulted || task.IsCanceled)
                                     {
-                                        Program.CanceledFaultProcessing($"DBConnection.interventionThresholds Get {interventionThresholds?.Version ?? -1}", task.Exception, Settings.Instance.IgnoreFaults);
+                                        Program.CanceledFaultProcessing($"DBConnection.interventionThresholds Get {interventionThresholds?.Version ?? -1}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                         if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                         {
                                             task.Exception?.Handle(e => true);

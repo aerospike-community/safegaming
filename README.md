@@ -1,8 +1,21 @@
-# Game Simulator Aerospike
+# Safe Gaming Applications
 
-This is the game simulator for the Safe Gaming application. This application can run on any OS (Windows, MacOS, Linux, RHEL). This version targets the Aerospike DB.
+The Safe Gaming applications consist of three separate applications. They are:
 
-This application is not a data generator but instead it simulates roulette and slot machine play using gaming industry rules, statistics, and data. This includes player data based on geographic and financial data.
+-   Safe Gaming Simulator (GameSimulator) – This application simulates a casino with gambling (games), players, player sessions, etc. This application drives the data used by the remining applications.
+-   Safe Gaming Dashboard (GameDashBoard) – This is a read-only console application driven by the output from Game Simulator. It simulators a high-level casino dashboard. It reads all global session overview, player wagers, player interventions, and detailed player information.
+-   Safe Gaming GUI – This is an interactive casino application where players place bets against the simulator.
+
+These applications can run on any OS (Windows, MacOS, and Linux).
+
+The Safe Gaming Simulator and Safe Gaming Dashboard applications can target different databases following the same document model and providing the same functionality/behavior. The following are the current databases supported:
+
+-   AerospikeDB (AS)
+-   MongoDB (MG)
+
+Each database target will be in a separate folder (they do share a common set of code except for the database component and configuration) based on the database name and the executable will be suffixed with the database abbreviation (e.g., GameDashBoardAS for Aerospike).
+
+These applications are not data generators but instead simulate roulette and slot machine play using gaming industry rules, statistics, and data. This includes player data based on geographic and financial data.
 
 ## Overview
 
@@ -54,7 +67,7 @@ In historic mode all timestamps are simulated in the past, the application will 
 
 ### Real Time Mode
 
-In real time mode all players and game play occur in real time. All game plays and player turn play are simulated in real time producing clock time timestamps. This mode is typically used to drive the SafeGaming GUI applications and GameDashBoard application.
+In real time mode all players and game play occur in real time. All game plays and player turn play are simulated in real time producing clock time timestamps. This mode is typically used to drive the SafeGaming GUI application and GameDashBoard application.
 
 ## Installation
 
@@ -132,3 +145,15 @@ The appsettings.json file follows the standard syntax of JSON. Below are the beh
     -   “\<empty\>” – An empty string is passed to the field in the application.
     -   “\#” – If the hash character is passed as the first element in a string, it is treated as a comment and is ignored. Example:  
         *"HGRMFile": “\#This is a file where the Histogram will be stored”*
+
+\<not finished\>
+
+## Command Line
+
+Each application will have the capabilities to override certain properties defined in the application configuration file. What can be overridden will depend on the targeted database version. To obtain a list of possible arguments, pass “-?” to the executable. It will list the argument, default value, and description of each argument.
+
+## Execution
+
+There will be an executable in the targeted folder. Based on the functionality and targeted database you just call the application by its name. For example, GameDashBoardAS for the dashboard application targeting Aerospike. GameSimulatorMG for the game simulator application targeting MonogoDB. No file extension is required or calling the “dotnet” CLI.
+
+Note for Linux or MacOS, you may need to change the access mode of a file to allow execution.

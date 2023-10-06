@@ -68,6 +68,8 @@ namespace GameSimulator
         }
 
         public static List<string> RemoveFromNotFoundSettings = new List<string>();
+        public delegate void InitializationActions(SettingsSim settings);
+        public static event InitializationActions OnInitialization;
 
         public SettingsSim(string appJsonFile = "appsettings.json")
             : base(appJsonFile)
@@ -79,6 +81,8 @@ namespace GameSimulator
                                                 this);
 
             PlayerCommon.Settings.RemoveNotFoundSettingClassProps(RemoveFromNotFoundSettings);
+
+            OnInitialization?.Invoke(this);
         }
 
         public GameSimulatorSettings Config = new();

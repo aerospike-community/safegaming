@@ -182,7 +182,7 @@ namespace PlayerCommon
                        
                         if (task.IsFaulted || task.IsCanceled)
                         {
-                            Program.CanceledFaultProcessing($"DBConnection.UpdateCurrentPlayers InsertOne {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                            Program.CanceledFaultProcessing($"DBConnection.UpdateCurrentPlayers InsertOne {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                             if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                             {
                                 task.Exception?.Handle(e => true);
@@ -281,7 +281,7 @@ namespace PlayerCommon
                                 
                                 if (task.IsFaulted || task.IsCanceled)
                                 {
-                                    Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer UpdateOneAsync {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                    Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer UpdateOneAsync {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                     if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                     {
                                         task.Exception?.Handle(e => true);
@@ -324,7 +324,7 @@ namespace PlayerCommon
 
                                 if (task.IsFaulted || task.IsCanceled)
                                 {
-                                    Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer InsertOne {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                    Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer InsertOne {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                     if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                     {
                                         task.Exception?.Handle(e => true);
@@ -550,7 +550,7 @@ namespace PlayerCommon
                            
                             if (task.IsFaulted || task.IsCanceled)
                             {
-                                Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) InsertOne {playerTransHistory.WagerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) InsertOne {playerTransHistory.WagerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                 if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                 {
                                     task.Exception?.Handle(e => true);
@@ -627,7 +627,7 @@ namespace PlayerCommon
                             
                             if (task.IsFaulted || task.IsCanceled)
                             {
-                                Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) InsertOne {forPlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) InsertOne {forPlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                 if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                 {
                                     task.Exception?.Handle(e => true);
@@ -704,7 +704,7 @@ namespace PlayerCommon
 
                                         if (task.IsFaulted || task.IsCanceled)
                                         {
-                                            Program.CanceledFaultProcessing($"DBConnection.DeterineEmail FindOneAndUpdate {email}", task.Exception, Settings.Instance.IgnoreFaults);
+                                            Program.CanceledFaultProcessing($"DBConnection.DeterineEmail FindOneAndUpdate {email}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                             if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                             {
                                                 task.Exception?.Handle(e => true);
@@ -783,7 +783,7 @@ namespace PlayerCommon
 
                     if (task.IsFaulted || task.IsCanceled)
                     {
-                        Program.CanceledFaultProcessing($"DBConnection.IncrementGlobalSet UpdateOneAsync {glbIncr.Key}", task.Exception, Settings.Instance.IgnoreFaults);
+                        Program.CanceledFaultProcessing($"DBConnection.IncrementGlobalSet UpdateOneAsync {glbIncr.Key}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                         if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                         {
                             task.Exception?.Handle(e => true);
@@ -841,7 +841,7 @@ namespace PlayerCommon
 
                         if (task.IsFaulted || task.IsCanceled)
                         {
-                            Program.CanceledFaultProcessing($"DBConnection.UpdateIntervention InsertOne {intervention.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                            Program.CanceledFaultProcessing($"DBConnection.UpdateIntervention InsertOne {intervention.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                             if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                             {
                                 task.Exception?.Handle(e => true);
@@ -910,7 +910,7 @@ namespace PlayerCommon
 
                         if (task.IsFaulted || task.IsCanceled)
                         {
-                            Program.CanceledFaultProcessing($"DBConnection.UpdateLiveWager InsertOne {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                            Program.CanceledFaultProcessing($"DBConnection.UpdateLiveWager InsertOne {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                             if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                             {
                                 task.Exception?.Handle(e => true);
@@ -976,7 +976,7 @@ namespace PlayerCommon
 
                                                 if (task.IsFaulted || task.IsCanceled)
                                                 {
-                                                    Program.CanceledFaultProcessing($"DBConnection.interventionThresholds Find {interventionThresholds?.Version ?? -1}", task.Exception, Settings.Instance.IgnoreFaults);
+                                                    Program.CanceledFaultProcessing($"DBConnection.interventionThresholds Find {interventionThresholds?.Version ?? -1}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
                                                     if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                                     {
                                                         task.Exception?.Handle(e => true);

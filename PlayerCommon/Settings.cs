@@ -560,9 +560,9 @@ namespace PlayerCommon
         public static bool UpdatedPropExists(string path)
                             => UpdatedProps.Any(p => p == path
                                                         || (path[0] == '*'
-                                                                && p.Remove('*').EndsWith(path[1..]))
+                                                                && p.EndsWith(path[1..]))
                                                         || (path.Last() == '*'
-                                                                && p.Remove('*').EndsWith(path[..^1])));
+                                                                && p.StartsWith(path[..^1])));
 
         /// <summary>
         /// A list of <see cref="KeyValuePair"/> where

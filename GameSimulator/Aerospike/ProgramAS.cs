@@ -25,10 +25,10 @@ namespace PlayerCommon
             PreConsoleDisplayAction = () =>
             {
                 ConsoleDisplay.Console.WriteLine("ADB Connection Timeout: {0}, Max: {1} Min: {2} Idle: {3} Operation Timeout: {4} Compression: {5} Max Latency Warning: {6}",
-                                                    SettingsSim.Instance.Config.Aerospike.ConnectionTimeout,
-                                                    SettingsSim.Instance.Config.Aerospike.MaxConnectionPerNode,
-                                                    SettingsSim.Instance.Config.Aerospike.MinConnectionPerNode,
-                                                    SettingsSim.Instance.Config.Aerospike.MaxSocketIdle,
+                                                    SettingsSim.Instance.Config.Aerospike.ClientPolicy.timeout,
+                                                    SettingsSim.Instance.Config.Aerospike.ClientPolicy.asyncMaxConnsPerNode,
+                                                    SettingsSim.Instance.Config.Aerospike.ClientPolicy.asyncMinConnsPerNode,
+                                                    SettingsSim.Instance.Config.Aerospike.ClientPolicy.maxSocketIdle,
                                                     SettingsSim.Instance.Config.Aerospike.DBOperationTimeout,
                                                     SettingsSim.Instance.Config.Aerospike.EnableDriverCompression,
                                                     SettingsSim.Instance.WarnMaxMSLatencyDBExceeded);

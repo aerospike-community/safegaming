@@ -9,29 +9,18 @@ namespace PlayerCommon
 {
     public class AerospikeSettings
     {
+        public AsyncClientPolicy ClientPolicy { get; set; } = new AsyncClientPolicy();
+
         public string DBHost = "localhost";
         public int DBPort = 3000;
+        public bool DaaS = false;
 
-        public int ConnectionTimeout = 5000;
-        public int DBOperationTimeout = 5000;
-        public int MaxConnectionPerNode = -1;
-        public int MinConnectionPerNode = -1;
-        public int MaxSocketIdle = -1;
-        public int totalTimeout;
-        public int asyncMaxCommands = 500; //less than CompletionPortThreads
-        public bool EnableDriverCompression = false;
-        public int QueueRecordSize = 5000;
-        public int MaxConcurrentNodes = 0;
-        public Replica Replica = Replica.SEQUENCE;
-
-        public int asyncBufferSize = 1048576; //1MB
-        public int connPoolsPerNode = 2;
-        public int maxRetries = 2;
-        public int maxErrorRate = 100;
-        public int errorRateWindow = 1;
-        public int tendInterval = 1000;
-        public bool DBUseExternalIPAddresses = false;
-        public int RecordsPerSecond = 0;
+        public int? DBOperationTimeout;
+        public bool? EnableDriverCompression;
+        public int? SocketTimeout;
+        public int? MaxRetries;
+        public int? SleepBetweenRetries;
+        public string TLSHostName;
 
         public string CurrentPlayersSetName = "test.CurrentPlayers";
         public string PlayersHistorySetName = "test.PlayersHistory";

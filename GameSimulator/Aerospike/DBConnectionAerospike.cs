@@ -281,7 +281,18 @@ namespace PlayerCommon
                 Logger.Instance.Warn("\t\tLive Wager will NOT be processed (Empty namespace/set)");
             else
                 Logger.Instance.InfoFormat("\t\tLiverWagerSet: {0}", this.LiverWagerSet);
-            
+
+            this.WritePolicy = new WritePolicy(this.ASSettings.ClientPolicy.writePolicyDefault);
+            Logger.Instance.Dump(this.WritePolicy, Logger.DumpType.Info, "\tWrite Policy", 2);
+            this.ReadPolicy = new Policy(this.ASSettings.ClientPolicy.readPolicyDefault);
+            Logger.Instance.Dump(this.ReadPolicy, Logger.DumpType.Info, "\tRead Policy", 2);
+            this.QueryPolicy = new QueryPolicy(this.ASSettings.ClientPolicy.queryPolicyDefault);
+            Logger.Instance.Dump(this.QueryPolicy, Logger.DumpType.Info, "\tQuery Policy", 2);
+
+#if WRITEDB
+            this.CreateListPolicies();
+#endif
+
             if (autoConnect)
                 this.Connect();
         }

@@ -35,6 +35,8 @@ namespace GameDashBoard
         }
 
         public static List<string> RemoveFromNotFoundSettings = new();
+        public delegate void InitializationActions(SettingsGDB settings);
+        public static event InitializationActions OnInitialization;
 
         public SettingsGDB(string appJsonFile = "appsettings.json")
             : base(appJsonFile)
@@ -45,6 +47,8 @@ namespace GameDashBoard
                                                 "GameDashBoard",
                                                 this);
             PlayerCommon.Settings.RemoveNotFoundSettingClassProps(RemoveFromNotFoundSettings);
+
+            OnInitialization?.Invoke(this);
         }
 
         public GameDashBoardSettings Config = new();

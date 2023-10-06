@@ -22,6 +22,8 @@ namespace PlayerCommon
         public int? SleepBetweenRetries;
         public string TLSHostName;
 
+        public int RecordsPerSecond;
+        
         public string CurrentPlayersSetName = "test.CurrentPlayers";
         public string PlayersHistorySetName = "test.PlayersHistory";
         public string PlayersTransHistorySetName = "test.PlayersTransHistory";

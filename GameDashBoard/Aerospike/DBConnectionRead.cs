@@ -14,49 +14,7 @@ namespace PlayerCommon
     partial class DBConnection : IDBConnectionGDB
     {
         #region Policies
-        void CreateWritePolicy()
-        {
-            this.WritePolicy = new Aerospike.Client.WritePolicy()
-            {
-                sendKey = true,
-                socketTimeout = this.ASSettings.DBOperationTimeout,
-                totalTimeout = this.ASSettings.totalTimeout * 3,
-                compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries
-            };
-
-            Logger.Instance.Dump(WritePolicy, Logger.DumpType.Info, "\tWrite Policy", 2);
-        }
-        void CreateReadPolicies()
-        {
-            this.ReadPolicy = new Policy(this.Connection.readPolicyDefault)
-            {
-                socketTimeout = this.ASSettings.DBOperationTimeout,
-                totalTimeout = this.ASSettings.totalTimeout * 3,
-                compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries,
-                replica = this.ASSettings.Replica
-            };
-
-            Logger.Instance.Dump(ReadPolicy, Logger.DumpType.Info, "\tRead Policy", 2);
-        }
-
-        void CreateQueryPolicies()
-        {
-            this.QueryPolicy = new QueryPolicy()
-            {
-                socketTimeout = this.ASSettings.DBOperationTimeout,
-                totalTimeout = this.ASSettings.totalTimeout * 3,
-                compress = this.ASSettings.EnableDriverCompression,
-                maxRetries = this.ASSettings.maxRetries,
-                recordQueueSize = this.ASSettings.QueueRecordSize,
-                maxConcurrentNodes = this.ASSettings.MaxConcurrentNodes,
-                replica = this.ASSettings.Replica
-            };
-
-            Logger.Instance.Dump(QueryPolicy, Logger.DumpType.Info, "\tQuery Policy", 2);
-        }
-
+        
         void CreateListPolicies()
         {
             this.ListPolicy = new ListPolicy(ListOrder.UNORDERED, ListWriteFlags.DEFAULT);
@@ -158,7 +116,7 @@ namespace PlayerCommon
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                Program.CanceledFaultProcessing($"DBConnection.DisplayRecords session {sessionIdx}", ex, Settings.Instance.IgnoreFaults);
+                Program.CanceledFaultProcessing($"DBConnection.DisplayRecords session {sessionIdx}", ex, Settings.Instance.IgnoreFaults,false);
             }
 
             if (Logger.Instance.IsDebugEnabled)
@@ -251,7 +209,7 @@ namespace PlayerCommon
                 catch (OperationCanceledException) { throw; }
                 catch (Exception ex)
                 {
-                    Program.CanceledFaultProcessing($"DBConnection.GetLiveWager Get session {sessionIdx}", ex, Settings.Instance.IgnoreFaults);
+                    Program.CanceledFaultProcessing($"DBConnection.GetLiveWager Get session {sessionIdx}", ex, Settings.Instance.IgnoreFaults, false);
                     if (Settings.Instance.IgnoreFaults)
                     {
                         continue;
@@ -382,7 +340,7 @@ namespace PlayerCommon
                 catch (OperationCanceledException) { throw; }
                 catch (Exception ex)
                 {
-                    Program.CanceledFaultProcessing($"DBConnection.GetIntervention Get session {sessionIdx}", ex, Settings.Instance.IgnoreFaults);
+                    Program.CanceledFaultProcessing($"DBConnection.GetIntervention Get session {sessionIdx}", ex, Settings.Instance.IgnoreFaults, false);
                     if (Settings.Instance.IgnoreFaults)
                     {
                         continue;
@@ -512,7 +470,7 @@ namespace PlayerCommon
                 catch (OperationCanceledException) { throw; }
                 catch (Exception ex) 
                 {                    
-                    Program.CanceledFaultProcessing($"DBConnection.GetLiveWager Get session {sessionIdx}", ex, Settings.Instance.IgnoreFaults);
+                    Program.CanceledFaultProcessing($"DBConnection.GetLiveWager Get session {sessionIdx}", ex, Settings.Instance.IgnoreFaults, false);
                     if (Settings.Instance.IgnoreFaults)
                     {
                         continue;
@@ -607,7 +565,7 @@ namespace PlayerCommon
 
                                  if (task.IsFaulted || task.IsCanceled)
                                  {
-                                     Program.CanceledFaultProcessing($"DBConnection.GetPlayer Get {playerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                     Program.CanceledFaultProcessing($"DBConnection.GetPlayer Get {playerId}", task.Exception, Settings.Instance.IgnoreFaults, false);
                                      if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                      {
                                          task.Exception?.Handle(e => true);

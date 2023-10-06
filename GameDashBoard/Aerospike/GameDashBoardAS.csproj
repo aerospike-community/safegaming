@@ -7,15 +7,21 @@
     <Authors>Richard Andersen</Authors>
     <Copyright>2023</Copyright>
     <Title>SafeGaming Dash Board Aerospike</Title>
-    <Version>1.2.4.0</Version>
-    <FileVersion>1.2.4.0</FileVersion>
-    <AssemblyVersion>1.2.4.0</AssemblyVersion>
+    <Version>1.2.5.0</Version>
+    <FileVersion>1.2.5.0</FileVersion>
+    <AssemblyVersion>1.2.5.0</AssemblyVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>../../PlayerCommon/PlayerGeneration.snk</AssemblyOriginatorKeyFile> 
     <RootNamespace>GameDashBoard</RootNamespace>
     <DefineConstants>$(DefineConstants);AEROSPIKE;READDB</DefineConstants>
     <NoWarn>1701;1702;CS8002</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="DaaS\**" />
+    <EmbeddedResource Remove="DaaS\**" />
+    <None Remove="DaaS\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\..\PlayerCommon\Attributes.cs" Link="Attributes.cs" />
@@ -42,6 +48,7 @@
   <ItemGroup>
     <Compile Include="..\..\GameSimulator\Aerospike\AerospikeSettings.cs" Link="AerospikeSettings.cs" />
     <Compile Include="..\..\GameSimulator\Aerospike\DBConnectionAerospike.cs" Link="DBConnectionAerospike.cs" />
+    <Compile Include="..\..\GameSimulator\Aerospike\DBConnectionASNative.cs" Link="DBConnectionASNative.cs" />
   </ItemGroup>
 
   <ItemGroup>

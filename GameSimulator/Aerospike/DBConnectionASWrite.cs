@@ -18,7 +18,7 @@ namespace PlayerCommon
         void CreateListPolicies()
         {
             this.ListPolicy = new ListPolicy(ListOrder.UNORDERED, ListWriteFlags.DEFAULT);
-            Logger.Instance.Dump(ListPolicy, Logger.DumpType.Info, "\tRead Policy", 2);
+            Logger.Instance.Dump(ListPolicy, Logger.DumpType.Info, "\tList Policy", 2);
         }
         #endregion
 

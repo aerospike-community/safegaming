@@ -208,7 +208,7 @@ namespace PlayerCommon
             catch (Exception ex)
             {
                 Program.CanceledFaultProcessing($"DBConnection.FetchRecords session {sessionIdx} Count: {nbrRecs} PlayerCnt: {currentPlayerCnt} Trans: {currentTrans}",
-                                                    ex, Settings.Instance.IgnoreFaults);
+                                                    ex, Settings.Instance.IgnoreFaults, false);
             }
             
             if (Logger.Instance.IsDebugEnabled)
@@ -393,7 +393,7 @@ namespace PlayerCommon
 
                                      if (task.IsFaulted || task.IsCanceled)
                                      {
-                                         Program.CanceledFaultProcessing($"DBConnection.GetPlayer Get {playerId}", task.Exception, Settings.Instance.IgnoreFaults);
+                                         Program.CanceledFaultProcessing($"DBConnection.GetPlayer Get {playerId}", task.Exception, Settings.Instance.IgnoreFaults, false);
                                          if (Settings.Instance.IgnoreFaults && !task.IsCanceled)
                                          {
                                              task.Exception?.Handle(e => true);

@@ -51,6 +51,7 @@ namespace PlayerCommon
             Logger.Instance.InfoFormat("\tInvalid Nodes: {0}", Connection.GetClusterStats().invalidNodeCount);
         }
 
+#if WRITEDB
         public void Truncate()
         {
 
@@ -87,6 +88,7 @@ namespace PlayerCommon
 
             Logger.Instance.Info("DBConnection.Truncate End");
         }
+#endif
 
         public ClusterStats ClusterStats() => this.Connection.GetClusterStats();
     }

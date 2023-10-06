@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "GameDashBoardAS": {
+      "commandName": "Project"
+    },
+    "GameDaskBoard Help": {
+      "commandName": "Project",
+      "commandLineArgs": "-?"
+    }
+  }
+}

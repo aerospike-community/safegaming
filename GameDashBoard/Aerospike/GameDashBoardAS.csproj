@@ -7,9 +7,9 @@
     <Authors>Richard Andersen</Authors>
     <Copyright>2023</Copyright>
     <Title>SafeGaming Dash Board Aerospike</Title>
-    <Version>1.2.5.0</Version>
-    <FileVersion>1.2.5.0</FileVersion>
-    <AssemblyVersion>1.2.5.0</AssemblyVersion>
+    <Version>1.2.5.1</Version>
+    <FileVersion>1.2.5.1</FileVersion>
+    <AssemblyVersion>1.2.5.1</AssemblyVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>../../PlayerCommon/PlayerGeneration.snk</AssemblyOriginatorKeyFile> 
     <RootNamespace>GameDashBoard</RootNamespace>
@@ -74,7 +74,7 @@
     <PackageReference Include="Aerospike.Client" Version="6.1.0" />
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
     <PackageReference Include="Common.Console" Version="5.31.10" />
-    <PackageReference Include="Common.Functions" Version="5.31.11" />
+    <PackageReference Include="Common.Functions" Version="5.31.12" />
     <PackageReference Include="Common.Logger" Version="5.31.15" />
     <PackageReference Include="Common.Path" Version="5.31.5" />
     <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />

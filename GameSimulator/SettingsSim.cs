@@ -33,12 +33,12 @@ namespace GameSimulator
 
         public int MinTransPerSession = 5;
         public int MaxTransPerSession = 10;
-        public readonly List<string> OnlyTheseGamingStates;
+        public List<string> OnlyTheseGamingStates;
         public int PlayerIdStartRange = 500;
 
         public int PlayerHistoryLastNbrTrans = 10;
         public bool GenerateUniqueEmails = true;
-        public readonly int GlobalIncrementIntervalSecs = 1;
+        public int GlobalIncrementIntervalSecs = 1;
         public TimeSpan GlobalIncremenIntervals { get => new(0, 0, GlobalIncrementIntervalSecs); }
         public int InterventionThresholdsRefreshRateSecs = 300;
         public TimeSpan InterventionThresholdsRefreshRate { get => new(0, 0, InterventionThresholdsRefreshRateSecs); }

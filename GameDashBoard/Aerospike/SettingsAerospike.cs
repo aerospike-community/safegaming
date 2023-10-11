@@ -144,7 +144,7 @@ namespace GameDashBoard
 
         private static void SettingsSim_OnInitialization(SettingsGDB settings)
         {
-            if (settings.Config.Aerospike.DaaS)
+            if (settings.Config.Aerospike.DBaaS)
             {
                 if (settings.Config.Aerospike.DBPort == 3000)
                     settings.Config.Aerospike.DBPort = 4000;

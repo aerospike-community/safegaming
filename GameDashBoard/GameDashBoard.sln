@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDashBoardAS", "Aerospik
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDashBoardMG", "Monogodb\GameDashBoardMG.csproj", "{5F9D1995-F4A3-4CB7-911D-F3A0D954E215}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDashBoardASDaaS", "Aerospike\DaaS\GameDashBoardASDaaS.csproj", "{592603C4-D859-4701-B0F1-EDA6D465ED3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDashBoardASDBaaS", "Aerospike\DBaaS\GameDashBoardASDBaaS.csproj", "{592603C4-D859-4701-B0F1-EDA6D465ED3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

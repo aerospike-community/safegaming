@@ -23,14 +23,14 @@ namespace PlayerCommon
         public string TLSHostName;
 
         public int RecordsPerSecond;
-        
-        public string CurrentPlayersSetName = "test.CurrentPlayers";
-        public string PlayersHistorySetName = "test.PlayersHistory";
-        public string PlayersTransHistorySetName = "test.PlayersTransHistory";
+
+        public string CurrentPlayersSetName = null; //"test.CurrentPlayers";
+        public string PlayersHistorySetName = null; //"test.PlayersHistory";
+        public string PlayersTransHistorySetName = null; //"test.PlayersTransHistory";
         public string UsedEmailCntSetName = null; //"test.UsedEmailCnt";        
-        public string GlobalIncrementSetName = "test.GlobalIncrement";
-        public string InterventionSetName = "test.Intervention";
-        public string LiveWagerSetName = "test.LiveWager";
-        public string InterventionThresholdsSetName = "test.InterventionThresholds";
+        public string GlobalIncrementSetName = null; //"test.GlobalIncrement";
+        public string InterventionSetName = null; //"test.Intervention";
+        public string LiveWagerSetName = null; //"test.LiveWager";
+        public string InterventionThresholdsSetName = null; //"test.InterventionThresholds";
     }
 }

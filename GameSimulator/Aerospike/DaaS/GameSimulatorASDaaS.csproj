@@ -7,9 +7,9 @@
     <Authors>Richard Andersen</Authors>
     <Copyright>2023</Copyright>
     <Title>SafeGaming Simulator Aerospike DaaS</Title>
-    <Version>1.2.5.1</Version>
-    <FileVersion>1.2.5.1</FileVersion>
-    <AssemblyVersion>1.2.5.1</AssemblyVersion>
+    <Version>1.2.5.2</Version>
+    <FileVersion>1.2.5.2</FileVersion>
+    <AssemblyVersion>1.2.5.2</AssemblyVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>../../../PlayerCommon/PlayerGeneration.snk</AssemblyOriginatorKeyFile> 
     <RootNamespace>GameSimulator</RootNamespace>

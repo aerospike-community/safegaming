@@ -150,6 +150,8 @@ namespace GameSimulator
                 if (settings.Config.Aerospike.DBPort == 3000)
                     settings.Config.Aerospike.DBPort = 4000;
             }
+            if (settings.Config.Aerospike.InterventionThresholdsSetName is null)
+                settings.Config.InterventionThresholdsRefreshRateSecs = -1;
         }
     }
 }

@@ -309,7 +309,7 @@ namespace PlayerCommon
                     var convertedValue = SettingConvertValue(propertyType, value);
 
                     if (convertedValue is null) return (null, false);
-                    if (value == ConfigNullValue)
+                    if (convertedValue.Equals(ConfigNullValue))
                     {
                         return (propertyType.GetDefaultValue(), true);
                     }

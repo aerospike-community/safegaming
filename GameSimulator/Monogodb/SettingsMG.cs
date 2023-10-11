@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Faker;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using static MongoDB.Driver.WriteConcern;
@@ -130,6 +129,13 @@ namespace GameSimulator
                 });
             PlayerCommon.Settings.AddPathSaveObj("GameSimulator:Mongodb:DriverSettings:WriteConcern");
 
+            OnInitialization += SettingsSim_OnInitialization;
+        }
+
+        private static void SettingsSim_OnInitialization(SettingsSim settings)
+        {
+            if (settings.Config.Mongodb.InterventionThresholdsCollection is null)
+                settings.Config.InterventionThresholdsRefreshRateSecs = -1;
         }
     }
 }

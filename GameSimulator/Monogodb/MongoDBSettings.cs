@@ -83,14 +83,14 @@ namespace PlayerCommon
             }
         }
 
-        public CollectionOpts CurrentPlayersCollection = new("CurrentPlayers", nameof(CurrentPlayersCollection));
-        public CollectionOpts PlayersHistoryCollection = new("PlayersHistory", nameof(PlayersHistoryCollection));
-        public CollectionOpts PlayersTransHistoryCollection = new("PlayersTransHistory", nameof(PlayersTransHistoryCollection));
+        public CollectionOpts CurrentPlayersCollection = null; // new("CurrentPlayers", nameof(CurrentPlayersCollection));
+        public CollectionOpts PlayersHistoryCollection = null; // new("PlayersHistory", nameof(PlayersHistoryCollection));
+        public CollectionOpts PlayersTransHistoryCollection = null; //new("PlayersTransHistory", nameof(PlayersTransHistoryCollection));
         public CollectionOpts UsedEmailCntCollection = null; //"UsedEmailCnt";
-        public CollectionOpts GlobalIncrementCollection = new("GlobalIncrement", nameof(GlobalIncrementCollection));
-        public CollectionOpts InterventionCollection = new("Intervention", nameof(InterventionCollection));
-        public CollectionOpts LiveWagerCollection = new("LiveWager", nameof(LiveWagerCollection));
-        public CollectionOpts InterventionThresholdsCollection = new("InterventionThresholds", nameof(InterventionThresholdsCollection));
+        public CollectionOpts GlobalIncrementCollection = null; //new("GlobalIncrement", nameof(GlobalIncrementCollection));
+        public CollectionOpts InterventionCollection = null; //new("Intervention", nameof(InterventionCollection));
+        public CollectionOpts LiveWagerCollection = null; // new("LiveWager", nameof(LiveWagerCollection));
+        public CollectionOpts InterventionThresholdsCollection = null; // new("InterventionThresholds", nameof(InterventionThresholdsCollection));
 
         public IEnumerable<CollectionOpts> GetAllCollections()
             => new List<CollectionOpts>()

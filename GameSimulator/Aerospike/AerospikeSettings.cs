@@ -13,7 +13,7 @@ namespace PlayerCommon
 
         public string DBHost = "localhost";
         public int DBPort = 3000;
-        public bool DaaS = false;
+        public bool DBaaS = false;
 
         public int? DBOperationTimeout;
         public bool? EnableDriverCompression;

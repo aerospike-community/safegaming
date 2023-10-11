@@ -18,9 +18,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DaaS\**" />
-    <EmbeddedResource Remove="DaaS\**" />
-    <None Remove="DaaS\**" />
+    <Compile Remove="DBaaS\**" />
+    <EmbeddedResource Remove="DBaaS\**" />
+    <None Remove="DBaaS\**" />
   </ItemGroup>
 
   <ItemGroup>

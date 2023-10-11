@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameSimulatorAS", "Aerospik
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameSimulatorMG", "Monogodb\GameSimulatorMG.csproj", "{385B6E9F-9F22-4047-8FF5-1699FB1FB383}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameSimulatorASDaaS", "Aerospike\DaaS\GameSimulatorASDaaS.csproj", "{10724FEF-BBFB-4996-8912-C3FB33681C62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameSimulatorASDBaaS", "Aerospike\DBaaS\GameSimulatorASDBaaS.csproj", "{10724FEF-BBFB-4996-8912-C3FB33681C62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

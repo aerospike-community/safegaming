@@ -6,14 +6,14 @@
     <Company>Aerospike</Company>
     <Authors>Richard Andersen</Authors>
     <Copyright>2023</Copyright>
-    <Title>SafeGaming Simulator Aerospike DaaS</Title>
+    <Title>SafeGaming Simulator Aerospike DBaaS</Title>
     <Version>1.2.5.2</Version>
     <FileVersion>1.2.5.2</FileVersion>
     <AssemblyVersion>1.2.5.2</AssemblyVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>../../../PlayerCommon/PlayerGeneration.snk</AssemblyOriginatorKeyFile> 
     <RootNamespace>GameSimulator</RootNamespace>
-    <DefineConstants>$(DefineConstants);AEROSPIKE;WRITEDB;ASDAAS</DefineConstants>
+    <DefineConstants>$(DefineConstants);AEROSPIKE;WRITEDB;ASDBAAS</DefineConstants>
     <NoWarn>1701;1702;CS8002</NoWarn>
   </PropertyGroup>
 

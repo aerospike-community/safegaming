@@ -17,7 +17,7 @@ namespace PlayerCommon
         static DBConnection()
         {
             ClientDriverClass = typeof(Aerospike.Client.AsyncClientProxy);
-            ClientDriverName = "Aerospike DaaS Driver";
+            ClientDriverName = "Aerospike DBaaS Driver";
             FakeClusterStats = new ClusterStats(new NodeStats[0], 0);
         }
 
@@ -27,7 +27,7 @@ namespace PlayerCommon
         {
             using var progression = new Progression(this.ConsoleProgression, "Connection");
 
-            Logger.Instance.Info("DBConnection.Connect.DaaS Start");
+            Logger.Instance.Info("DBConnection.Connect.DBaaS Start");
 
 
             var policy = this.ASSettings.ClientPolicy;
@@ -51,13 +51,13 @@ namespace PlayerCommon
 
             this.Connection = new AsyncClientProxy(policy, hosts);
 
-            Logger.Instance.Info("DBConnection.Connect.DaaS End");            
+            Logger.Instance.Info("DBConnection.Connect.DBaaS End");            
         }
 
         public void Truncate()
         {
             Logger.Instance.Info("DBConnection.Truncate Not Supported");
-            this.ConsoleProgression.Write("Truncate Not Supported for DaaS");
+            this.ConsoleProgression.Write("Truncate Not Supported for DBaaS");
         }
 
         

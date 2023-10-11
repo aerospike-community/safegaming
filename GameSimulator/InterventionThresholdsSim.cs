@@ -22,7 +22,7 @@ namespace PlayerCommon
                                                     CancellationToken token,
                                                     bool forceRefresh = false)
         {
-            if(dbConnection is null)
+            if(dbConnection is null || SettingsSim.Instance.Config.InterventionThresholdsRefreshRateSecs <= 0)
                 return false;
 
             return await dbConnection.InterventionThresholdsRefreshCheck(Instance,

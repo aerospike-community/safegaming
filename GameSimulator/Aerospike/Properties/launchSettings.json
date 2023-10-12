@@ -34,6 +34,10 @@
     "GameSimulator help": {
       "commandName": "Project",
       "commandLineArgs": "-?"
+    },
+    "GameSim LiveSetTickingDisable": {
+      "commandName": "Project",
+      "commandLineArgs": "--LiveSetTickingDisable"
     }
   }
 }

@@ -63,6 +63,13 @@ namespace GameSimulator
                 Description = "True to Fire and Forget Live Sets"
             });
 
+            this._cmdLineParser.Arguments.Add(new SwitchArgument("LiveSetTickingDisable", false)
+            {
+                DefaultValue = appSettings.Config.ContinuousSessions,
+                Optional = true, //Required                
+                Description = "All Live Set (e.g., Global Increment) Ticking will be disabled"
+            });
+
         }
        
         public override bool ParseSetArguments(string[] args, bool throwIfNotMpaaed = true)
@@ -97,7 +104,10 @@ namespace GameSimulator
                         break;
                     case "LiveFireForgetTasks":
                         this.AppSettings.Config.LiveFireForgetTasks = ((ValueArgument<bool>)item).Value;
-                        break;                    
+                        break;
+                    case "LiveSetTickingDisable":
+                        this.AppSettings.Config.LiveSetTickingDisable = true;
+                        break;
                     default:
                         if(throwIfNotMpaaed)
                             ConsoleArgumentsSim.ThrowArgumentException(item);

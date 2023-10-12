@@ -16,7 +16,17 @@ namespace PlayerCommon
                 string.IsNullOrEmpty(appJsonFile)
                     ? new SettingsSim()
                     : new SettingsSim(appJsonFile);
-            
+
+            InitializationAction = () =>
+            {
+                if (SettingsSim.Instance.Config.LiveSetTickingDisable)
+                {
+                    SettingsSim.Instance.Config.GlobalIncrementIntervalSecs = 0;
+                    SettingsSim.Instance.Config.Mongodb.GlobalIncrementCollection = null;
+                    SettingsSim.Instance.Config.Mongodb.LiveWagerCollection = null;
+                }
+            };
+
             PreConsoleDisplayAction = () =>
             {
                 ConsoleDisplay.Console.WriteLine("MGDB Connection Timeout: {0}, Socket Timeout: {1} Max Latency Warning: {2}",

@@ -8,6 +8,7 @@ namespace GameSimulator
     public partial class GameSimulatorSettings
     {
         public bool LiveFireForgetTasks = false;
+        public bool LiveSetTickingDisable = false;
 
         public int NbrPlayers = 100;
         public int MinPlayerSessions = 1;

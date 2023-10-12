@@ -20,6 +20,12 @@ namespace PlayerCommon
             InitializationAction = () =>
             {
                 Settings.Instance.DBConnectionString = $"Host={SettingsSim.Instance.Config.Aerospike.DBHost};Port={SettingsSim.Instance.Config.Aerospike.DBPort};";
+                if(SettingsSim.Instance.Config.LiveSetTickingDisable)
+                {
+                    SettingsSim.Instance.Config.GlobalIncrementIntervalSecs = 0;
+                    SettingsSim.Instance.Config.Aerospike.GlobalIncrementSetName = null;                    
+                    SettingsSim.Instance.Config.Aerospike.LiveWagerSetName = null;                   
+                }
             };
 
             PreConsoleDisplayAction = () =>

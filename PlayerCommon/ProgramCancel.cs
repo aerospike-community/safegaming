@@ -9,7 +9,8 @@ namespace PlayerCommon
     partial class Program
     {
         static public volatile bool AlreadyCanceled = false;
-        
+        static public volatile bool AlreadyFaulted = false;
+        static readonly object FaultedLock = new object();
 
         static public void CanceledFaultProcessing(string tag, System.Exception ex, bool ignoreFalut, bool isCanceled)
         {            
@@ -44,16 +45,25 @@ namespace PlayerCommon
                     }
                     else
                     {
-                        ConsoleDisplay.End();
-                        //GCMonitor.GetInstance().StopGCMonitoring();
-                        Logger.Instance.Info($"{Common.Functions.Instance.ApplicationName} Main Ended from Fault or Canceled");
-                        Logger.Instance.Flush(5000);
-                        ConsoleDisplay.Console.SetReWriteToWriterPosition();
+                        PrefStats.EnableEvents = false;
+                        lock (FaultedLock)
+                        {
+                            if (!AlreadyFaulted)
+                            {
+                                AlreadyFaulted = true;
 
-                        var histOutputFile = WritePrefFiles();
-                        Terminate(histOutputFile, Logger.GetApplicationLogFile(), ex.GetType().Name);
+                                ConsoleDisplay.End();
+                                //GCMonitor.GetInstance().StopGCMonitoring();
+                                Logger.Instance.Info($"{Common.Functions.Instance.ApplicationName} Main Ended from Fault or Canceled");
+                                Logger.Instance.Flush(5000);
+                                ConsoleDisplay.Console.SetReWriteToWriterPosition();
 
-                        Environment.Exit(-1);
+                                var histOutputFile = WritePrefFiles();
+                                Terminate(histOutputFile, Logger.GetApplicationLogFile(), ex.GetType().Name);
+
+                                Environment.Exit(-1);
+                            }
+                        }
                     }
                 }
             }

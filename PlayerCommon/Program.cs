@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Common;
 using System.Diagnostics;
 using System.Threading;
+using System.Text.Json;
+using System.Timers;
 
 namespace PlayerCommon
 {
@@ -337,56 +339,94 @@ namespace PlayerCommon
             return histogramOutput;
         }
 
+        static volatile bool Terminating = false;
+        static readonly object TerminatingLock = new object();
+
+        static System.Timers.Timer CancelPromptTimer = new System.Timers.Timer();
+
+        public static void StartCancelPromptTimer()
+        {
+            CancelPromptTimer.Elapsed += new ElapsedEventHandler(OnCancelPromptTimedEvent);
+            CancelPromptTimer.Interval = 1000;
+            CancelPromptTimer.Start();
+            ConsoleDisplay.Console.WriteLine("Press \'Q\' to quit.");
+        }
+
+        static volatile bool UserQuitDetected = false;
+
+        private static void OnCancelPromptTimedEvent(object source, ElapsedEventArgs e)
+        {
+            CancelPromptTimer.Enabled = false;
+            var readValue = System.Console.ReadKey();
+
+            if(readValue.KeyChar == 'q' || readValue.KeyChar == 'Q')
+            {
+                CancelPromptTimer.Enabled=false;
+                UserQuitDetected = true;
+                Logger.Instance.Warn("Quit Triggered by User...");
+                ConsoleWarnings.Increment("Quiting...");
+                cancellationTokenSource.Cancel(true);
+            }
+            CancelPromptTimer.Enabled = true;
+        }
+
         public static void Terminate(string histogramOutput, string logFilePath, string errorTermination = null)
         {
-            ConsoleDisplay.Console.SetReWriteToWriterPosition();
+            CancelPromptTimer?.Stop();
 
-            if (!string.IsNullOrEmpty(histogramOutput))
+            lock (TerminatingLock)
             {
-                ConsoleDisplay.Console.WriteLine(" ");
-                ConsoleDisplay.Console.WriteLine($"Histogram Output ({Settings.Instance.HGReportTickToUnitRatio}):");
+                if (Terminating) return;
+                Terminating = true;
+                ConsoleDisplay.Console.SetReWriteToWriterPosition();
 
-                ConsoleDisplay.Console.WriteLine(histogramOutput);
-                //ConsoleDisplay.Console.SetReWriteToWriterPosition();                
-            }
-
-
-            var consoleColor = System.Console.ForegroundColor;
-            try
-            {
-                if (!string.IsNullOrEmpty(errorTermination) || ExceptionCount > 0)
-                    System.Console.ForegroundColor = ConsoleColor.Red;
-                else if (WarningCount > 0)
-                    System.Console.ForegroundColor = ConsoleColor.Yellow;
-                else
-                    System.Console.ForegroundColor = ConsoleColor.Green;
-
-                ConsoleDisplay.Console.WriteLine(" ");
-
-                if(!string.IsNullOrEmpty(errorTermination))
+                if (!string.IsNullOrEmpty(histogramOutput))
                 {
-                    ConsoleDisplay.Console.WriteLine($"Application Terminated due to \"{errorTermination}\"...");
+                    ConsoleDisplay.Console.WriteLine(" ");
+                    ConsoleDisplay.Console.WriteLine($"Histogram Output ({Settings.Instance.HGReportTickToUnitRatio}):");
+
+                    ConsoleDisplay.Console.WriteLine(histogramOutput);
+                    //ConsoleDisplay.Console.SetReWriteToWriterPosition();                
+                }
+
+
+                var consoleColor = System.Console.ForegroundColor;
+                try
+                {
+                    if (!string.IsNullOrEmpty(errorTermination) || ExceptionCount > 0)
+                        System.Console.ForegroundColor = ConsoleColor.Red;
+                    else if (WarningCount > 0)
+                        System.Console.ForegroundColor = ConsoleColor.Yellow;
+                    else
+                        System.Console.ForegroundColor = ConsoleColor.Green;
+
+                    ConsoleDisplay.Console.WriteLine(" ");
+
+                    if (!string.IsNullOrEmpty(errorTermination))
+                    {
+                        ConsoleDisplay.Console.WriteLine($"Application Terminated due to \"{errorTermination}\"...");
+                        ConsoleDisplay.Console.WriteLine(" ");
+                    }
+
+                    if (!string.IsNullOrEmpty(logFilePath))
+                    {
+                        ConsoleDisplay.Console.WriteLine("Application Logs \"{0}\"",
+                                                            Helpers.MakeRelativePath(logFilePath));
+                    }
+                    else
+                    {
+                        ConsoleDisplay.Console.WriteLine("Check Application Log file for detail results.");
+                    }
+
                     ConsoleDisplay.Console.WriteLine(" ");
                 }
-
-                if (!string.IsNullOrEmpty(logFilePath))
+                finally
                 {
-                    ConsoleDisplay.Console.WriteLine("Application Logs \"{0}\"",
-                                                        Helpers.MakeRelativePath(logFilePath));
-                }
-                else
-                {
-                    ConsoleDisplay.Console.WriteLine("Check Application Log file for detail results.");
+                    System.Console.ForegroundColor = consoleColor;
                 }
 
-                ConsoleDisplay.Console.WriteLine(" ");
+                ConsoleDisplay.Console.SetReWriteToWriterPosition();
             }
-            finally
-            {
-                System.Console.ForegroundColor = consoleColor;
-            }
-
-            ConsoleDisplay.Console.SetReWriteToWriterPosition();
         }
 
         public static string GetOSInfo()

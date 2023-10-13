@@ -165,6 +165,8 @@ namespace PlayerCommon
             }
 
             ConsoleDisplay.Console.WriteLine(" ");
+            StartCancelPromptTimer();
+            ConsoleDisplay.Console.WriteLine(" ");
 
             ConsoleDisplay.IncludeRunningTime = true;
 
@@ -303,166 +305,180 @@ namespace PlayerCommon
             
             int actualPlayersProcessed = 0;
 
-            await Parallel.ForEachAsync(idxs, parallelOptions,
-               async (idx, cancellationToken) =>
-                {
-                    if (Logger.Instance.IsDebugEnabled)
-                        Logger.Instance.DebugFormat("Main Player {0}", idx);
-
-                    #region Random Property Init
-                    var random = new Random(Guid.NewGuid().GetHashCode());
-
-                    var first = Faker.Name.First();
-                    var last = Faker.Name.Last();
-                    var domain = Faker.Internet.DomainName();
-                    string email;
-
-                    if (SettingsSim.Instance.Config.GenerateUniqueEmails)
+            try
+            {
+                await Parallel.ForEachAsync(idxs, parallelOptions,
+                   async (idx, cancellationToken) =>
                     {
-                        if(dbConnection == null || !dbConnection.UsedEmailCntEnabled)
+                        if (Logger.Instance.IsDebugEnabled)
+                            Logger.Instance.DebugFormat("Main Player {0}", idx);
+
+                        #region Random Property Init
+                        var random = new Random(Guid.NewGuid().GetHashCode());
+
+                        var first = Faker.Name.First();
+                        var last = Faker.Name.Last();
+                        var domain = Faker.Internet.DomainName();
+                        string email;
+
+                        if (SettingsSim.Instance.Config.GenerateUniqueEmails)
                         {
-                            var emailNbr = random.Next(0,99);
-                            if(emailNbr > 1)
-                                email = $"{last}{first}{emailNbr}@{domain}";
+                            if (dbConnection == null || !dbConnection.UsedEmailCntEnabled)
+                            {
+                                var emailNbr = random.Next(0, 99);
+                                if (emailNbr > 1)
+                                    email = $"{last}{first}{emailNbr}@{domain}";
+                                else
+                                    email = $"{first}.{last}@{domain}";
+                            }
                             else
-                                email = $"{first}.{last}@{domain}";
+                            {
+                                email = dbConnection.DeterineEmail(first, last, domain, cancellationTokenSource.Token).Result;
+                            }
                         }
                         else
+                            email = $"{first}.{last}@{domain}";
+
+                        ConsoleGenerating.Increment("Player " + email);
+
+                        //var state =  Faker.Address.UsStateAbbr();
+                        var stateIdx = random.Next(0, onlyGamingCountiesByState.Length - 1);
+                        //var stateRec = stateDB.FirstOrDefault(s => s.Name == state);
+                        var stateRec = onlyGamingCountiesByState[stateIdx];
+                        var state = stateRec.Name;
+                        //var housing = random.Next(1000, 10000000);
+                        var housing = random.Next((int)stateRec.MinHousingCounty, (int)stateRec.MaxHousingCounty);
+                        var countyRecs = stateRec.Counties
+                                            .Where(s => housing >= s.HousingCount);
+                        var countyIdx = random.Next(0, countyRecs.Count() - 1);
+                        var countyRec = countyRecs.ElementAt(countyIdx);
+                        var county = countyRec?.Name;
+                        var bingeFlag = false;
+
+                        if (string.IsNullOrEmpty(county))
                         {
-                            email = dbConnection.DeterineEmail(first, last, domain, cancellationTokenSource.Token).Result;
+                            countyIdx = random.Next(0, stateRec.Counties.Count() - 1);
+
+                            countyRec = stateRec.Counties.ElementAt(countyIdx);
                         }
-                    }
-                    else
-                        email = $"{first}.{last}@{domain}";
 
-                    ConsoleGenerating.Increment("Player " + email);
+                        Tiers valueTier;
 
-                    //var state =  Faker.Address.UsStateAbbr();
-                    var stateIdx = random.Next(0, onlyGamingCountiesByState.Length - 1);
-                    //var stateRec = stateDB.FirstOrDefault(s => s.Name == state);
-                    var stateRec = onlyGamingCountiesByState[stateIdx];
-                    var state = stateRec.Name;
-                    //var housing = random.Next(1000, 10000000);
-                    var housing = random.Next((int)stateRec.MinHousingCounty, (int)stateRec.MaxHousingCounty);
-                    var countyRecs = stateRec.Counties
-                                        .Where(s => housing >= s.HousingCount);
-                    var countyIdx = random.Next(0, countyRecs.Count() - 1);
-                    var countyRec = countyRecs.ElementAt(countyIdx);
-                    var county = countyRec?.Name;
-                    var bingeFlag = false;
+                        switch (countyRec.HouseIncomeTier)
+                        {
+                            case Tiers.VeryHigh:
+                            case Tiers.High:
+                                {
+                                    var probValue = random.Next(0, 1000);
+                                    if (probValue <= 1)
+                                        valueTier = Tiers.VeryHigh;
+                                    else if (probValue <= 39)
+                                        valueTier = Tiers.High;
+                                    else if (probValue <= 200)
+                                        valueTier = Tiers.Medium;
+                                    else
+                                        valueTier = Tiers.Low;
+                                }
+                                break;
+                            case Tiers.Medium:
+                                {
+                                    var probValue = random.Next(0, 10000);
+                                    if (probValue <= 5)
+                                        valueTier = Tiers.VeryHigh;
+                                    else if (probValue <= 195)
+                                        valueTier = Tiers.High;
+                                    else if (probValue <= 1800)
+                                        valueTier = Tiers.Medium;
+                                    else
+                                        valueTier = Tiers.Low;
+                                }
+                                break;
+                            case Tiers.Low:
+                                {
+                                    var probValue = random.Next(0, 100000);
+                                    if (probValue <= 25)
+                                        valueTier = Tiers.VeryHigh;
+                                    else if (probValue <= 975)
+                                        valueTier = Tiers.High;
+                                    else if (probValue <= 13000)
+                                        valueTier = Tiers.Medium;
+                                    else
+                                        valueTier = Tiers.Low;
+                                }
+                                break;
+                            default:
+                                valueTier = Tiers.Medium;
+                                break;
+                        }
 
-                    if (string.IsNullOrEmpty(county))
-                    {
-                        countyIdx = random.Next(0, stateRec.Counties.Count() - 1);
+                        {
+                            var bingeFlagChance = random.Next(1, 100);
 
-                        countyRec = stateRec.Counties.ElementAt(countyIdx);
-                    }
+                            bingeFlag = bingeFlagChance <= 3;
+                        }
 
-                    Tiers valueTier;
+                        DateTimeSimulation datetimeHistory;
 
-                    switch (countyRec.HouseIncomeTier)
-                    {
-                        case Tiers.VeryHigh:
-                        case Tiers.High:
-                            {
-                                var probValue = random.Next(0, 1000);
-                                if (probValue <= 1)
-                                    valueTier = Tiers.VeryHigh;
-                                else if (probValue <= 39)
-                                    valueTier = Tiers.High;
-                                else if (probValue <= 200)
-                                    valueTier = Tiers.Medium;
-                                else
-                                    valueTier = Tiers.Low;
-                            }
-                            break;
-                        case Tiers.Medium:
-                            {
-                                var probValue = random.Next(0, 10000);
-                                if (probValue <= 5)
-                                    valueTier = Tiers.VeryHigh;
-                                else if (probValue <= 195)
-                                    valueTier = Tiers.High;
-                                else if (probValue <= 1800)
-                                    valueTier = Tiers.Medium;
-                                else
-                                    valueTier = Tiers.Low;
-                            }
-                            break;
-                        case Tiers.Low:
-                            {
-                                var probValue = random.Next(0, 100000);
-                                if (probValue <= 25)
-                                    valueTier = Tiers.VeryHigh;
-                                else if (probValue <= 975)
-                                    valueTier = Tiers.High;
-                                else if (probValue <= 13000)
-                                    valueTier = Tiers.Medium;
-                                else
-                                    valueTier = Tiers.Low;
-                            }
-                            break;
-                        default:
-                            valueTier = Tiers.Medium;
-                            break;
-                    }
-                    
-                    {
-                        var bingeFlagChance = random.Next(1, 100);
+                        if (DateTimeSimulation.InitialType == DateTimeSimulation.Types.RealTime)
+                            datetimeHistory = DateTimeRealTime.GenerateDateTime(countyRec.TZOffsets.FirstOrDefault());
+                        else
+                            datetimeHistory = DateTimeHistory.GenerateDateTime(countyRec.TZOffsets.FirstOrDefault());
 
-                        bingeFlag = bingeFlagChance <= 3;
-                    }
-
-                    DateTimeSimulation datetimeHistory;
-
-                    if (DateTimeSimulation.InitialType == DateTimeSimulation.Types.RealTime)                        
-                        datetimeHistory = DateTimeRealTime.GenerateDateTime(countyRec.TZOffsets.FirstOrDefault());
-                    else
-                        datetimeHistory = DateTimeHistory.GenerateDateTime(countyRec.TZOffsets.FirstOrDefault());                    
-
-                    #endregion
+                        #endregion
 
                         var player = new Player($"{last}.{first}",
-                                                first,
-                                                last,
-                                                email,
-                                                "US",
-                                                state,
-                                                countyRec,
-                                                valueTier,
-                                                0,
-                                                random.Next(0, 36),
-                                                datetimeHistory,
-                                                InterventionThresholds.Instance,
-                                                bingeFlag);
-                    
-                    if (Logger.Instance.IsDebugEnabled)
-                        Logger.Instance.DebugFormat("Main Generated Player {0} {1}", idx, player.PlayerId);
+                                            first,
+                                            last,
+                                            email,
+                                            "US",
+                                            state,
+                                            countyRec,
+                                            valueTier,
+                                            0,
+                                            random.Next(0, 36),
+                                            datetimeHistory,
+                                            InterventionThresholds.Instance,
+                                            bingeFlag);
 
-                    var continuePlay = false;
-                    {
-                        await RanSession(dbConnection,
-                                            enableDBUpdate,
-                                            continuePlay,
-                                            player,
-                                            cancellationToken);
-                        continuePlay = true;                        
-                    } while (SettingsSim.Instance.Config.ContinuousSessions) ;
+                        if (Logger.Instance.IsDebugEnabled)
+                            Logger.Instance.DebugFormat("Main Generated Player {0} {1}", idx, player.PlayerId);
 
-                    Interlocked.Increment(ref actualPlayersProcessed);
-                    ConsoleGenerating.Decrement("Player " + email);
-                });
+                        var continuePlay = false;
+                        {
+                            await RanSession(dbConnection,
+                                                enableDBUpdate,
+                                                continuePlay,
+                                                player,
+                                                cancellationToken);
+                            continuePlay = true;
+                        } while (SettingsSim.Instance.Config.ContinuousSessions) ;
 
-            Task.WaitAll(LiveFireForgetTasks.ToArray());
+                        Interlocked.Increment(ref actualPlayersProcessed);
+                        ConsoleGenerating.Decrement("Player " + email);
+                    });
+
+                Task.WaitAll(LiveFireForgetTasks.ToArray());
+                
+            }            
+            catch(OperationCanceledException cex)
+            {
+                if(UserQuitDetected)
+                    Logger.Instance.Warn("Main Stopped due to User Quit...");
+                else
+                    CanceledFaultProcessing("Main", cex, false, true);
+            }
+            catch (Exception ex)
+            {
+                CanceledFaultProcessing("Main", ex, false, false);
+            }
 
             startPlayerProcessingTime.Stop();
             ConsolePuttingDB.TaskEndAll();
             dbConnection?.Dispose();
 
-            var histogramOutput = WritePrefFiles();
-            
             #region Terminate
 
+            var histogramOutput = WritePrefFiles();
             var playerRate = (decimal)actualPlayersProcessed / (decimal)startPlayerProcessingTime.Elapsed.TotalSeconds;
 
             Logger.Instance.Info($"{Common.Functions.Instance.ApplicationName} Main End. Processed {actualPlayersProcessed} Players in {startPlayerProcessingTime.Elapsed} (rate {playerRate:###,##0.000} players/sec).");

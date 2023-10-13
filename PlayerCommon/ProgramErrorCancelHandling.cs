@@ -94,22 +94,25 @@ namespace PlayerCommon
             
             System.Diagnostics.Trace.WriteLine("Execution Halted");
             System.Diagnostics.Trace.Flush();
-                
-            Logger.Instance.FatalFormat("Unhandled Exception Occurred! Exception Is \"{0}\" ({1}) Terminating Processing...",
+                            
+            Exception exTypeObj = e.ExceptionObject as System.Exception;
+
+            if (exTypeObj is null)
+            {
+                Logger.Instance.FatalFormat("Unhandled Exception Occurred! Exception Is \"{0}\" ({1}) Terminating Processing...",
                                             e.ExceptionObject?.GetType(),
                                             e.ExceptionObject is System.Exception exObj ? exObj.Message : "<Not an Exception Object>");
-            
-            if (e.ExceptionObject is System.Exception exTypeObj)
-            {
-                Logger.Instance.Error("Unhandled Exception", exTypeObj);
-                ConsoleDisplay.Console.WriteLine("Unhandled Exception of \"{0}\" occurred", exTypeObj.GetType().Name);
-                ConsoleDisplay.Console.WriteLine("Unhandled Exception Message \"{0}\"", exTypeObj.Message);
+
+                ConsoleDisplay.Console.WriteLine("Unhandled Exception of \"{0}\" occurred", exTypeObj?.GetType().Name);
+                Logger.Instance.Info($"{Common.Functions.Instance.ApplicationName} Console Application Main Ended due to unhandled exception");
+                Logger.Instance.Flush(5000);
+
+                Environment.Exit(-1);
             }
 
-            Logger.Instance.Info($"{Common.Functions.Instance.ApplicationName} Console Application Main Ended due to unhandled exception");
-            Logger.Instance.Flush(5000);
-
-            Environment.Exit(-1);
+            Logger.Instance.Error("Exception detected is NOT Handled!");
+            Logger.Instance.Error($"Unhandled Exception file at \"{traceFile.PathResolved}\"");
+            CanceledFaultProcessing("Unhandled", exTypeObj, false, false);
         }
 
         private static Common.Logger.Log4NetInfo LastLogLine;

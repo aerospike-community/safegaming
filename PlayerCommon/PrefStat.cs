@@ -66,7 +66,7 @@ namespace PlayerCommon
             Histogram = 0x00100000
         }
 
-        public static bool EnableEvents { get; set;  } = false;
+        public static volatile bool EnableEvents = false;
         public static CaptureTypes CaptureType { get; set; } = CaptureTypes.Disabled; 
         public static Stopwatch RunningStopwatch { get; }  = Stopwatch.StartNew();
         private static long SequenceNbr = 0;

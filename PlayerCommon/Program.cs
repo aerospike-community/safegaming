@@ -355,28 +355,28 @@ namespace PlayerCommon
         static volatile bool UserQuitDetected = false;
 
         private static void OnCancelPromptTimedEvent(object source, ElapsedEventArgs e)
-        {
-            CancelPromptTimer.Enabled = false;
+        {            
             if (UserQuitDetected) return;
 
-            var readValue = System.Console.ReadKey();
-
-            if(readValue.KeyChar == 'q' || readValue.KeyChar == 'Q')
+            if (Console.KeyAvailable)
             {
-                CancelPromptTimer.Enabled=false;
-                UserQuitDetected = true;
-                Logger.Instance.Warn("Quit Triggered by User...");
-                ConsoleWarnings.Increment("Quiting...");
-                cancellationTokenSource.Cancel(true);
-            }
-            else
-                CancelPromptTimer.Enabled = true;
+                var readValue = System.Console.ReadKey(true);
+
+                if (readValue.KeyChar == 'q' || readValue.KeyChar == 'Q')
+                {
+                    CancelPromptTimer.Enabled = false;
+                    UserQuitDetected = true;
+                    Logger.Instance.Warn("Quit Triggered by User...");                    
+                    ConsoleWarnings.Increment("Quiting...");                    
+                    cancellationTokenSource.Cancel(true);
+                }
+            }            
         }
 
         public static void Terminate(string histogramOutput, string logFilePath, string errorTermination = null)
         {
             CancelPromptTimer?.Stop();
-
+            
             lock (TerminatingLock)
             {
                 if (Terminating) return;
@@ -398,7 +398,7 @@ namespace PlayerCommon
                 {
                     if (!string.IsNullOrEmpty(errorTermination) || ExceptionCount > 0)
                         System.Console.ForegroundColor = ConsoleColor.Red;
-                    else if (WarningCount > 0)
+                    else if (WarningCount > 0 || UserQuitDetected)
                         System.Console.ForegroundColor = ConsoleColor.Yellow;
                     else
                         System.Console.ForegroundColor = ConsoleColor.Green;
@@ -408,6 +408,12 @@ namespace PlayerCommon
                     if (!string.IsNullOrEmpty(errorTermination))
                     {
                         ConsoleDisplay.Console.WriteLine($"Application Terminated due to \"{errorTermination}\"...");
+                        ConsoleDisplay.Console.WriteLine(" ");
+                    }
+
+                    if(UserQuitDetected)
+                    {
+                        ConsoleDisplay.Console.WriteLine("Canceled by User...");
                         ConsoleDisplay.Console.WriteLine(" ");
                     }
 

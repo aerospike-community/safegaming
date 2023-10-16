@@ -7,9 +7,9 @@
     <Authors>Richard Andersen</Authors>
     <Copyright>2023</Copyright>
     <Title>SafeGaming Simulator Monogodb</Title>
-    <Version>1.2.5.2</Version>
-    <FileVersion>1.2.5.2</FileVersion>
-    <AssemblyVersion>1.2.5.2</AssemblyVersion>
+    <Version>1.2.5.3</Version>
+    <FileVersion>1.2.5.3</FileVersion>
+    <AssemblyVersion>1.2.5.3</AssemblyVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>../../PlayerCommon/PlayerGeneration.snk</AssemblyOriginatorKeyFile> 
     <RootNamespace>GameSimulator</RootNamespace>

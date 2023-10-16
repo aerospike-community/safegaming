@@ -385,12 +385,7 @@ namespace PlayerCommon
                                                                      playerId,
                                                                      stopWatch.ElapsedMilliseconds);
                                      }
-
-                                     if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                                         Logger.Instance.WarnFormat("DBConnection.GetPlayer Run Exceeded Latency Threshold for {1}. Latency: {0}",
-                                                                     stopWatch.ElapsedMilliseconds,
-                                                                     playerId);
-
+                                     
                                      if (task.IsFaulted || task.IsCanceled)
                                      {
                                          Program.CanceledFaultProcessing($"DBConnection.GetPlayer Get {playerId}", task.Exception, Settings.Instance.IgnoreFaults, false);

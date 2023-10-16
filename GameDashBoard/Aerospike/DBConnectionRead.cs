@@ -235,12 +235,7 @@ namespace PlayerCommon
                         Logger.Instance.DebugFormat("DBConnection.GetGlobalIncrement Run No Records Query Session {0}",
                                                         sessionIdx);
                 }
-
-                if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                    Logger.Instance.WarnFormat("DBConnection.GetGlobalIncrement Run Exceeded Latency Threshold for Query Session {1}. Latency: {0}",
-                                                stopWatch.ElapsedMilliseconds,
-                                                sessionIdx);
-
+                
                 if (!SettingsGDB.Instance.Config.EnableRealtime
                         && SettingsGDB.Instance.Config.SessionRefreshRateSecs > 0)
                 {
@@ -365,12 +360,7 @@ namespace PlayerCommon
                     if (Logger.Instance.IsDebugEnabled)
                         Logger.Instance.DebugFormat("DBConnection.GetIntervention Run No Records Query Session {0}",
                                                         sessionIdx);
-                }
-
-                if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                    Logger.Instance.WarnFormat("DBConnection.GetIntervention Run Exceeded Latency Threshold for Query Session {1}. Latency: {0}",
-                                                stopWatch.ElapsedMilliseconds,
-                                                sessionIdx);
+                }                
 
                 if (!SettingsGDB.Instance.Config.EnableRealtime
                         && SettingsGDB.Instance.Config.SessionRefreshRateSecs > 0)
@@ -495,12 +485,7 @@ namespace PlayerCommon
                         Logger.Instance.DebugFormat("DBConnection.GetLiveWager Run No Records Query Session {0}",
                                                         sessionIdx);
                 }
-
-                if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                    Logger.Instance.WarnFormat("DBConnection.GetLiveWager Run Exceeded Latency Threshold for Query Session {1}. Latency: {0}",
-                                                stopWatch.ElapsedMilliseconds,
-                                                sessionIdx);
-
+                
                 if (!SettingsGDB.Instance.Config.EnableRealtime
                         && SettingsGDB.Instance.Config.SessionRefreshRateSecs > 0)
                 {
@@ -556,12 +541,7 @@ namespace PlayerCommon
                                      Logger.Instance.DebugFormat("DBConnection.GetPlayer Run End {0} Elapsed Time (ms): {1}",
                                                                  playerId,
                                                                  stopWatch.ElapsedMilliseconds);
-                                 }
-
-                                 if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                                     Logger.Instance.WarnFormat("DBConnection.GetPlayer Run Exceeded Latency Threshold for {1}. Latency: {0}",
-                                                                 stopWatch.ElapsedMilliseconds,
-                                                                 playerId);
+                                 }                                 
 
                                  if (task.IsFaulted || task.IsCanceled)
                                  {

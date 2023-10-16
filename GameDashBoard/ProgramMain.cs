@@ -153,6 +153,8 @@ namespace PlayerCommon
             }
 
             ConsoleDisplay.Console.WriteLine(" ");
+            StartCancelPromptTimer();
+            ConsoleDisplay.Console.WriteLine(" ");
 
             ConsoleDisplay.IncludeRunningTime = true;
 
@@ -224,7 +226,9 @@ namespace PlayerCommon
             int actualProcessedTrans = 0;
             int nbrSessions = 0;
 
-            Parallel.For(0, SettingsGDB.Instance.Config.NumberOfDashboardSessions,
+            try
+            {
+                Parallel.For(0, SettingsGDB.Instance.Config.NumberOfDashboardSessions,
                             parallelOptions,
                             (sessionId, state) =>
                 {
@@ -320,6 +324,18 @@ namespace PlayerCommon
                                                     totalTrans,
                                                     startDateTime);
                 });
+            }
+            catch (OperationCanceledException cex)
+            {
+                if (UserQuitDetected)
+                    Logger.Instance.Warn("Main Stopped due to User Quit...");
+                else
+                    CanceledFaultProcessing("Main", cex, false, true);
+            }
+            catch (Exception ex)
+            {
+                CanceledFaultProcessing("Main", ex, false, false);
+            }
 
             startProcessingTime.Stop();
             
@@ -328,9 +344,9 @@ namespace PlayerCommon
 
             dbConnection?.Dispose();
 
-            var histogramOutput = WritePrefFiles();
-            
             #region Terminate
+
+            var histogramOutput = WritePrefFiles();
 
             var transRate = (decimal)actualProcessedTrans / (decimal)startProcessingTime.Elapsed.TotalSeconds;
 

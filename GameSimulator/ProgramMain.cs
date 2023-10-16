@@ -475,6 +475,7 @@ namespace PlayerCommon
             startPlayerProcessingTime.Stop();
             ConsolePuttingDB.TaskEndAll();
             dbConnection?.Dispose();
+            
 
             #region Terminate
 

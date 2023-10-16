@@ -357,6 +357,8 @@ namespace PlayerCommon
         private static void OnCancelPromptTimedEvent(object source, ElapsedEventArgs e)
         {
             CancelPromptTimer.Enabled = false;
+            if (UserQuitDetected) return;
+
             var readValue = System.Console.ReadKey();
 
             if(readValue.KeyChar == 'q' || readValue.KeyChar == 'Q')
@@ -367,7 +369,8 @@ namespace PlayerCommon
                 ConsoleWarnings.Increment("Quiting...");
                 cancellationTokenSource.Cancel(true);
             }
-            CancelPromptTimer.Enabled = true;
+            else
+                CancelPromptTimer.Enabled = true;
         }
 
         public static void Terminate(string histogramOutput, string logFilePath, string errorTermination = null)

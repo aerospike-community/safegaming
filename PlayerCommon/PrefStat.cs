@@ -289,9 +289,14 @@ namespace PlayerCommon
                                                             outputValueUnitScalingRatio);
                 var histOutputResult = writer.ToString();
 
-                logger?.Info($"HdrHistogram Output:\n{histOutputResult}");
-                console?.WriteLine(histOutputResult);                
+                if (HdrHistogramTickErrorCnt > 0)
+                {
+                    histOutputResult += $"\nWarning: The HdrHistogram could be incomplete!\nCheck Application Log for HDRHistorgram Errors ({HdrHistogramTickErrorCnt})!";                    
+                }
 
+                logger?.Info($"HdrHistogram Output:\n{histOutputResult}");
+                console?.WriteLine(histOutputResult);
+               
                 if(file is not null)
                 {
                     if (CaptureType.HasFlag(CaptureTypes.HGRM))

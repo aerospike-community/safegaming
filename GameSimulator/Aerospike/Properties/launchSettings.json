@@ -5,7 +5,7 @@
     },
     "GameSimulator CommandLineArgs": {
       "commandName": "Project",
-      "commandLineArgs": "--start-key 800 --keys 150"
+      "commandLineArgs": "--start-key 800 --keys 1000 -d 500"
     },
     "PG Sync Mode": {
       "commandName": "Project",

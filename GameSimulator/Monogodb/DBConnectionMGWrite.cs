@@ -175,11 +175,6 @@ namespace PlayerCommon
                                                         stopWatch.ElapsedMilliseconds);
                         }
 
-                        if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                            Logger.Instance.WarnFormat("DBConnection.UpdateCurrentPlayers Run Exceeded Latency Threshold for InsertOne {1}. Latency: {0}",
-                                                        stopWatch.ElapsedMilliseconds,
-                                                        player.PlayerId);
-                       
                         if (task.IsFaulted || task.IsCanceled)
                         {
                             Program.CanceledFaultProcessing($"DBConnection.UpdateCurrentPlayers InsertOne {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
@@ -273,12 +268,7 @@ namespace PlayerCommon
                                                                 player.PlayerId,
                                                                 stopWatch.ElapsedMilliseconds);
                                 }
-
-                                if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                                    Logger.Instance.WarnFormat("DBConnection.UpdateChangedCurrentPlayer Run Exceeded Latency Threshold for UpdateOneAsync {1}. Latency: {0}",
-                                                                stopWatch.ElapsedMilliseconds,
-                                                                player.PlayerId);
-                                
+ 
                                 if (task.IsFaulted || task.IsCanceled)
                                 {
                                     Program.CanceledFaultProcessing($"DBConnection.UpdateChangedCurrentPlayer UpdateOneAsync {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
@@ -316,11 +306,6 @@ namespace PlayerCommon
                                                                 player.PlayerId,
                                                                 stopWatch.ElapsedMilliseconds);
                                 }
-
-                                if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                                    Logger.Instance.WarnFormat("DBConnection.UpdateChangedCurrentPlayer Run Exceeded Latency Threshold for InsertOne {1}. Latency: {0}",
-                                                                stopWatch.ElapsedMilliseconds,
-                                                                player.PlayerId);
 
                                 if (task.IsFaulted || task.IsCanceled)
                                 {
@@ -542,12 +527,6 @@ namespace PlayerCommon
                                                             stopWatch.ElapsedMilliseconds);
                             }
 
-                            if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                                Logger.Instance.WarnFormat("DBConnection.UpdateHistory(Player) Run Exceeded Latency Threshold for InsertOne {2}-{1}. Latency: {0}",
-                                                            stopWatch.ElapsedMilliseconds,
-                                                            playerTransHistory.WagerId,
-                                                            forPlayerId);
-                           
                             if (task.IsFaulted || task.IsCanceled)
                             {
                                 Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) InsertOne {playerTransHistory.WagerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
@@ -620,11 +599,6 @@ namespace PlayerCommon
                                                             stopWatch.ElapsedMilliseconds);
                             }
 
-                            if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                                Logger.Instance.WarnFormat("DBConnection.UpdateHistory(Player) Run Exceeded Latency Threshold for InsertOne {1}. Latency: {0}",
-                                                            stopWatch.ElapsedMilliseconds,
-                                                            forPlayerId);
-                            
                             if (task.IsFaulted || task.IsCanceled)
                             {
                                 Program.CanceledFaultProcessing($"DBConnection.UpdateHistory(Player) InsertOne {forPlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
@@ -695,12 +669,6 @@ namespace PlayerCommon
                                                                         email,
                                                                         stopWatch.ElapsedMilliseconds);
                                         }
-
-                                        if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                                            Logger.Instance.WarnFormat("DBConnection.DeterineEmail Run Exceeded Latency Threshold for FindOneAndUpdate {0}. Latency: {1}",
-                                                                        email,
-                                                                        stopWatch.ElapsedMilliseconds);
-
 
                                         if (task.IsFaulted || task.IsCanceled)
                                         {
@@ -775,12 +743,6 @@ namespace PlayerCommon
                                                     stopWatch.ElapsedMilliseconds);
                     }
 
-                    if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                        Logger.Instance.WarnFormat("DBConnection.IncrementGlobalSet Run Exceeded Latency Threshold for UpdateOneAsync {0}. Latency: {1}",
-                                                    glbIncr.Key,
-                                                    stopWatch.ElapsedMilliseconds);
-
-
                     if (task.IsFaulted || task.IsCanceled)
                     {
                         Program.CanceledFaultProcessing($"DBConnection.IncrementGlobalSet UpdateOneAsync {glbIncr.Key}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
@@ -833,11 +795,6 @@ namespace PlayerCommon
                                                         intervention.PlayerId,
                                                         stopWatch.ElapsedMilliseconds);
                         }
-
-                        if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                            Logger.Instance.WarnFormat("DBConnection.UpdateIntervention Run Exceeded Latency Threshold for InsertOne {1}. Latency: {0}",
-                                                        stopWatch.ElapsedMilliseconds,
-                                                        intervention.PlayerId);
 
                         if (task.IsFaulted || task.IsCanceled)
                         {
@@ -903,11 +860,6 @@ namespace PlayerCommon
                                                         stopWatch.ElapsedMilliseconds);
                         }
 
-                        if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                            Logger.Instance.WarnFormat("DBConnection.UpdateLiveWager Run Exceeded Latency Threshold for InsertOne {1}. Latency: {0}",
-                                                        stopWatch.ElapsedMilliseconds,
-                                                        player.PlayerId);
-
                         if (task.IsFaulted || task.IsCanceled)
                         {
                             Program.CanceledFaultProcessing($"DBConnection.UpdateLiveWager InsertOne {player.PlayerId}", task.Exception, Settings.Instance.IgnoreFaults, task.IsCanceled);
@@ -968,11 +920,6 @@ namespace PlayerCommon
                                                                                 interventionThresholds?.Version ?? -1,
                                                                                 stopWatch.ElapsedMilliseconds);
                                                 }
-
-                                                if (stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
-                                                    Logger.Instance.WarnFormat("DBConnection.ReFreshInterventionThresholds Run Exceeded Latency Threshold for Find {1}. Latency: {0}",
-                                                                                stopWatch.ElapsedMilliseconds,
-                                                                                interventionThresholds?.Version ?? 0);
 
                                                 if (task.IsFaulted || task.IsCanceled)
                                                 {

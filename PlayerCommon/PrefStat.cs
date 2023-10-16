@@ -105,6 +105,15 @@ namespace PlayerCommon
                 {
                     HdrHistogramRecordValue(stopWatch.ElapsedTicks);                    
                 }
+
+                if (setName != null
+                        && Settings.Instance.WarnMaxMSLatencyDBExceeded > 0
+                        && stopWatch.ElapsedMilliseconds > Settings.Instance.WarnMaxMSLatencyDBExceeded)
+                    Logger.Instance.WarnFormat("{0}.{1} Run Exceeded Latency Threshold for Key {2}. Latency: {3}",
+                                                setName,
+                                                funcName,
+                                                pk,
+                                                stopWatch.ElapsedMilliseconds);
             }
         }
 

@@ -38,6 +38,10 @@
     "GameSim LiveSetTickingDisable": {
       "commandName": "Project",
       "commandLineArgs": "--LiveSetTickingDisable"
+    },
+    "GameSimulator config file": {
+      "commandName": "Project",
+      "commandLineArgs": "--AppConfigJsonFile C:\\Users\\randersen_aerospike\\Downloads\\appsettings.json"
     }
   }
 }

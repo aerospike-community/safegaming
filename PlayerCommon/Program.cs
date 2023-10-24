@@ -346,10 +346,13 @@ namespace PlayerCommon
 
         public static void StartCancelPromptTimer()
         {
-            CancelPromptTimer.Elapsed += new ElapsedEventHandler(OnCancelPromptTimedEvent);
-            CancelPromptTimer.Interval = 1000;
-            CancelPromptTimer.Start();
-            ConsoleDisplay.Console.WriteLine("Press \'Q\' to quit.");
+            if (!Console.IsInputRedirected)
+            {
+                CancelPromptTimer.Elapsed += new ElapsedEventHandler(OnCancelPromptTimedEvent);
+                CancelPromptTimer.Interval = 1000;
+                CancelPromptTimer.Start();
+                ConsoleDisplay.Console.WriteLine("Press \'Q\' to quit.");
+            }
         }
 
         static volatile bool UserQuitDetected = false;
@@ -358,10 +361,10 @@ namespace PlayerCommon
         {            
             if (UserQuitDetected) return;
 
-            if (Console.KeyAvailable)
+            while(Console.KeyAvailable)
             {
                 var readValue = System.Console.ReadKey(true);
-
+                
                 if (readValue.KeyChar == 'q' || readValue.KeyChar == 'Q')
                 {
                     CancelPromptTimer.Enabled = false;

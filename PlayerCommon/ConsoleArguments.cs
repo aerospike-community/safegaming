@@ -14,6 +14,8 @@ namespace PlayerCommon
 
         protected readonly CommandLineParser.CommandLineParser _cmdLineParser = new();
 
+        public const string AppConfigJsonFileCmd = "AppConfigJsonFile";
+
         public ConsoleArguments(Settings appSettings)
         {
             this.AppSettings = appSettings;
@@ -83,7 +85,7 @@ namespace PlayerCommon
                 Description = "True to Ignore any Exceptions during an DB Operation (continue running and log fault))"
             });
 
-            this._cmdLineParser.Arguments.Add(new FileArgument("AppConfigJsonFile")
+            this._cmdLineParser.Arguments.Add(new FileArgument(AppConfigJsonFileCmd)
             {
                 DefaultValue = new System.IO.FileInfo(appSettings.AppJsonFile),
                 Optional = true, //Required
@@ -228,13 +230,7 @@ namespace PlayerCommon
                     case "IgnoreFaults":
                         this.AppSettings.IgnoreFaults = ((ValueArgument<bool>)item).Value;
                         break;
-                    case "AppConfigJsonFile":
-                        var appConfigFile = ((FileArgument)item).Value;
-                        if(appConfigFile is not null
-                            && appConfigFile.FullName != this.AppSettings.AppJsonFile)
-                        {
-                            this.AppSettings = Program.CreateAppSettingsInstance(appConfigFile.FullName);
-                        }
+                    case "AppConfigJsonFile":                        
                         break;
                     case "Debug":
                         this.Debug = true;

@@ -21,8 +21,31 @@ namespace PlayerCommon
         public static void Main(string[] args)
         {
             #region Initialization
+            var fndJsonFile = args.IndexOf(f => f == "--" + ConsoleArguments.AppConfigJsonFileCmd);
+            string appSettingFile = null;
 
-            var settings = CreateAppSettingsInstance(null);
+            if (fndJsonFile >= 0 && fndJsonFile < args.Length)
+            {
+                appSettingFile = args[fndJsonFile + 1];
+                try
+                {
+                    var fileInfo = new FileInfo(appSettingFile);
+                    if (!fileInfo.Exists)
+                    {
+                        Logger.Instance.Error($"Argument {ConsoleArguments.AppConfigJsonFileCmd} invalid. File \"{appSettingFile}\" does not exists.");
+                        ConsoleDisplay.Console.WriteLine($"Argument {ConsoleArguments.AppConfigJsonFileCmd} invalid. File \"{appSettingFile}\" does not exists.");
+                        return;
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.Instance.Error($"Argument {ConsoleArguments.AppConfigJsonFileCmd} has an invalid value of \"{appSettingFile}\" Exception: {ex.GetType().Name} \"{ex.Message}\"");
+                    ConsoleDisplay.Console.WriteLine($"Argument {ConsoleArguments.AppConfigJsonFileCmd} has an invalid value of \"{appSettingFile}\" Exception: {ex.GetType().Name} \"{ex.Message}\"");
+                    return;
+                }
+            }
+
+            var settings = CreateAppSettingsInstance(appSettingFile);
             var logFile = InitialazationLogs(args);
             InitialazationArguments(args, new ConsoleArgumentsGDB(SettingsGDB.Instance), logFile);
             InitialazationConfig();

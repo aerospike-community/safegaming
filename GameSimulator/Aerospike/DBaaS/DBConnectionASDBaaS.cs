@@ -40,6 +40,11 @@ namespace PlayerCommon
 
             Logger.Instance.Dump(policy, Logger.DumpType.Info, "\tConnection Policy", 2);
 
+            if (policy.tlsPolicy != null)
+            {
+                Logger.Instance.Dump(policy.tlsPolicy, Logger.DumpType.Info, "\t\tTLS Policy", 2);
+            }
+
             Host[] hosts;
 
             if (string.IsNullOrEmpty(this.ASSettings.TLSHostName))

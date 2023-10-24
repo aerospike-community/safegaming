@@ -43,6 +43,12 @@ namespace PlayerCommon
                     asConfig.Optional = true;
             }
 
+            Logger.Instance.Dump(ConfigurationBuilder
+                                    .Sources.OfType<JsonConfigurationSource>()
+                                    .Select(x => x.Path),
+                                    Logger.DumpType.Info,
+                                    "Using AppConfig Files:");
+
             this.ConfigurationBuilderFile = configBuilderFile.Build();
 
             GetSetting(this.ConfigurationBuilderFile, ref IgnoreFaults, nameof(IgnoreFaults), this);            

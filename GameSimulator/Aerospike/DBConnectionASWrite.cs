@@ -683,7 +683,7 @@ namespace PlayerCommon
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.DeterineEmail Start {0}", email);
 
-            var emailProg = new Progression(this.ConsoleProgression, email);
+            this.PlayerProgression.Increment("Determine Email", email);
 
             var key = new Key(this.UsedEmailCntSet.Namespace, this.UsedEmailCntSet.SetName, email);
 
@@ -732,7 +732,7 @@ namespace PlayerCommon
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.DeterineEmail End Exists {0}", email);
 
-            emailProg.Decrement();
+            this.PlayerProgression.Decrement("Determine Email");
 
             return email;
         }
@@ -741,11 +741,11 @@ namespace PlayerCommon
                                                 CancellationToken token)
         {
             if (GlobalIncrementSet.IsEmpty()) return;
-
+            
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.IncrementGlobalSet Start {0}", glbIncr.Key);
 
-            var incrProg = new Progression(this.ConsoleProgression, $"Incrementing Global Set {glbIncr.Key}");
+            this.PlayerProgression.Increment("Incrementing Global Set", glbIncr.Key);
 
             var stopWatch = Stopwatch.StartNew();
 
@@ -811,8 +811,11 @@ namespace PlayerCommon
                     TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously,
                     TaskScheduler.Default);
 
+            this.PlayerProgression.Decrement("Incrementing Global Set");
+
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.IncrementGlobalSet End Exists {0}", glbIncr.Key);
+            
         }
 
         public async Task UpdateIntervention(Intervention intervention,
@@ -824,7 +827,7 @@ namespace PlayerCommon
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            this.PlayerProgression.Increment("Intervention", $"Transforming/Putting...");
+            this.PlayerProgression.Increment("Intervention", "Transforming/Putting...");
 
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.UpdateIntervention Run Start Transform Player: {0}",

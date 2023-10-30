@@ -642,7 +642,7 @@ namespace PlayerCommon
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.DeterineEmail Start {0}", email);
 
-            var emailProg = new Progression(this.ConsoleProgression, email);
+            this.PlayerProgression.Increment("Determine Email", email);
 
             var stopWatch = Stopwatch.StartNew();
 
@@ -694,7 +694,7 @@ namespace PlayerCommon
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.DeterineEmail End AlreadyExists {0}", email);
 
-            emailProg.Decrement();
+            this.PlayerProgression.Decrement("Determine Email");
 
             return email;
         }
@@ -708,7 +708,8 @@ namespace PlayerCommon
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.IncrementGlobalSet Start {0}", glbIncr.Key);
 
-            var incrProg = new Progression(this.ConsoleProgression, $"Incrementing Global Set {glbIncr.Key}");
+            this.PlayerProgression.Increment("Incrementing Global Set", glbIncr.Key);
+
             var stopWatch = Stopwatch.StartNew();
 
             await GlobalIncrementCollection.Collection
@@ -759,6 +760,8 @@ namespace PlayerCommon
                     token,
                     TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously,
                     TaskScheduler.Default);
+
+            this.PlayerProgression.Decrement("Incrementing Global Set");
 
             if (Logger.Instance.IsDebugEnabled)
                 Logger.Instance.DebugFormat("DBConnection.IncrementGlobalSet End AlreadyExists {0}", glbIncr.Key);

@@ -16,9 +16,10 @@ namespace PlayerCommon
         {
             DebugMode = 1,
             DebugModeConsole = 2,
-            NormalMode = 3,
-            LaunchDebugger = 4,
-            ExitProgram = 5
+            DebugDriver = 3,
+            NormalMode = 4,
+            LaunchDebugger = 5,
+            ExitProgram = 6
         }
     }
 }

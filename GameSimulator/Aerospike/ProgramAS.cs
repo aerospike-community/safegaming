@@ -42,7 +42,8 @@ namespace PlayerCommon
 
             CreateDBConnection = (displayProgression, settingsSim) =>
                                     new DBConnection(settingsSim.Config.Aerospike,
-                                                        displayProgression);
+                                                        displayProgression,
+                                                        debugDriver: settingsSim.DebugDriver);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace PlayerCommon
         private readonly static DateTime RunDateTime = DateTime.Now;
         private static readonly string CommandLineArgsString = null;
         private static bool DebugMode = false;
-
+        
         public static bool SyncMode = false;
 
         /// <summary>
@@ -110,13 +110,18 @@ namespace PlayerCommon
                     {
                         case DebugMenuItems.DebugMode:
                             DebugMode = true;
-                            ConsoleDisplay.EnabeConsole = false;
+                            consoleArgs.DebugDriver = true;
+                            consoleArgs.AppSettings.DebugDriver = true;
                             System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
                             System.Diagnostics.Debug.AutoFlush = true;
                             System.Diagnostics.Debug.Indent();
                             break;
                         case DebugMenuItems.DebugModeConsole:
                             DebugMode = true;
+                            break;
+                        case DebugMenuItems.DebugDriver:
+                            consoleArgs.DebugDriver = true;
+                            consoleArgs.AppSettings.DebugDriver = true;
                             break;
                         case DebugMenuItems.LaunchDebugger:
                             DebugMode = true;
@@ -134,7 +139,7 @@ namespace PlayerCommon
                     }
 
                     if (DebugMode) Logger.Instance.Debug("Debug Mode Enabled");
-
+                    if (consoleArgs.DebugDriver) Logger.Instance.Debug("Debug Driver Mode Enabled");
                 }
             }
             catch (CommandLineParser.Exceptions.CommandLineException e)
@@ -154,7 +159,7 @@ namespace PlayerCommon
                 ConsoleDisplay.Console.WriteLine("CommandLine: '{0}'", CommandLineArgsString);
                 Common.ConsoleHelper.Prompt("Press Return to Exit", ConsoleColor.Gray, ConsoleColor.DarkRed);
                 return;
-            }            
+            }
         }
 
         public static void InitialazationConfig()

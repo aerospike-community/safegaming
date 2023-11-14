@@ -781,6 +781,8 @@ namespace PlayerCommon
         public string TimeZoneFormatWoZone = "yyyy-MM-ddTHH:mm:ss.ffff";
 
         public string DBConnectionString;
+
+        public bool DebugDriver;
         #endregion
     }
 }

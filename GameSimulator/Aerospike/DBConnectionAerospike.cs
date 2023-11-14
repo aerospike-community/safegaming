@@ -8,6 +8,8 @@ using Common.Patterns.Tasks;
 using Aerospike.Client;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace PlayerCommon
 {    
@@ -221,11 +223,23 @@ namespace PlayerCommon
                     
         public DBConnection(AerospikeSettings settings,
                                 ConsoleDisplay displayProgression,
-                                bool autoConnect = true)
+                                bool autoConnect = true,
+                                bool debugDriver = false)
         {
             this.ASSettings = settings;
             this.ConsoleProgression = new Progression(displayProgression, "Aerospike Connection", null);
             
+            if(debugDriver)
+            {
+                static string Canceled() => PlayerCommon.Program.cancellationTokenSource.IsCancellationRequested || PlayerCommon.Program.AlreadyCanceled ? ": **User Cancel Detected**" : string.Empty;
+                static string Faulted() => PlayerCommon.Program.AlreadyFaulted ? ": **User Fault**" : string.Empty;
+
+                Logger.Instance.InfoFormat("DB Enable Driver Debug");
+                Aerospike.Client.Log.SetCallback((l,msg) 
+                                        => System.Diagnostics.Debug.WriteLine($"ASDriver: {Task.CurrentId}: {l}: '{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}': {msg}{Faulted()}{Canceled()}"));
+                Aerospike.Client.Log.SetLevel(Log.Level.DEBUG);
+            }
+
             this.CurrentPlayersSet = new NamespaceSetName(this.ASSettings.CurrentPlayersSetName);
 #if WRITEDB
             this.PlayersHistorySet = new NamespaceSetName(this.ASSettings.PlayersHistorySetName);

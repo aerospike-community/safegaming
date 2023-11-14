@@ -32,12 +32,6 @@ namespace PlayerCommon
 
             var policy = this.ASSettings.ClientPolicy;
 
-            if (Settings.Instance.CompletionPortThreads > 0)
-            {
-                policy.asyncMaxCommands = Settings.Instance.CompletionPortThreads;
-                policy.asyncMaxCommandAction = MaxCommandAction.DELAY;
-            }
-
             Logger.Instance.Dump(policy, Logger.DumpType.Info, "\tConnection Policy", 2);
 
             if (policy.tlsPolicy != null)

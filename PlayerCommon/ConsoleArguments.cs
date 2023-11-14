@@ -99,6 +99,12 @@ namespace PlayerCommon
                 Description = "Debug Mode"
             });
 
+            this._cmdLineParser.Arguments.Add(new SwitchArgument("DriverDebug", false)
+            {
+                Optional = true, //Required                
+                Description = "Debug Mode for the Client Driver"
+            });
+
             this._cmdLineParser.Arguments.Add(new SwitchArgument("Sync", false)
             {
                 Optional = true, //Required                
@@ -126,6 +132,12 @@ namespace PlayerCommon
         }
 
         public bool Debug
+        {
+            get;
+            set;
+        }
+
+        public bool DebugDriver
         {
             get;
             set;
@@ -234,6 +246,10 @@ namespace PlayerCommon
                         break;
                     case "Debug":
                         this.Debug = true;
+                        break;
+                    case "DriverDebug":
+                        this.DebugDriver = true;
+                        this.AppSettings.DebugDriver = true;
                         break;
                     case "Sync":
                         this.Sync = true;

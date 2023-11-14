@@ -39,13 +39,13 @@
       "commandName": "Project",
       "commandLineArgs": "--LiveSetTickingDisable   "
     },
-    "GameSimulator BadAppFile": {
-      "commandName": "Project",
-      "commandLineArgs": "--AppConfigJsonFile none.json"
-    },
     "GameSimulator appsettings.json": {
       "commandName": "Project",
       "commandLineArgs": "--AppConfigJsonFile appsettings.json"
+    },
+    "GameSimulator LocalHost": {
+      "commandName": "Project",
+      "commandLineArgs": "--AppConfigJsonFile appsettingsASLocal.json"
     }
   }
 }

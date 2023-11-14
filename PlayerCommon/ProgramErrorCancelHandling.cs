@@ -9,7 +9,7 @@ namespace PlayerCommon
 {
     partial class Program
     {
-        static readonly CancellationTokenSource cancellationTokenSource = new();
+        static public readonly CancellationTokenSource cancellationTokenSource = new();
 
         private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {

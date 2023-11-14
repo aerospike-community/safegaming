@@ -24,6 +24,9 @@ namespace PlayerCommon
 
         public void CreateIndexes(CancellationToken cancellationToken)
         {
+#if ASDBAAS
+            Logger.Instance.Warn("Index Creation Not Allowed in DBaaS");
+#else
             Logger.Instance.Info("DBConnection.CreateIndexes Start");
 
             using var consoleTrunc = new Progression(this.ConsoleProgression, "Create SIdxs...");
@@ -64,6 +67,7 @@ namespace PlayerCommon
             CreateIdx(this.LiverWagerSet);
 
             Logger.Instance.Info("DBConnection.CreateIndexes End");
+#endif
         }
 
         private int DisplayRecords(RecordSet recordSet, 
@@ -196,7 +200,11 @@ namespace PlayerCommon
                 {
                     stopWatch.Restart();
 
-                    recordSet = this.Connection.QueryPartitions(query, stmt, filter);
+                    recordSet = this.Connection.QueryPartitions(query, stmt, filter
+#if ASDBAAS
+                        , cancellationToken
+#endif
+                        );
                     cursors = filter.Partitions;
                     hasRecs = recordSet.Next();
 
@@ -322,7 +330,11 @@ namespace PlayerCommon
                 {
                     stopWatch.Restart();
 
-                    recordSet = this.Connection.QueryPartitions(query, stmt, filter);
+                    recordSet = this.Connection.QueryPartitions(query, stmt, filter
+#if ASDBAAS
+                        , cancellationToken
+#endif
+                        );
                     cursors = filter.Partitions;
                     hasRecs = recordSet.Next();
 
@@ -448,7 +460,11 @@ namespace PlayerCommon
                 {
                     stopWatch.Restart();
 
-                    recordSet = this.Connection.QueryPartitions(query, stmt, filter);
+                    recordSet = this.Connection.QueryPartitions(query, stmt, filter
+#if ASDBAAS
+                        , cancellationToken
+#endif
+                        );
                     cursors = filter.Partitions;
                     hasRecs = recordSet.Next();
                     stopWatch.StopRecord(GetTag,

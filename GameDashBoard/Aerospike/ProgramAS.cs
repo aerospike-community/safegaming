@@ -35,7 +35,7 @@ namespace PlayerCommon
             };
 
             CreateDBConnection = (settings, displayProgression) =>
-                                    new DBConnection(settings.Config.Aerospike, displayProgression);
+                                    new DBConnection(settings.Config.Aerospike, displayProgression, debugDriver: settings.DebugDriver);
         }
     }
 }

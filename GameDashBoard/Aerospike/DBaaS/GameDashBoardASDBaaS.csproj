@@ -56,6 +56,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\DBConnectionRead.cs" Link="DBConnectionRead.cs" />
+    <Compile Include="..\ProgramAS.cs" Link="ProgramAS.cs" />
+    <Compile Include="..\SettingsAerospike.cs" Link="SettingsAerospike.cs" />   
+    <Compile Include="..\GlobalSuppressions.cs" Link="GlobalSuppressionsGDBAS.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!--PackageReference Include="Aerospike.Client" Version="6.1.0" /-->
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
     <PackageReference Include="Common.Console" Version="5.31.10" />

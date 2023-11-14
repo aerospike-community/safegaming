@@ -6,6 +6,10 @@
     "GameDaskBoard Help": {
       "commandName": "Project",
       "commandLineArgs": "-?"
+    },
+    "GameDashBoard DBDrv": {
+      "commandName": "Project",
+      "commandLineArgs": "--DriverDebug"
     }
   }
 }

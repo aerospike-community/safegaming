@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDashBoardASDBaaS", "GameDashBoardASDBaaS.csproj", "{65F0AAF2-49D3-4E73-BD50-8DF061D0DFEA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDashBoardASDBaaSASClient", "GameDashBoardASDBaaSASClient.csproj", "{AF7832A8-4D04-4B18-B188-01B446A0967B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{65F0AAF2-49D3-4E73-BD50-8DF061D0DFEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65F0AAF2-49D3-4E73-BD50-8DF061D0DFEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65F0AAF2-49D3-4E73-BD50-8DF061D0DFEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65F0AAF2-49D3-4E73-BD50-8DF061D0DFEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF7832A8-4D04-4B18-B188-01B446A0967B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF7832A8-4D04-4B18-B188-01B446A0967B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF7832A8-4D04-4B18-B188-01B446A0967B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF7832A8-4D04-4B18-B188-01B446A0967B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4FDAE038-1F58-43D3-8391-B7DDA46B3D50}
+	EndGlobalSection
+EndGlobal

@@ -84,6 +84,7 @@ namespace PlayerCommon
             public readonly string DBName = null;
             public readonly string CollectionName = null;
             public readonly IMongoCollection<T> Collection = null;
+            public readonly IndexKeysDefinitionBuilder<T> BuildersIndexKeys => Builders<T>.IndexKeys;
             public readonly FilterDefinitionBuilder<T> BuildersFilter => Builders<T>.Filter;
             public readonly UpdateDefinitionBuilder<T> BuildersUpdate => Builders<T>.Update;
             public readonly FilterDefinition<T> FilterEmpty = null;

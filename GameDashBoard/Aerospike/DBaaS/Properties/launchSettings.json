@@ -10,6 +10,10 @@
     "GameDashBoard DBDrv": {
       "commandName": "Project",
       "commandLineArgs": "--DriverDebug"
+    },
+    "GameDashBoard DBDrv Cloud": {
+      "commandName": "Project",
+      "commandLineArgs": "--DriverDebug --AppConfigJsonFile appsettingsASCloud.json"
     }
   }
 }

@@ -62,36 +62,50 @@ namespace PlayerCommon
             }
 
             void CreateShard<T>(DBCollection<T> collectionShard)
-            {
-                using var consoleShard = new Progression(this.ConsoleProgression, $"Creating Shard {collectionShard.CollectionName}...");
-
-                Logger.Instance.Info($"DBConnection.TruncateCollections Creating Shard on {collectionShard.CollectionName}");
-
-                var adminDb = this.Client.GetDatabase("admin");
-                var commandDict = new Dictionary<string, object>()
+            {                
+                BsonDocument bsonDocument = null;
+                try
                 {
-                    { "shardCollection", $"{collectionShard.DBName}.{collectionShard.CollectionName}" }
-                };
-                var shardType = collectionShard.Options.Shard.Type == MongoDBSettings.ShardOpts.Types.Range
-                                    ? "1"
-                                    : collectionShard.Options.Shard.Type
-                                        .ToString().ToLower();
+                    using var consoleShard = new Progression(this.ConsoleProgression, $"Creating Shard {collectionShard.CollectionName}...");
 
-                commandDict.Add("key", new Dictionary<string, object>() { { "_id", shardType } });
-                commandDict.Add("unique", collectionShard.Options.Shard.unique);
-                
-                var bsonDocument = new BsonDocument(commandDict);
+                    Logger.Instance.Info($"DBConnection.TruncateCollections Creating Shard on {collectionShard.CollectionName}");
 
-                if (!string.IsNullOrEmpty(collectionShard.Options.Shard.Options))
-                {
-                    var optionsDoc = BsonSerializer.Deserialize<BsonDocument>(collectionShard.Options.Shard.Options);
-                    bsonDocument.Merge(optionsDoc);
+                    var adminDb = this.Client.GetDatabase("admin");
+                    var commandDict = new Dictionary<string, object>()
+                    {
+                        { "shardCollection", $"{collectionShard.DBName}.{collectionShard.CollectionName}" }
+                    };
+                    object shardType = collectionShard.Options.Shard.Type == MongoDBSettings.ShardOpts.Types.Range
+                                        ? (object) 1
+                                        : collectionShard.Options.Shard.Type
+                                            .ToString().ToLower();
+
+                    commandDict.Add("key", new Dictionary<string, object>() { { "_id", shardType } });
+                    commandDict.Add("unique", collectionShard.Options.Shard.unique);
+
+                    bsonDocument = new BsonDocument(commandDict);
+
+                    if (!string.IsNullOrEmpty(collectionShard.Options.Shard.Options))
+                    {
+                        var optionsDoc = BsonSerializer.Deserialize<BsonDocument>(collectionShard.Options.Shard.Options);
+                        bsonDocument.Merge(optionsDoc);
+                    }
+
+                    var commandDoc = new BsonDocumentCommand<BsonDocument>(bsonDocument);
+                    var response = adminDb.RunCommand(commandDoc);
+
+                    Logger.Instance.Info($"DBConnection.TruncateCollections Created Shard on {collectionShard.CollectionName} Response: '{response}'");
                 }
-
-                var commandDoc = new BsonDocumentCommand<BsonDocument>(bsonDocument);
-                var response = adminDb.RunCommand(commandDoc);
-
-                Logger.Instance.Info($"DBConnection.TruncateCollections Created Shard on {collectionShard.CollectionName}");
+                catch(Exception ex)
+                {
+                    if (bsonDocument == null)
+                        Logger.Instance.Error($"Exception occurred during the construction of Shard {collectionShard.DBName}.{collectionShard.CollectionName}.",
+                                                ex);
+                    else
+                        Logger.Instance.Error($"Exception occurred while creating Shard {collectionShard.DBName}.{collectionShard.CollectionName} using this commend: {bsonDocument}.",
+                                                ex);
+                    throw;
+                }
             }
 
             void PerformActions<T>(DBCollection<T> collection)

@@ -72,8 +72,7 @@ namespace PlayerCommon
 
             public bool Drop { get; set; }
             public ShardOpts Shard { get; set; }
-            public string ShardType { get; set; }
-
+            
             public CreateCollectionOptions createCollectionOptions { get; set; }
             public FindOptions findOptions { get; set; }
 

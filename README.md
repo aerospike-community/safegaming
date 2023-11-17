@@ -19,7 +19,15 @@ These applications are not data generators but instead simulate roulette and slo
 
 ## Overview
 
-It consists of a true document model that represents multiple facets (documents/objects) of gaming. They are:
+Safe Gaming performs true inserts, updates, and atomic operations against seven different Sets (tables) concurrently with true realistic varying payloads. The action rates performed against these Sets (tables) even vary to simulate more realistic patterns.
+
+Safe Gaming also has a read workload to simulate business dashboards. The read workload performs queries (with and without the use of secondary indexes) and Gets (read by PK).
+
+The Safe Gaming Dashboards can be running concurrent to the Gaming Simulator resulting in real time dashboard updates or in "historic" mode simulating "real time" against existing data. This application reads from four Sets (tables) concurrently and simulate “drill-down” by obtaining additional more detail data.
+
+This is why Safe Gaming is drastically different from many other tools like ASBench, and YCSB. These tools use static artificial payloads against a single Set (table) using one, maybe two, DB action(s) for either reads or writes. Neither perform query operations. Because of this and other factors, this type of workload is not found in a typical customer's ecosystem.
+
+As such, it consists of a true document model that represents multiple facets (documents/objects) of gaming. They are:
 
 -   Player represents a person playing a game. It has the following associates:
     -   Information

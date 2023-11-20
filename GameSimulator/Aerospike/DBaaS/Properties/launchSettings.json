@@ -46,6 +46,10 @@
     "GameSimulator LocalHost": {
       "commandName": "Project",
       "commandLineArgs": "--AppConfigJsonFile appsettingsASLocal.json"
+    },
+    "GameSim DriverDebug": {
+      "commandName": "Project",
+      "commandLineArgs": "--DriverDebug"
     }
   }
 }

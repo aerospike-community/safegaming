@@ -72,15 +72,15 @@
     <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />
     <PackageReference Include="Common.Patterns.Threading" Version="5.31.1" />
     <PackageReference Include="HdrHistogram" Version="2.5.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="./Packages/AerospikeClient.dll" />
-    <PackageReference Include="Google.Protobuf" Version="3.24.4" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.57.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.58.0">
+    <PackageReference Include="Google.Protobuf" Version="3.25.1" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.59.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.59.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.59.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

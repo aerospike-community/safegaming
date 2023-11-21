@@ -73,7 +73,7 @@
     <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />
     <PackageReference Include="Common.Patterns.Threading" Version="5.31.1" />
     <PackageReference Include="HdrHistogram" Version="2.5.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
   </ItemGroup>  
 
   <ItemGroup>

@@ -94,17 +94,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aerospike.Client" Version="6.1.0" />
+    <PackageReference Include="Aerospike.Client" Version="6.2.0" />
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
     <PackageReference Include="Common.Console" Version="5.31.10" />
-    <PackageReference Include="Common.Functions" Version="5.31.11" />
+    <PackageReference Include="Common.Functions" Version="5.31.12" />
     <PackageReference Include="Common.Logger" Version="5.31.15" />
     <PackageReference Include="Common.Path" Version="5.31.5" />
     <PackageReference Include="Common.Patterns.Tasks" Version="5.31.5" />
     <PackageReference Include="Common.Patterns.Threading" Version="5.31.1" />
     <PackageReference Include="Faker.Net" Version="2.0.154" />
     <PackageReference Include="HdrHistogram" Version="2.5.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
   </ItemGroup>  
 
   <ItemGroup>

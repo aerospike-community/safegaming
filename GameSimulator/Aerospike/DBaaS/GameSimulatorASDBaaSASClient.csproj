@@ -131,6 +131,9 @@
     <None Update="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="appsettingsASLocalSSL.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="appsettingsASLocal.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

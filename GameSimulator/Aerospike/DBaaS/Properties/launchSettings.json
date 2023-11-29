@@ -50,6 +50,10 @@
     "GameSim DriverDebug": {
       "commandName": "Project",
       "commandLineArgs": "--DriverDebug"
+    },
+    "GameSim Localhost SSL": {
+      "commandName": "Project",
+      "commandLineArgs": "--AppConfigJsonFile appsettingsASLocalSSL.json"
     }
   }
 }

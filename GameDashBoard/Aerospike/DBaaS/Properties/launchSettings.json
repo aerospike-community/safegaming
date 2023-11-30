@@ -18,6 +18,10 @@
     "GameDashBoard Cloud": {
       "commandName": "Project",
       "commandLineArgs": "--AppConfigJsonFile appsettingsASCloud.json -u 10"
+    },
+    "GameDashBoard DBDrv SSL": {
+      "commandName": "Project",
+      "commandLineArgs": "--DriverDebug --AppConfigJsonFile appsettingsASLocalSSL.json"
     }
   }
 }

@@ -15,6 +15,7 @@ namespace PlayerCommon
         {
             Logger.Instance.Warn("Application Aborted");
             Program.ConsoleErrors?.Increment("Aborted");
+            System.Diagnostics.Debug.WriteLine($"'{Common.Functions.Instance.AssemblyFullName}': '{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}': Application Aborted");
             cancellationTokenSource.Cancel();
             
             Logger.Instance.Flush(5000);

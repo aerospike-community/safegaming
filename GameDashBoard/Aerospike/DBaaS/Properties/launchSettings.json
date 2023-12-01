@@ -13,7 +13,7 @@
     },
     "GameDashBoard DBDrv Cloud": {
       "commandName": "Project",
-      "commandLineArgs": "--DriverDebug --AppConfigJsonFile appsettingsASCloud.json"
+      "commandLineArgs": "--DriverDebug --AppConfigJsonFile appsettingsASCloud.json -u 10"
     },
     "GameDashBoard Cloud": {
       "commandName": "Project",

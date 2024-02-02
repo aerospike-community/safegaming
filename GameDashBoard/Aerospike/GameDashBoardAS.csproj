@@ -71,7 +71,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aerospike.Client" Version="6.2.0" />
+    <PackageReference Include="Aerospike.Client" Version="7.0.1" />
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.23" />
     <PackageReference Include="Common.Console" Version="5.31.10" />
     <PackageReference Include="Common.Functions" Version="5.31.12" />

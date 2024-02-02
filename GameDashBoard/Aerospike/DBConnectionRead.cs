@@ -200,11 +200,11 @@ namespace PlayerCommon
                 {
                     stopWatch.Restart();
 
-                    recordSet = this.Connection.QueryPartitions(query, stmt, filter
 #if ASDBAAS
-                        , cancellationToken
-#endif
-                        );
+                    recordSet =  this.Connection.QueryPartitions(query, cancellationToken, stmt, filter).Result;
+#else
+                    recordSet = this.Connection.QueryPartitions(query, stmt, filter);
+#endif                       
                     cursors = filter.Partitions;
                     hasRecs = recordSet.Next();
 
@@ -330,11 +330,11 @@ namespace PlayerCommon
                 {
                     stopWatch.Restart();
 
-                    recordSet = this.Connection.QueryPartitions(query, stmt, filter
 #if ASDBAAS
-                        , cancellationToken
-#endif
-                        );
+                    recordSet = this.Connection.QueryPartitions(query, cancellationToken, stmt, filter).Result;
+#else
+                    recordSet = this.Connection.QueryPartitions(query, stmt, filter);
+#endif                        
                     cursors = filter.Partitions;
                     hasRecs = recordSet.Next();
 
@@ -460,11 +460,11 @@ namespace PlayerCommon
                 {
                     stopWatch.Restart();
 
-                    recordSet = this.Connection.QueryPartitions(query, stmt, filter
 #if ASDBAAS
-                        , cancellationToken
+                    recordSet = this.Connection.QueryPartitions(query, cancellationToken, stmt, filter).Result;
+#else
+                    recordSet = this.Connection.QueryPartitions(query, stmt, filter);
 #endif
-                        );
                     cursors = filter.Partitions;
                     hasRecs = recordSet.Next();
                     stopWatch.StopRecord(GetTag,

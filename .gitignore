@@ -1,0 +1,7 @@
+GameSimulator/Aerospike/DBaaS/obj/
+GameSimulator/Aerospike/obj/
+GameSimulator/Monogodb/obj/
+GameSimulator/obj/
+GameSimulatorTests/bin/
+GameSimulatorTests/obj/
+PlayerCommon/obj/
